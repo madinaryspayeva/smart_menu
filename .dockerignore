@@ -1,0 +1,27 @@
+*.sqlite3
+*.pyc   
+.DS_Store
+.venv
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Python
+__pycache__/
+*.pyc
+*.py[cod]
+*.sqlite3
+
+# Environment
+.env
+.env*
+
+# IDE / Editor / OS
+.idea/
+.vscode/
+.DS_Store
+.venv
