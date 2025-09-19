@@ -21,8 +21,8 @@ dependencies = [
 
 [tool.poetry]
 packages = [
-    {include = "app", from = "src"},
-    {include = "users", from = "src"},
+    {include = "app"},
+    {include = "users"},
 ]
 
 

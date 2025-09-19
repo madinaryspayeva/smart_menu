@@ -12,6 +12,7 @@ from users.models import User
 class UserAdmin(BaseUserAdmin):
     ordering = ["id"]
     list_display = ["email", "username", ]
+    list_display = ["email", "first_name", "last_name", "is_staff"]
     fieldsets = (
         (None, {"fields": ("email", "password")}),
         (_("Personal Info"), {"fields": ("first_name", "last_name")}),
@@ -22,5 +23,6 @@ class UserAdmin(BaseUserAdmin):
         (None, {
             "classes": ("wide",),
             "fields": ("email", "password", "password2"),
+            "fields": ("email", "password"),
         }),
     )
