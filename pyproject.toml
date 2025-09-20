@@ -26,6 +26,9 @@ packages = [
 ]
 
 
+[tool.poetry.group.dev.dependencies]
+django-widget-tweaks = "^1.5.0"
+
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
