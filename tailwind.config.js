@@ -2,7 +2,22 @@
 module.exports = {
   content: ["./templates/**/*.html"],
   theme: {
-    extend: {},
+    extend: {
+        colors: {
+                        'pastel-pink': '#ff9a8b',
+                        'pastel-yellow': '#fef9e7',
+                        'coral-red': '#d44f4f',
+                        'light-pink': '#fff5f5',
+                        'lemon': '#fef08a',
+                        'lemon-dark': '#facc15',
+                        'lemon-light': '#fef9c3',
+                        'lemon-border': '#eab308',
+                    },
+                    fontFamily: {
+                        'lilita': ['Lilita One', 'cursive'],
+                        'arvo': ['Arvo', 'serif'],
+                    }
+    },
   },
   plugins: [
     require("@tailwindcss/forms"),
