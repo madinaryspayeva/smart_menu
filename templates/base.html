@@ -6,6 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'output.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Arvo:ital,wght@0,400;0,700;1,400;1,700&family=Lilita+One&display=swap" rel="stylesheet">
     <title>SmartMenu</title>
     <style>
         .btn {
@@ -30,11 +31,30 @@
         }
     </style>
 </head>
-<body>
-    <nav>Common navighation bar for all templates</nav>
-    {% block content %}
+<body class="bg-pastel-yellow font-arvo">
+<header class="bg-gradient-to-r from-pastel-pink to-amber-300 text-white py-5 shadow-lg">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <span class="text-3xl">🍽</span>
+                <h1 class="text-2xl font-lilita text-coral-red">Smart Menu</h1>
+            </div>
+            <nav class="hidden md:block">
+                <ul class="flex space-x-6">
+                    <li><a href="#" class="hover:bg-pastel-pink/30 px-3 py-2 rounded transition">Главная</a></li>
+                    <li><a href="#" class="hover:bg-pastel-pink/30 px-3 py-2 rounded transition">Меню</a></li>
+                    <li><a href="#" class="hover:bg-pastel-pink/30 px-3 py-2 rounded transition">О нас</a></li>
+                </ul>
+            </nav>
+            <button class="md:hidden text-2xl">☰</button>
+        </div>
+    </header>
+    <main class="container mx-auto px-4 py-10">
+        <div class="flex flex-col md:flex-row justify-center items-start gap-8 max-w-5xl mx-auto">
+            {% block content %}
 
-    {% endblock content %}
+            {% endblock content %}
+        </div>
+    </main>
     <footer>Common footer for all templates</footer>
 </body>
 </html>
