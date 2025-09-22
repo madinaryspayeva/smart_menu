@@ -1,12 +1,60 @@
 {% extends "base.html" %}
+{% load widget_tweaks %}
+
+
 {% block content %}
 
+    <div class="w-full md:w-96">
+        <div class="auth-form bg-white rounded-xl p-8 border-2 border-pastel-pink">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-lilita text-coral-red mb-2">Вход в аккаунт</h2>
+                <p class="text-gray-600">Введите свои данные для входа в систему</p>
+            </div>
 
-    <h2>Вход</h2>
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button class="button primary" type="submit">Войти</button>
-        </form>
+            <form method="POST">
+                {% csrf_token %}
+                {% if form.errors %}
+                    <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
+                        Пожалуйста, исправьте ошибки ниже.
+                    </div>
+                {% endif %}
+
+                <div class="mb-5">
+                    <label for="{{ form.username.id_for_label }}" class="block text-gray-700 font-medium mb-2">Email</label>
+                    {% render_field form.username class="form-input" placeholder="Ваш email" %}
+                    {% for error in form.username.errors %}
+                        <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-5">
+                    <label for="{{ form.password.id_for_label }}" class="block text-gray-700 font-medium mb-2">Пароль</label>
+                    {% render_field form.password class="form-input" placeholder="Ваш пароль" %}
+                    {% for error in form.password.errors %}
+                        <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <div class="flex items-center justify-end mb-5">
+                    <a href="#" class="text-sm text-coral-red hover:text-pastel-pink font-medium">Забыли пароль?</a>
+                </div>
+
+                <button type="submit" class="primary">
+                    Войти
+                </button>
+
+                <div class="relative flex items-center my-6">
+                    <div class="flex-grow border-t border-pastel-pink"></div>
+                    <span class="flex-shrink mx-4 text-gray-500">или</span>
+                    <div class="flex-grow border-t border-pastel-pink"></div>
+                </div>
+
+                <div class="text-center text-gray-600">
+                    Нет аккаунта?
+                    <a href="{% url 'signup' %}" class="text-coral-red hover:text-pastel-pink font-medium transition">Зарегистрироваться</a>
+                </div>
+            </form>
+        </div>
+    </div>
 
 {% endblock content %}
