@@ -1,9 +1,99 @@
 {% extends "base.html" %}
+{% load widget_tweaks %}
+
+
 {% block content %}
-    <h2>Регистрация</h2>
+    {% comment %} <h2>Регистрация</h2>
         <form method="post">
             {% csrf_token %}
             {{ form.as_p }}
             <button type="submit">Зарегистрироваться</button>
-        </form>
+        </form> {% endcomment %}
+
+   
+    <div class="w-full md:w-96">
+        <div class="auth-form bg-white rounded-xl p-8 border-2 border-pastel-pink">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-lilita text-coral-red mb-2">Создать аккаунт</h2>
+                <p class="text-gray-600">Заполните форму для регистрации в приложении</p>
+             </div>
+                    
+                <form method="POST">
+                    {% csrf_token%}
+                    {% if form.errors %}
+                        <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
+                            Пожалуйста, исправьте ошибки ниже.
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-5">
+                        <label for="{{ form.first_name.id_for_label }}" class="block text-gray-700 font-medium mb-2">Имя</label>
+                        {% render_field form.first_name class="form-input" placeholder="Ваше имя" required="required" %}
+                        {% for error in form.first_name.errors %}
+                            <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                        
+                    <div class="mb-5">
+                        <label for="{{ form.email.id_for_label }}" class="block text-gray-700 font-medium mb-2">Email</label>
+                        {% render_field form.email class="form-input" placeholder="Ваш email" required="required" %}
+                        {% for error in form.email.errors %}
+                            <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                        
+                    <div class="mb-5">
+                        <label for="{{ form.password1.id_for_label }}" class="block text-gray-700 font-medium mb-2">Пароль</label>
+                        {% render_field form.password1 class="form-input" placeholder="Придумайте пароль" required="required" %}
+                            {% for error in form.password1.errors %}
+                                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+                            {% endfor %}
+                    </div>
+                        
+                    <div class="mb-5">
+                        <label for="{{ form.password2.id_for_label }}" class="block text-gray-700 font-medium mb-2">Подтверждение пароля</label>
+                        {% render_field form.password2 class="form-input" placeholder="Повторите пароль" required="required" %}
+                            {% for error in form.password2.errors %}
+                                <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+                            {% endfor %}
+                    </div>
+                        
+                    <div class="mb-5 flex items-center">
+                        <input type="checkbox" id="terms" class="h-4 w-4 text-coral-red focus:ring-coral-red border-gray-300 rounded">
+                        <label for="terms" class="ml-2 block text-sm text-gray-700">
+                                Я принимаю 
+                                <a href="#" class="text-coral-red hover:text-pastel-pink">условия использования</a>
+                        </label>
+                    </div>
+                        
+                    <button type="submit" class="primary">
+                            <span class="relative z-10">Зарегистрироваться</span>
+                    </button>
+                        
+                    <div class="relative flex items-center my-6">
+                        <div class="flex-grow border-t border-pastel-pink"></div>
+                        <span class="flex-shrink mx-4 text-gray-500">или</span>
+                        <div class="flex-grow border-t border-pastel-pink"></div>
+                    </div>
+                        
+                    <div class="flex justify-center space-x-4 mb-6">
+                        <button class="social-btn w-12 h-12 rounded-full bg-light-pink flex items-center justify-center text-coral-red border border-pastel-pink font-bold">
+                                G
+                        </button>
+                        <button class="social-btn w-12 h-12 rounded-full bg-light-pink flex items-center justify-center text-coral-red border border-pastel-pink font-bold">
+                                f
+                        </button>
+                        <button class="social-btn w-12 h-12 rounded-full bg-light-pink flex items-center justify-center text-coral-red border border-pastel-pink font-bold">
+                                in
+                        </button>
+                    </div>
+                        
+                    <div class="text-center text-gray-600">
+                            Уже есть аккаунт? <a href="{% url 'login' %}" class="text-coral-red hover:text-pastel-pink font-medium transition" onclick="toggleForm()">Войти</a>
+                    </div>
+                </form>
+
+        </div
+    </div>
+
 {% endblock content %}

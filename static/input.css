@@ -7,8 +7,21 @@
   }
 
   .primary {
-    @apply w-full bg-gradient-to-r from-pastel-pink to-amber-400 text-white py-3 px-6 rounded-lg font-semibold shadow-md;
+    @apply relative w-full bg-gradient-to-r from-pastel-pink to-amber-400 text-white py-3 px-6 rounded-lg font-semibold shadow-md overflow-hidden;
+    @apply transition-transform duration-300 ease-in-out;
   }
+  .primary:hover {
+    @apply shadow-lg transform -translate-y-px;
+  }
+  .primary::after {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r from-pastel-pink/90 to-amber-400/90 opacity-0 transition-opacity duration-300 ease-in-out;
+  }
+
+  .primary:hover::after {
+    @apply opacity-100;
+  }
+
 
   .secondary {
     @apply w-full bg-lemon-light text-amber-900 border-2 border-lemon-border py-3 px-6 rounded-lg font-semibold hover:bg-lemon;
