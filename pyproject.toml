@@ -10,13 +10,13 @@ requires-python = ">=3.13"
 dependencies = [
     "django (>=5.2.4,<6.0.0)",
     "django-behaviors (>=0.5.1,<0.6.0)",
-    "psycopg2-binary (>=2.9.10,<3.0.0)",
     "python-decouple (>=3.8,<4.0)",
     "python-dotenv (>=1.1.1,<2.0.0)",
-    "psycopg (>=3.2.9,<4.0.0)",
+    "psycopg[binary] (>=3.2.9,<4.0.0)",
     "dj-database-url (>=3.0.1,<4.0.0)",
     "pillow (>=11.3.0,<12.0.0)",
-    "django-allauth[socialaccount] (>=65.11.2,<66.0.0)"
+    "django-allauth[socialaccount] (>=65.11.2,<66.0.0)",
+    "django-widget-tweaks (>=1.5.0,<2.0.0)"
 ]
 
 
@@ -24,11 +24,9 @@ dependencies = [
 packages = [
     {include = "app"},
     {include = "users"},
+    {include = "product"},
 ]
 
-
-[tool.poetry.group.dev.dependencies]
-django-widget-tweaks = "^1.5.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
