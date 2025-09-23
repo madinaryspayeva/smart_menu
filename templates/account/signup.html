@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load widget_tweaks %}
+{% load widget_tweaks socialaccount %}
 
 
 {% block content %}
@@ -77,23 +77,17 @@
                     </div>
                         
                     <div class="flex justify-center space-x-4 mb-6">
-                        <button class="social-btn w-12 h-12 rounded-full bg-light-pink flex items-center justify-center text-coral-red border border-pastel-pink font-bold">
-                                G
-                        </button>
-                        <button class="social-btn w-12 h-12 rounded-full bg-light-pink flex items-center justify-center text-coral-red border border-pastel-pink font-bold">
-                                f
-                        </button>
-                        <button class="social-btn w-12 h-12 rounded-full bg-light-pink flex items-center justify-center text-coral-red border border-pastel-pink font-bold">
-                                in
-                        </button>
+                        <a href="{% provider_login_url 'google' %}" class="social-btn w-12 h-12 rounded-full bg-light-pink flex items-center justify-center text-coral-red border border-pastel-pink font-bold">
+                            G
+                        </a>
                     </div>
                         
                     <div class="text-center text-gray-600">
-                            Уже есть аккаунт? <a href="{% url 'login' %}" class="text-coral-red hover:text-pastel-pink font-medium transition" onclick="toggleForm()">Войти</a>
+                            Уже есть аккаунт? <a href="{% url 'account_login' %}" class="text-coral-red hover:text-pastel-pink font-medium transition">Войти</a>
                     </div>
                 </form>
 
-        </div
+        </div>
     </div>
 
 {% endblock content %}

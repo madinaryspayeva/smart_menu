@@ -24,7 +24,7 @@ from app import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('account/', include('users.urls')),
+    path('accounts/', include('allauth.urls')),
 ]
 
 if settings.DEBUG:
