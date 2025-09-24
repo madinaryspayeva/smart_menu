@@ -14,4 +14,58 @@
   </form>
 
   <a href="{% url 'product:list' %}" class="text-gray-600">Назад</a>
+
+
+
+
+  <!-- Модальное окно добавления/редактирования продукта -->
+    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="modal bg-white rounded-xl p-6 mx-4 max-w-md w-full border-2 border-pastel-pink max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-lilita text-coral-red">Добавить продукт</h3>
+                <button class="text-gray-500 hover:text-coral-red text-xl" onclick="closeModal('editModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 font-medium mb-2">Название продукта</label>
+                    <input type="text" class="w-full px-4 py-2 border border-pastel-pink rounded-lg bg-light-pink focus:outline-none focus:ring-2 focus:ring-coral-red" placeholder="Введите название">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-medium mb-2">Категория</label>
+                    <select class="w-full px-4 py-2 border border-pastel-pink rounded-lg bg-light-pink focus:outline-none focus:ring-2 focus:ring-coral-red">
+                        <option>Выберите категорию</option>
+                        <option>Овощи</option>
+                        <option>Фрукты</option>
+                        <option>Мясо</option>
+                        <option>Молочные продукты</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-medium mb-2">Описание</label>
+                    <textarea class="w-full px-4 py-2 border border-pastel-pink rounded-lg bg-light-pink focus:outline-none focus:ring-2 focus:ring-coral-red" rows="3" placeholder="Введите описание продукта"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Количество</label>
+                        <input type="number" class="w-full px-4 py-2 border border-pastel-pink rounded-lg bg-light-pink focus:outline-none focus:ring-2 focus:ring-coral-red" placeholder="0">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Цена (₽)</label>
+                        <input type="number" class="w-full px-4 py-2 border border-pastel-pink rounded-lg bg-light-pink focus:outline-none focus:ring-2 focus:ring-coral-red" placeholder="0">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-2 pt-4">
+                    <button type="button" class="btn bg-lemon-light text-amber-900 border border-lemon-border py-2 px-4 rounded-lg font-medium hover:bg-lemon" onclick="closeModal('editModal')">
+                        Отмена
+                    </button>
+                    <button type="submit" class="btn bg-gradient-to-r from-pastel-pink to-amber-400 text-white py-2 px-4 rounded-lg font-medium">
+                        Сохранить
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 {% endblock %}

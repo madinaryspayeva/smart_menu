@@ -7,9 +7,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'output.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Arvo:ital,wght@0,400;0,700;1,400;1,700&family=Lilita+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <title>SmartMenu</title>
 </head>
-<body class="bg-pastel-yellow font-arvo">
+<body class="bg-pastel-yellow font-arvo min-h-screen">
 <header class="bg-gradient-to-r from-pastel-pink to-amber-300 text-white py-5 shadow-lg">
         <div class="container mx-auto px-4 flex justify-between items-center">
             <div class="flex items-center space-x-2">
@@ -28,11 +29,34 @@
     </header>
   
     <main class="container mx-auto px-4 py-10">
-        <div class="flex justify-center items-start">
+        <div class="flex justify-center items-start ">
             {% block content %}
             {% endblock content %}
         </div>
     </main>
     <footer>Common footer for all templates</footer>
+
+
+{% comment %} 
+    <script>
+        // Функции для открытия/закрытия модальных окон
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+        
+        // Закрытие модальных окон при клике вне их области
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('#viewModal, #editModal, #deleteModal');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    closeModal(modal.id);
+                }
+            });
+        }
+    </script> {% endcomment %}
 </body>
 </html>
