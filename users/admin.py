@@ -11,7 +11,6 @@ from users.models import User
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
     ordering = ["id"]
-    list_display = ["email", "username", ]
     list_display = ["email", "first_name", "is_staff"]
     fieldsets = (
         (None, {"fields": ("email", "password")}),
@@ -22,7 +21,6 @@ class UserAdmin(BaseUserAdmin):
     add_fieldsets = (
         (None, {
             "classes": ("wide",),
-            "fields": ("email", "password", "password2"),
             "fields": ("email", "password"),
         }),
     )

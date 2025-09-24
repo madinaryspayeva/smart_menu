@@ -1,0 +1,10 @@
+{
+  "python.defaultInterpreterPath": "/Users/madinator/Library/Caches/pypoetry/virtualenvs/smart-menu--TSOTZ0s-py3.13",
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}",    
+    "${workspaceFolder}/product",
+    "${workspaceFolder}/users"
+  ],
+  "python.analysis.diagnosticMode": "openFilesOnly",
+  "python.analysis.indexing": true
+}
