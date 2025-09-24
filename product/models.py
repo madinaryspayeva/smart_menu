@@ -3,12 +3,19 @@ from django.utils.translation import gettext_lazy as _
 
 from app import settings
 from app.models import TimestampedModel
+from product.choices import Category
 
 
 class Product(TimestampedModel):
     name = models.CharField(
         max_length=255,
         verbose_name=_("Название")
+    )
+    category = models.CharField(
+        max_length=50,
+        choices=Category.choices,
+        default=Category.OTHER,
+        verbose_name=_("Категория")
     )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,

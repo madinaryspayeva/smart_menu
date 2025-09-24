@@ -7,7 +7,9 @@
   <ul>
     {% for product in products %}
       <li>
-        <a href="{% url 'product:detail' product.pk %}">{{ product.name }}</a>
+        <a href="{% url 'product:detail' product.pk %}"
+          >{{ product.name }} ({{ product.get_category_display }})</a
+        >
       </li>
     {% empty %}
       <li>Пока нет продуктов</li>

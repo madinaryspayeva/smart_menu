@@ -3,6 +3,7 @@
 
 {% block content %}
   <h1 class="text-xl font-bold">{{ product.name }}</h1>
+  <p>Категория: {{ product.get_category_display }}</p>
   <p>Добавил: {{ product.created_by }}</p>
 
   <a href="{% url 'product:edit' object.pk %}" class="text-yellow-600">Редактировать</a> |

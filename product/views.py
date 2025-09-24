@@ -54,7 +54,7 @@ class ProductDeleteView(DeleteView):
 
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
-        if obj.created_by != self.request.user:
+        if obj.created_by != self.request_user:
             raise PermissionDenied(_("Нельзя удалить чужие продукты."))
         return obj
 
