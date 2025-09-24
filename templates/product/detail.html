@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+  <h1 class="text-xl font-bold">{{ product.name }}</h1>
+  <p>Добавил: {{ product.created_by }}</p>
+
+  <a href="{% url 'product:edit' object.pk %}" class="text-yellow-600">Редактировать</a> |
+  <a href="{% url 'product:delete' object.pk %}" class="text-red-600">Удалить</a> |
+  <a href="{% url 'product:list' %}" class="text-blue-600">Назад</a>
+{% endblock %}

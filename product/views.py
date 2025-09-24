@@ -5,7 +5,8 @@ from django.views.generic import (
     CreateView,
     UpdateView,
     DeleteView,
-    ListView
+    ListView,
+    DetailView
 )
 
 from product.models import Product
@@ -20,7 +21,7 @@ class ProductListView(ListView):
 
 class ProductCreateView(CreateView):
     model = Product
-    template_name = "product/create.html"
+    template_name = "product/form.html"
     form_class = ProductForm
     success_url = reverse_lazy("product:list")
 
@@ -32,7 +33,7 @@ class ProductCreateView(CreateView):
 
 class ProductUpdateView(UpdateView):
     model = Product
-    template_name = "product/update.html"
+    template_name = "product/form.html"
     form_class = ProductForm
     context_object_name = "product"
     success_url = reverse_lazy("product:list")
@@ -53,6 +54,13 @@ class ProductDeleteView(DeleteView):
 
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
-        if obj.created_by != self.request_user:
+        if obj.created_by != self.request.user:
             raise PermissionDenied(_("Нельзя удалить чужие продукты."))
         return obj
+
+
+class ProductDetailView(DetailView):
+    model = Product
+    template_name = "product/detail.html"
+    context_object_name = "product"
+
