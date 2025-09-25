@@ -1,64 +1,39 @@
-{% extends "base.html" %}
+<div class="modal bg-white rounded-xl p-6 mx-4 max-w-md w-full border-2 border-pastel-pink">
+    <div class="flex justify-between items-center mb-4">
+        <h3 class="text-2xl font-lilita text-coral-red">Просмотр продукта</h3>
+        <button class="text-gray-500 hover:text-coral-red text-xl" onclick="closeModal()">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
 
-
-{% block content %}
-  <h1 class="text-xl font-bold">{{ product.name }}</h1>
-  <p>Категория: {{ product.get_category_display }}</p>
-  <p>Добавил: {{ product.created_by }}</p>
-
-  <a href="{% url 'product:edit' object.pk %}" class="text-yellow-600">Редактировать</a> |
-  <a href="{% url 'product:delete' object.pk %}" class="text-red-600">Удалить</a> |
-  <a href="{% url 'product:list' %}" class="text-blue-600">Назад</a>
-
-
-
-
-  <!-- Модальное окно просмотра продукта -->
-    <div id="viewModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="modal bg-white rounded-xl p-6 mx-4 max-w-md w-full border-2 border-pastel-pink">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-2xl font-lilita text-coral-red">Просмотр продукта</h3>
-                <button class="text-gray-500 hover:text-coral-red text-xl" onclick="closeModal('viewModal')">
-                    <i class="fas fa-times"></i>
-                </button>
+    <div class="mb-4">
+        <div class="space-y-3">
+            <div>
+                <span class="font-semibold">Название:</span>
+                <span class="ml-2">{{ product.name }}</span>
             </div>
-            <div class="mb-4">
-                <div class="space-y-3">
-                    <div>
-                        <span class="font-semibold">Название:</span>
-                        <span class="ml-2">Морковь свежая</span>
-                    </div>
-                    <div>
-                        <span class="font-semibold">Категория:</span>
-                        <span class="ml-2 bg-lemon-light text-amber-900 text-sm px-2 py-1 rounded">Овощи</span>
-                    </div>
-                    <div>
-                        <span class="font-semibold">Описание:</span>
-                        <p class="mt-1">Свежая морковь с местной фермы, богата витаминами А и С.</p>
-                    </div>
-                    <div>
-                        <span class="font-semibold">Количество:</span>
-                        <span class="ml-2">15 кг</span>
-                    </div>
-                    <div>
-                        <span class="font-semibold">Цена:</span>
-                        <span class="ml-2">85 ₽/кг</span>
-                    </div>
-                    <div>
-                        <span class="font-semibold">Дата добавления:</span>
-                        <span class="ml-2">15.09.2023</span>
-                    </div>
-                </div>
+            <div>
+                <span class="font-semibold">Категория:</span>
+                <span class="ml-2 bg-lemon-light text-amber-900 text-sm px-2 py-1 rounded">{{ product.get_category_display }}</span>
             </div>
-            <div class="flex justify-end space-x-2">
-                <button class="btn bg-lemon-light text-amber-900 border border-lemon-border py-2 px-4 rounded-lg font-medium hover:bg-lemon" onclick="closeModal('viewModal')">
-                    Закрыть
-                </button>
-                <button class="btn bg-gradient-to-r from-pastel-pink to-amber-400 text-white py-2 px-4 rounded-lg font-medium" onclick="closeModal('viewModal'); openModal('editModal');">
-                    Редактировать
-                </button>
+            <div>
+                <span class="font-semibold">Дата добавления:</span>
+                <span class="ml-2">{{ product.created|date:"d.m.Y" }}</span>
             </div>
         </div>
     </div>
 
-{% endblock %}
+    <div class="flex justify-end space-x-2">
+        <button class="btn bg-lemon-light text-amber-900 border border-lemon-border py-2 px-4 rounded-lg font-medium hover:bg-lemon" onclick="closeModal()">
+            Закрыть
+        </button>
+        <button 
+            hx-get="{% url 'product:edit' product.pk %}" 
+            hx-target="#modal-content"
+            hx-trigger="click"
+            class="btn bg-gradient-to-r from-pastel-pink to-amber-400 text-white py-2 px-4 rounded-lg font-medium"
+            onclick="openModal()">
+            Редактировать
+        </button>
+    </div>
+</div>

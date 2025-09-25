@@ -55,6 +55,11 @@ class ProductCreateView(CreateView):
     def form_valid(self, form):
         form.instance.created_by = self.request.user
         return super().form_valid(form)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["categories"] = Category.choices
+        return context
 
 
 class ProductUpdateView(UpdateView):
@@ -70,6 +75,11 @@ class ProductUpdateView(UpdateView):
         if obj.created_by != self.request.user:
             raise PermissionDenied(_("Нельзя редактировать чужие продукты."))
         return obj
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["categories"] = Category.choices
+        return context
 
 
 class ProductDeleteView(DeleteView):

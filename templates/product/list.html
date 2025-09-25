@@ -9,7 +9,12 @@
             <h2 class="w-full text-3xl text-center font-lilita text-coral-red mb-4">
                 Список продуктов
             </h2> 
-            <button class="w-full button primary" onclick="openModal('editModal')">
+            <button 
+            hx-get="{% url 'product:add' %}"
+            hx-target="#modal-content"
+            hx-trigger="click"
+            class="w-full button primary" 
+            onclick="openModal()">
                 <i class="fas fa-plus"></i>
                 <span>Добавить продукт</span>
             </button>
@@ -73,13 +78,28 @@
             </div>
             
             <div class="flex space-x-2">
-                <button class="btn flex-1 bg-lemon-light text-amber-900 border border-lemon-border py-2 rounded-lg font-medium text-sm hover:bg-lemon" onclick="openModal('viewModal')">
+                <button 
+                hx-get="{% url 'product:detail' product.pk %}"
+                hx-target="#modal-content"
+                hx-trigger="click"
+                class="btn flex-1 bg-lemon-light text-amber-900 border border-lemon-border py-2 rounded-lg font-medium text-sm hover:bg-lemon" 
+                onclick="openModal()">
                     <i class="fas fa-eye mr-1"></i> Просмотр
                 </button>
-                <button class="btn flex-1 bg-gradient-to-r from-pastel-pink to-amber-400 text-white py-2 rounded-lg font-medium text-sm" onclick="openModal('editModal')">
+                <button 
+                hx-get="{% url 'product:edit' product.pk %}"
+                hx-target="#modal-content"
+                hx-trigger="click"
+                class="btn flex-1 bg-gradient-to-r from-pastel-pink to-amber-400 text-white py-2 rounded-lg font-medium text-sm" 
+                onclick="openModal()">
                     <i class="fas fa-edit mr-1"></i> Редактировать
                 </button>
-                <button class="btn bg-gradient-to-r from-red-400 to-red-500 text-white py-2 px-3 rounded-lg font-medium text-sm" onclick="openModal('deleteModal')">
+                <button 
+                hx-get="{% url 'product:delete' product.pk %}"
+                hx-target="#modal-content"
+                hx-trigger="click"
+                class="btn bg-gradient-to-r from-red-400 to-red-500 text-white py-2 px-3 rounded-lg font-medium text-sm" 
+                onclick="openModal()">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
@@ -118,5 +138,54 @@
         </div>
         {% endif %}  
     </div>
+
+
+    <!-- Универсальная модалка -->
+<div id="modal" 
+     class="fixed inset-0 hidden items-center justify-center 
+            bg-white/30 backdrop-blur-sm z-50 transition-opacity duration-300">
+  
+  <div id="modal-content" 
+       class="transform scale-95 opacity-0 transition-all duration-300 w-full h-auto flex items-center justify-center p-4">
+  </div>
+</div>
+
+
+    <script>
+      function openModal() {
+          const modal = document.getElementById("modal");
+          const content = document.getElementById("modal-content");
+
+          modal.classList.remove("hidden");
+          modal.classList.add("flex");
+
+          // Плавное появление
+          setTimeout(() => {
+              content.classList.remove("scale-95", "opacity-0");
+              content.classList.add("scale-100", "opacity-100");
+          }, 10);
+      }
+
+      function closeModal() {
+          const modal = document.getElementById("modal");
+          const content = document.getElementById("modal-content");
+
+          // Плавное исчезновение
+          content.classList.remove("scale-100", "opacity-100");
+          content.classList.add("scale-95", "opacity-0");
+
+          setTimeout(() => {
+              modal.classList.add("hidden");
+              modal.classList.remove("flex");
+          }, 300); // должно совпадать с duration-300
+      }
+
+      // Закрытие по клику на фон
+      document.getElementById("modal").addEventListener("click", function(e) {
+          if (e.target === this) {
+              closeModal();
+          }
+      });
+</script>
 
 {% endblock %}
