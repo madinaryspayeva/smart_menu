@@ -21,7 +21,7 @@ class ProductListView(ListView):
     paginate_by = 3
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().order_by("-created")
 
         search = self.request.GET.get("q")
         if search:
@@ -35,7 +35,7 @@ class ProductListView(ListView):
         if sort == "name":
             queryset = queryset.order_by("name")
         elif sort == "date":
-            queryset = queryset.order_by("-created")
+            queryset = queryset.order_by("-created") # This is already the default, but explicit is fine.
         
         return queryset
 
@@ -51,6 +51,10 @@ class ProductCreateView(CreateView):
     form_class = ProductForm
     success_url = reverse_lazy("product:list")
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
 
     def form_valid(self, form):
         form.instance.created_by = self.request.user
@@ -68,8 +72,12 @@ class ProductUpdateView(UpdateView):
     form_class = ProductForm
     context_object_name = "product"
     success_url = reverse_lazy("product:list")
-    
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
+    
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
         if obj.created_by != self.request.user:

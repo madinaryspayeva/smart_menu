@@ -1,63 +1,46 @@
-{% extends "base.html" %}
-
-{% block content %}
-  <h1 class="text-xl font-bold">
-    {% if product %}Редактировать продукт{% else %}Добавить продукт{% endif %}
-  </h1>
-
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">
-      Сохранить
-    </button>
-  </form>
-
-  <a href="{% url 'product:list' %}" class="text-gray-600">Назад</a>
-
-
-
+{% load widget_tweaks %}
+{% load i18n %}
 
   <!-- Модальное окно добавления/редактирования продукта -->
-    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+   
         <div class="modal bg-white rounded-xl p-6 mx-4 max-w-md w-full border-2 border-pastel-pink max-h-screen overflow-y-auto">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-2xl font-lilita text-coral-red">Добавить продукт</h3>
-                <button class="text-gray-500 hover:text-coral-red text-xl" onclick="closeModal('editModal')">
+                <button class="text-gray-500 hover:text-coral-red text-xl" onclick="closeModal()">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <form class="space-y-4">
-                <div>
-                    <label class="block text-gray-700 font-medium mb-2">Название продукта</label>
-                    <input type="text" class="w-full px-4 py-2 border border-pastel-pink rounded-lg bg-light-pink focus:outline-none focus:ring-2 focus:ring-coral-red" placeholder="Введите название">
-                </div>
-                <div>
-                    <label class="block text-gray-700 font-medium mb-2">Категория</label>
-                    <select class="w-full px-4 py-2 border border-pastel-pink rounded-lg bg-light-pink focus:outline-none focus:ring-2 focus:ring-coral-red">
-                        <option>Выберите категорию</option>
-                        <option>Овощи</option>
-                        <option>Фрукты</option>
-                        <option>Мясо</option>
-                        <option>Молочные продукты</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-gray-700 font-medium mb-2">Описание</label>
-                    <textarea class="w-full px-4 py-2 border border-pastel-pink rounded-lg bg-light-pink focus:outline-none focus:ring-2 focus:ring-coral-red" rows="3" placeholder="Введите описание продукта"></textarea>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-gray-700 font-medium mb-2">Количество</label>
-                        <input type="number" class="w-full px-4 py-2 border border-pastel-pink rounded-lg bg-light-pink focus:outline-none focus:ring-2 focus:ring-coral-red" placeholder="0">
+            <form
+                method="POST"
+                action="{% if product %}{% url 'product:edit' product.pk %}{% else %}{% url 'product:add' %}{% endif %}"
+                class="space-y-4">
+             {% csrf_token %}
+                {% if form.errors %}
+                    <div class="p-4 mb-4 text-sm text-red-700 rounded-lg bg-red-100 border border-red-300" role="alert">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        <span>Пожалуйста, исправьте ошибки ниже.</span>
                     </div>
-                    <div>
-                        <label class="block text-gray-700 font-medium mb-2">Цена (₽)</label>
-                        <input type="number" class="w-full px-4 py-2 border border-pastel-pink rounded-lg bg-light-pink focus:outline-none focus:ring-2 focus:ring-coral-red" placeholder="0">
-                    </div>
+                {% endif %}
+
+                <div>
+                    <label for="{{ form.name.id_for_label }}" class="block text-gray-700 font-medium mb-2">Название продукта</label>
+                    {% render_field form.name class="w-full px-4 py-2 border border-pastel-pink rounded-lg bg-light-pink focus:outline-none focus:ring-2 focus:ring-coral-red" placeholder="Введите название" %}
+                    {% for error in form.name.errors %}
+                        <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+                    {% endfor %}
                 </div>
+
+
+                <div>
+                    <label for="{{ form.category.id_for_label }}" class="block text-gray-700 font-medium mb-2">Категория</label>
+                    {% render_field form.category class="w-full px-4 py-2 border border-pastel-pink rounded-lg bg-light-pink focus:outline-none focus:ring-2 focus:ring-coral-red" %}
+                     {% for error in form.category.errors %}
+                        <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
                 <div class="flex justify-end space-x-2 pt-4">
-                    <button type="button" class="btn bg-lemon-light text-amber-900 border border-lemon-border py-2 px-4 rounded-lg font-medium hover:bg-lemon" onclick="closeModal('editModal')">
+                    <button type="button" class="btn bg-lemon-light text-amber-900 border border-lemon-border py-2 px-4 rounded-lg font-medium hover:bg-lemon" onclick="closeModal()">
                         Отмена
                     </button>
                     <button type="submit" class="btn bg-gradient-to-r from-pastel-pink to-amber-400 text-white py-2 px-4 rounded-lg font-medium">
@@ -66,6 +49,4 @@
                 </div>
             </form>
         </div>
-    </div>
-
-{% endblock %}
+  

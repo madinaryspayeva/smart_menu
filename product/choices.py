@@ -13,4 +13,5 @@ class Category(models.TextChoices):
         BAKERY = "bakery", _("Хлебобулочные изделия")
         BEVERAGES = "beverages", _("Напитки")
         FROZEN = "frozen", _("Замороженные продукты")
+        SPICES = "spices", _("Приправы и специи")
         OTHER = "other", _("Другое")
