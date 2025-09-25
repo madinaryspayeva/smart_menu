@@ -3,25 +3,7 @@
 
 {% block content %}
 
-
-
-  {% comment %} <h1 class="text-xl font-bold">Список продуктов</h1>
-  <a href="{% url 'product:add' %}" class="text-blue-500">Добавить продукт</a>
-  <ul>
-    {% for product in products %}
-      <li>
-        <a href="{% url 'product:detail' product.pk %}"
-          >{{ product.name }} ({{ product.get_category_display }})</a
-        >
-      </li>
-    {% empty %}
-      <li>Пока нет продуктов</li>
-    {% endfor %}
-  </ul> {% endcomment %}
-
-
-
- <main class="container mx-auto px-4 py-8 max-w-[900px]"> 
+ <div class="container mx-auto px-4 py-8 max-w-[900px]"> 
  <!-- Заголовок и кнопка добавления -->
        <div class="flex flex-col w-full mb-8">
             <h2 class="w-full text-3xl text-center font-lilita text-coral-red mb-4">
@@ -36,62 +18,60 @@
 
 
 <!-- Поиск и фильтры -->
-<div class="bg-white rounded-xl p-4 mb-6 border-2 border-pastel-pink">
-        <div class="flex flex-col gap-4 w-full">
-          
-          <!-- Поиск -->
-          <div class="relative w-full">
-            <input type="text"
-                  placeholder="Поиск продуктов..."
-                  class="w-full px-4 py-2 border border-pastel-pink rounded-lg bg-light-pink 
-                          focus:outline-none focus:ring-2 focus:ring-coral-red pl-10">
-            <i class="fas fa-search absolute left-3 top-3 text-pastel-pink"></i>
-          </div>
+<form method="get" action="{% url 'product:list' %}" class="bg-white rounded-xl p-4 mb-6 border-2 border-pastel-pink">
+    <div class="flex flex-col gap-4 w-full">
+        
+        <!-- Поиск -->
+        <div class="relative w-full">
+        <input type="text"
+                name="q"
+                placeholder="Поиск продуктов..."
+                value="{{ request.GET.q }}"
+                class="w-full px-4 py-2 border border-pastel-pink rounded-lg bg-light-pink 
+                        focus:outline-none focus:ring-2 focus:ring-coral-red pl-10">
+        <i class="fas fa-search absolute left-3 top-3 text-pastel-pink"></i>
+        </div>
 
-          <!-- Фильтры (рядом) -->
-          <div class="flex gap-2 w-full">
-                <select class="flex-1 px-4 py-2 border border-pastel-pink rounded-lg bg-light-pink 
-                              focus:outline-none focus:ring-2 focus:ring-coral-red">
-                  <option>Все категории</option>
-                  <option>Овощи</option>
-                  <option>Фрукты</option>
-                  <option>Мясо</option>
-                  <option>Молочные продукты</option>
-                </select>
+        <!-- Фильтры -->
+        <div class="flex gap-2 w-full">
+            <select name="category" class="flex-1 px-4 py-2 border border-pastel-pink rounded-lg bg-light-pink 
+                            focus:outline-none focus:ring-2 focus:ring-coral-red">
+                <option value="">Все категории</option>
+                {% for value, label in categories %}
+                <option value="{{ value }}" {% if request.GET.category == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
 
-                <select class="flex-1 px-4 py-2 border border-pastel-pink rounded-lg bg-light-pink 
-                              focus:outline-none focus:ring-2 focus:ring-coral-red">
-                  <option>Сортировка</option>
-                  <option>По названию</option>
-                  <option>По дате добавления</option>
-                  <option>По количеству</option>
-                </select>
-          </div>
+            <select name="sort" class="flex-1 px-4 py-2 border border-pastel-pink rounded-lg bg-light-pink 
+                            focus:outline-none focus:ring-2 focus:ring-coral-red">
+                <option value="">Сортировка</option>
+                <option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>По названию</option>
+                <option value="date" {% if request.GET.sort == 'date' %}selected{% endif %}>По дате добавления</option>
+            </select>
+        </div>
 
-      </div>
+        <div class="flex justify-end">
+            <button type="submit" class="button primary py-2 px-6">
+                Применить
+            </button>
+        </div>
     </div>
+</form>
 
 
     <!-- Список продуктов -->
 <div class="grid grid-cols-1 gap-6 mb-8">
     <!-- Карточка продукта 1 -->
+
+    {% for product in products%}
     <div class="card bg-white rounded-xl overflow-hidden border-2 border-pastel-pink w-full">
         <div class="p-4">
+
             <div class="flex justify-between items-start mb-3">
-                <h3 class="text-xl font-bold text-gray-800">Морковь свежая</h3>
-                <span class="bg-lemon-light text-amber-900 text-sm px-2 py-1 rounded">Овощи</span>
+                <h3 class="text-xl font-bold text-gray-800">{{ product.name }}</h3>
+                <span class="bg-lemon-light text-amber-900 text-sm px-2 py-1 rounded">{{ product.get_category_display }}</span>
             </div>
-            <p class="text-gray-600 mb-4">Свежая морковь с местной фермы</p>
-            <div class="flex justify-between items-center mb-4">
-                <div>
-                    <span class="text-gray-700 font-semibold">Количество:</span>
-                    <span class="ml-2">15 кг</span>
-                </div>
-                <div>
-                    <span class="text-gray-700 font-semibold">Цена:</span>
-                    <span class="ml-2">85 ₽/кг</span>
-                </div>
-            </div>
+            
             <div class="flex space-x-2">
                 <button class="btn flex-1 bg-lemon-light text-amber-900 border border-lemon-border py-2 rounded-lg font-medium text-sm hover:bg-lemon" onclick="openModal('viewModal')">
                     <i class="fas fa-eye mr-1"></i> Просмотр
@@ -105,30 +85,38 @@
             </div>
         </div>
     </div>
+    {% endfor %}
 </div>
 
 
-<!-- Пагинация (отдельно от сетки!) -->
-<div class="flex justify-center mb-8">
-    <div class="bg-white rounded-xl p-4 border-2 border-pastel-pink">
-        <div class="flex space-x-2">
-            <button class="btn bg-lemon-light text-amber-900 border border-lemon-border py-2 px-4 rounded-lg font-medium hover:bg-lemon">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <button class="btn bg-gradient-to-r from-pastel-pink to-amber-400 text-white py-2 px-4 rounded-lg font-medium">1</button>
-            <button class="btn bg-lemon-light text-amber-900 border border-lemon-border py-2 px-4 rounded-lg font-medium hover:bg-lemon">2</button>
-            <button class="btn bg-lemon-light text-amber-900 border border-lemon-border py-2 px-4 rounded-lg font-medium hover:bg-lemon">3</button>
-            <button class="btn bg-lemon-light text-amber-900 border border-lemon-border py-2 px-4 rounded-lg font-medium hover:bg-lemon">
-                <i class="fas fa-chevron-right"></i>
-            </button>
+<!-- Пагинация  -->
+        {% if page_obj.has_other_pages %}
+        <div class="flex justify-center mb-8">
+            <div class="bg-white rounded-xl p-4 border-2 border-pastel-pink">
+                <div class="flex space-x-2">
+                  {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}" class="btn bg-lemon-light text-amber-900 border border-lemon-border py-2 px-4 rounded-lg font-medium hover:bg-lemon">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                  {% endif %}
+
+                  {% for num in page_obj.paginator.page_range %}
+                      {% if num == page_obj.number %}
+                      <button class="btn bg-gradient-to-r from-pastel-pink to-amber-400 text-white py-2 px-4 rounded-lg font-medium">{{ num }}</button>
+                      {% else %}
+                      <a href="?page={{ num }}&{{ request.GET.urlencode }}" class="btn bg-lemon-light text-amber-900 border border-lemon-border py-2 px-4 rounded-lg font-medium hover:bg-lemon">{{ num }}</a>
+                      {% endif %}
+                  {% endfor %}
+
+                  {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}" class="btn bg-lemon-light text-amber-900 border border-lemon-border py-2 px-4 rounded-lg font-medium hover:bg-lemon">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                  {% endif %}
+                </div>
+            </div>
         </div>
+        {% endif %}  
     </div>
-</div>
-
-
-  
-    </main>
-
-
 
 {% endblock %}

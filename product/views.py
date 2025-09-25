@@ -9,7 +9,8 @@ from django.views.generic import (
     DetailView
 )
 
-from product.models import Product
+from product.choices import Category
+from product.models import Product 
 from product.forms import ProductForm
 
 
@@ -17,6 +18,31 @@ class ProductListView(ListView):
     model = Product
     template_name = "product/list.html"
     context_object_name = "products"
+    paginate_by = 3
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        search = self.request.GET.get("q")
+        if search:
+            queryset = queryset.filter(name__icontains=search)
+
+        category = self.request.GET.get("category")
+        if category:
+            queryset = queryset.filter(category=category)
+
+        sort = self.request.GET.get("sort")
+        if sort == "name":
+            queryset = queryset.order_by("name")
+        elif sort == "date":
+            queryset = queryset.order_by("-created")
+        
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["categories"] = Category.choices
+        return context
 
 
 class ProductCreateView(CreateView):
@@ -63,4 +89,3 @@ class ProductDetailView(DetailView):
     model = Product
     template_name = "product/detail.html"
     context_object_name = "product"
-
