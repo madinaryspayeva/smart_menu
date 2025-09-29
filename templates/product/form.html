@@ -12,7 +12,9 @@
             </div>
             <form
                 method="POST"
-                action="{% if product %}{% url 'product:edit' product.pk %}{% else %}{% url 'product:add' %}{% endif %}"
+                hx-post="{% if product %}{% url 'product:edit' product.pk %}{% else %}{% url 'product:add' %}{% endif %}"
+                hx-target="#modal-content"
+                hx-swap="innerHTML"
                 class="space-y-4">
              {% csrf_token %}
                 {% if form.errors %}

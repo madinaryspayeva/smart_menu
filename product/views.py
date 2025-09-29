@@ -1,3 +1,5 @@
+from django.http import HttpResponse
+from django.shortcuts import render
 from django.core.exceptions import PermissionDenied
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse_lazy 
@@ -59,7 +61,20 @@ class ProductCreateView(CreateView):
 
     def form_valid(self, form):
         form.instance.created_by = self.request.user
-        return super().form_valid(form)
+        response = super().form_valid(form)
+
+        if self.request.headers.get("HX-Request"):
+            return HttpResponse(
+                headers={"HX-Trigger": "productChanged"}
+            )
+        return response
+
+    def form_invalid(self, form):
+        context = self.get_context_data(form=form)
+        if self.request.headers.get("HX-Request"):
+            return render(self.request, self.template_name, context)
+        return super().form_invalid(form)
+
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -83,6 +98,28 @@ class ProductUpdateView(OwnerOrSuperuserMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         context["categories"] = Category.choices
         return context
+    
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user
+        response = super().form_valid(form)
+
+        if self.request.headers.get("HX-Request"):
+            return HttpResponse(
+                headers={"HX-Trigger": "productChanged"}
+            )
+        return response
+    
+    def form_invalid(self, form):
+        context = self.get_context_data(form=form)
+        if self.request.headers.get("HX-Request"):
+            return render(self.request, self.template_name, context)
+        return super().form_invalid(form)
+
+    
+    def form_invalid(self, form):
+        if self.request.headers.get("HX-Request"):
+            return render(self.request, self.template_name, {"form": form, "product": getattr(self, "object", None)})
+        return super().form_invalid(form)
 
 
 class ProductDeleteView(OwnerOrSuperuserMixin, DeleteView):
