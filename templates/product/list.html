@@ -66,7 +66,7 @@
 
     <!-- Список продуктов -->
 <div class="grid grid-cols-1 gap-6 mb-8">
-    <!-- Карточка продукта 1 -->
+    <!-- Карточка продукта -->
 
     {% for product in products%}
     <div class="card bg-white rounded-xl overflow-hidden border-2 border-pastel-pink w-full">
@@ -86,22 +86,25 @@
                 onclick="openModal()">
                     <i class="fas fa-eye mr-1"></i> Просмотр
                 </button>
-                <button 
-                hx-get="{% url 'product:edit' product.pk %}"
-                hx-target="#modal-content"
-                hx-trigger="click"
-                class="btn flex-1 bg-gradient-to-r from-pastel-pink to-amber-400 text-white py-2 rounded-lg font-medium text-sm" 
-                onclick="openModal()">
-                    <i class="fas fa-edit mr-1"></i> Редактировать
-                </button>
-                <button 
-                hx-get="{% url 'product:delete' product.pk %}"
-                hx-target="#modal-content"
-                hx-trigger="click"
-                class="btn bg-gradient-to-r from-red-400 to-red-500 text-white py-2 px-3 rounded-lg font-medium text-sm" 
-                onclick="openModal()">
-                    <i class="fas fa-trash"></i>
-                </button>
+
+                {% if request.user == product.created_by or request.user.is_superuser %}
+                    <button 
+                    hx-get="{% url 'product:edit' product.pk %}"
+                    hx-target="#modal-content"
+                    hx-trigger="click"
+                    class="btn flex-1 bg-gradient-to-r from-pastel-pink to-amber-400 text-white py-2 rounded-lg font-medium text-sm" 
+                    onclick="openModal()">
+                        <i class="fas fa-edit mr-1"></i> Редактировать
+                    </button>
+                    <button 
+                    hx-get="{% url 'product:delete' product.pk %}"
+                    hx-target="#modal-content"
+                    hx-trigger="click"
+                    class="btn bg-gradient-to-r from-red-400 to-red-500 text-white py-2 px-3 rounded-lg font-medium text-sm" 
+                    onclick="openModal()">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                {% endif %}
             </div>
         </div>
     </div>

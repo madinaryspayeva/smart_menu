@@ -9,6 +9,7 @@ from django.views.generic import (
     DetailView
 )
 
+from product.mixins import OwnerOrSuperuserMixin
 from product.choices import Category
 from product.models import Product 
 from product.forms import ProductForm
@@ -35,7 +36,7 @@ class ProductListView(ListView):
         if sort == "name":
             queryset = queryset.order_by("name")
         elif sort == "date":
-            queryset = queryset.order_by("-created") # This is already the default, but explicit is fine.
+            queryset = queryset.order_by("-created") 
         
         return queryset
 
@@ -66,7 +67,7 @@ class ProductCreateView(CreateView):
         return context
 
 
-class ProductUpdateView(UpdateView):
+class ProductUpdateView(OwnerOrSuperuserMixin, UpdateView):
     model = Product
     template_name = "product/form.html"
     form_class = ProductForm
@@ -78,29 +79,16 @@ class ProductUpdateView(UpdateView):
         kwargs['request'] = self.request
         return kwargs
     
-    def get_object(self, queryset=None):
-        obj = super().get_object(queryset)
-        if obj.created_by != self.request.user:
-            raise PermissionDenied(_("Нельзя редактировать чужие продукты."))
-        return obj
-    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["categories"] = Category.choices
         return context
 
 
-class ProductDeleteView(DeleteView):
+class ProductDeleteView(OwnerOrSuperuserMixin, DeleteView):
     model = Product
     template_name = "product/delete.html"
     success_url = reverse_lazy("product:list")
-
-
-    def get_object(self, queryset=None):
-        obj = super().get_object(queryset)
-        if obj.created_by != self.request_user:
-            raise PermissionDenied(_("Нельзя удалить чужие продукты."))
-        return obj
 
 
 class ProductDetailView(DetailView):

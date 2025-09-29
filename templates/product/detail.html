@@ -27,13 +27,15 @@
         <button class="btn bg-lemon-light text-amber-900 border border-lemon-border py-2 px-4 rounded-lg font-medium hover:bg-lemon" onclick="closeModal()">
             Закрыть
         </button>
-        <button 
-            hx-get="{% url 'product:edit' product.pk %}" 
-            hx-target="#modal-content"
-            hx-trigger="click"
-            class="btn bg-gradient-to-r from-pastel-pink to-amber-400 text-white py-2 px-4 rounded-lg font-medium"
-            onclick="openModal()">
-            Редактировать
-        </button>
+        {% if request.user == product.created_by or request.user.is_superuser %}
+            <button 
+                hx-get="{% url 'product:edit' product.pk %}" 
+                hx-target="#modal-content"
+                hx-trigger="click"
+                class="btn bg-gradient-to-r from-pastel-pink to-amber-400 text-white py-2 px-4 rounded-lg font-medium"
+                onclick="openModal()">
+                Редактировать
+            </button>
+        {% endif %}
     </div>
 </div>

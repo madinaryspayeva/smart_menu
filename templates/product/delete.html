@@ -1,33 +1,23 @@
-{% extends "base.html" %}
-{% block content %}
-  <h1 class="text-xl font-bold text-red-600">Удалить продукт?</h1>
-  <p>Вы уверены, что хотите удалить "{{ product.name }}"?</p>
-
-  <form method="post">
-    {% csrf_token %}
-    <button type="submit" class="bg-red-500 text-black px-4 py-2 rounded">Удалить</button>
-    <a href="{% url 'product:detail' product.pk %}" class="text-gray-600">Отмена</a>
-  </form>
-
-
-
 
   <!-- Модальное окно удаления продукта -->
-    <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+
         <div class="modal bg-white rounded-xl p-6 mx-4 max-w-md w-full border-2 border-pastel-pink">
             <div class="text-center">
-                <i class="fas fa-exclamation-triangle text-5xl text-red-500 mb-4"></i>
-                <h3 class="text-2xl font-lilita text-coral-red mb-2">Удаление продукта</h3>
-                <p class="text-gray-600 mb-6">Вы уверены, что хотите удалить продукт "Морковь свежая"? Это действие нельзя отменить.</p>
-                <div class="flex justify-center space-x-4">
-                    <button class="btn bg-lemon-light text-amber-900 border border-lemon-border py-2 px-6 rounded-lg font-medium hover:bg-lemon" onclick="closeModal('deleteModal')">
-                        Отмена
-                    </button>
-                    <button class="btn bg-gradient-to-r from-red-400 to-red-500 text-white py-2 px-6 rounded-lg font-medium" onclick="closeModal('deleteModal')">
-                        Удалить
-                    </button>
-                </div>
+                <form
+                    method="POST"
+                    action="{% url 'product:delete' product.pk %}">
+                    {% csrf_token %}
+
+                    <i class="fas fa-exclamation-triangle text-5xl text-red-500 mb-4"></i>
+                    <h3 class="text-2xl font-lilita text-coral-red mb-2">Удаление продукта</h3>
+                    <p class="text-gray-600 mb-6">Вы уверены, что хотите удалить продукт "{{ product.name }}"? Это действие нельзя отменить.</p>
+                    <div class="flex justify-center space-x-4">
+                    <a href="{% url 'product:list' %}" class="btn bg-lemon-light text-amber-900 border border-lemon-border py-2 px-6 rounded-lg font-medium hover:bg-lemon">Отмена</a>
+                       
+                        <button type="submit" class="btn bg-gradient-to-r from-red-400 to-red-500 text-white py-2 px-6 rounded-lg font-medium" onclick="closeModal()">
+                            Удалить
+                        </button>
+                    </div>
+                </form>
             </div>
-        </div>
-    </div>
-{% endblock %}
+
