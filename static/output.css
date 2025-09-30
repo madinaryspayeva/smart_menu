@@ -35,6 +35,8 @@
     --text-2xl--line-height: calc(2 / 1.5);
     --text-3xl: 1.875rem;
     --text-3xl--line-height: calc(2.25 / 1.875);
+    --text-4xl: 2.25rem;
+    --text-4xl--line-height: calc(2.5 / 2.25);
     --text-5xl: 3rem;
     --text-5xl--line-height: 1;
     --font-weight-medium: 500;
@@ -404,13 +406,6 @@
       margin-inline-end: calc(calc(var(--spacing) * 2) * calc(1 - var(--tw-space-x-reverse)));
     }
   }
-  .space-x-3 {
-    :where(& > :not(:last-child)) {
-      --tw-space-x-reverse: 0;
-      margin-inline-start: calc(calc(var(--spacing) * 3) * var(--tw-space-x-reverse));
-      margin-inline-end: calc(calc(var(--spacing) * 3) * calc(1 - var(--tw-space-x-reverse)));
-    }
-  }
   .space-x-4 {
     :where(& > :not(:last-child)) {
       --tw-space-x-reverse: 0;
@@ -560,11 +555,14 @@
   .text-center {
     text-align: center;
   }
-  .font-arvo {
-    font-family: Arvo, serif;
+  .font-bebas-neue {
+    font-family: Bebas Neue, sans-serif;
   }
-  .font-lilita {
-    font-family: Lilita One, cursive;
+  .font-raleway {
+    font-family: Raleway, sans-serif, cursive;
+  }
+  .font-raleway\! {
+    font-family: Raleway, sans-serif, cursive !important;
   }
   .text-2xl {
     font-size: var(--text-2xl);
@@ -573,6 +571,10 @@
   .text-3xl {
     font-size: var(--text-3xl);
     line-height: var(--tw-leading, var(--text-3xl--line-height));
+  }
+  .text-4xl {
+    font-size: var(--text-4xl);
+    line-height: var(--tw-leading, var(--text-4xl--line-height));
   }
   .text-5xl {
     font-size: var(--text-5xl);
@@ -602,6 +604,18 @@
     --tw-font-weight: var(--font-weight-semibold);
     font-weight: var(--font-weight-semibold);
   }
+  .text-\[\#4ade80\] {
+    color: #4ade80;
+  }
+  .text-\[\#374151\] {
+    color: #374151;
+  }
+  .text-\[\#\] {
+    color: #;
+  }
+  .text-\[374151\] {
+    color: 374151;
+  }
   .text-amber-900 {
     color: var(--color-amber-900);
   }
@@ -619,6 +633,9 @@
   }
   .text-gray-800 {
     color: var(--color-gray-800);
+  }
+  .text-lemon-dark {
+    color: #facc15;
   }
   .text-pastel-pink {
     color: #ff9a8b;

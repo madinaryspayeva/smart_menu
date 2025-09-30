@@ -20,10 +20,11 @@ module.exports = {
                             400: '#4ade80',
                             900: '#14532d'
                         },
+                        'dark-gray': '#374151'
                     },
                     fontFamily: {
-                        'lilita': ['Lilita One', 'cursive'],
-                        'arvo': ['Arvo', 'serif'],
+                        'oswald': ['Oswald', 'sans-serif'],
+                        'bebas-neue': ['Bebas Neue', 'sans-serif'],
                     }
     },
   },
