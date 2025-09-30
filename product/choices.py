@@ -8,7 +8,7 @@ class Category(models.TextChoices):
         VEGETABLES = "vegetables", _("Овощи")
         FRUITS = "fruits", _("Фрукты и ягоды")
         DAIRY = "dairy", _("Молочные продукты и яйца")
-        GROCERY = "grocery", _("Бакалея")
+        GROCERY = "grocery", _("Крупы и бакалея")
         OILS = "oils", _("Масла и соусы")
         BAKERY = "bakery", _("Хлебобулочные изделия")
         BEVERAGES = "beverages", _("Напитки")
