@@ -15,6 +15,11 @@ module.exports = {
                         'lemon-dark': '#facc15',
                         'lemon-light': '#fef9c3',
                         'lemon-border': '#eab308',
+                        'mint': '#6ee7b7', // Примерный цвет для mint
+                        'green': {
+                            400: '#4ade80',
+                            900: '#14532d'
+                        },
                     },
                     fontFamily: {
                         'lilita': ['Lilita One', 'cursive'],

@@ -21,7 +21,7 @@ class ProductListView(ListView):
     model = Product
     template_name = "product/list.html"
     context_object_name = "products"
-    paginate_by = 3
+    paginate_by = 6
 
     def get_queryset(self):
         queryset = super().get_queryset().order_by("-created")
@@ -113,12 +113,6 @@ class ProductUpdateView(OwnerOrSuperuserMixin, UpdateView):
         context = self.get_context_data(form=form)
         if self.request.headers.get("HX-Request"):
             return render(self.request, self.template_name, context)
-        return super().form_invalid(form)
-
-    
-    def form_invalid(self, form):
-        if self.request.headers.get("HX-Request"):
-            return render(self.request, self.template_name, {"form": form, "product": getattr(self, "object", None)})
         return super().form_invalid(form)
 
 
