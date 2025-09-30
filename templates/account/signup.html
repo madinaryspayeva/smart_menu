@@ -20,7 +20,7 @@
 
                     <div class="mb-5">
                         <label for="{{ form.first_name.id_for_label }}" class="block text-gray-700 font-medium mb-2">Имя</label>
-                        {% render_field form.first_name class="form-input" placeholder="Ваше имя" required="required" %}
+                        {% render_field form.first_name class="form-input" placeholder="Ваше имя" %}
                         {% for error in form.first_name.errors %}
                             <p class="text-red-500 text-xs mt-1">{{ error }}</p>
                         {% endfor %}

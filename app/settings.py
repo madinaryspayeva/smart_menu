@@ -161,6 +161,14 @@ LOGOUT_REDIRECT_URL = 'account_login/'
 # django-allauth settings
 # Use email for authentication instead of username
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+
+# For local development, we can set email verification to optional or none.
+# 'optional' will send an email but allow login. 'none' will not send an email.
+ACCOUNT_EMAIL_VERIFICATION = 'optional'
+
+# Send emails to the console during development
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
@@ -175,4 +183,9 @@ SOCIALACCOUNT_PROVIDERS = {
             'access_type': 'online',
         }
     }
+}
+
+# Custom forms for django-allauth
+ACCOUNT_FORMS = {
+    'signup': 'users.forms.CustomSignupForm',
 }
