@@ -25,7 +25,8 @@ from app import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
-    path('product/', include('product.urls', namespace='product')), # Already included!
+    path('product/', include('product.urls', namespace='product')), 
+    path('recipe/', include('recipe.urls', namespace='recipe'))
 ]
 
 if settings.DEBUG:

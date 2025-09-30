@@ -4,12 +4,19 @@ from behaviors.behaviors import Timestamped
 
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 __all__ = [
     'models',
     'DefaultModel',
     'TimestampedModel',
+    'StatusModel',
 ]
+
+
+class StatusChoices(models.TextChoices):
+    PUBLIC = "public", _("Публичный")
+    PRIVATE = "private", _("Приватный")
 
 
 class DefaultModel(models.Model):
@@ -56,5 +63,20 @@ class TimestampedModel(DefaultModel, Timestamped):
     Default app model that has `created` and `updated` attributes.
     Currently based on https://github.com/audiolion/django-behaviors
     """
+    class Meta:
+        abstract = True
+
+
+class StatusModel(models.Model):
+    """
+    Default app model that has `status` attribute.
+    """
+    status = models.CharField(
+        max_length=10,
+        choices=StatusChoices.choices,
+        default=StatusChoices.PRIVATE,
+        verbose_name=_('Статус')
+    )
+
     class Meta:
         abstract = True
