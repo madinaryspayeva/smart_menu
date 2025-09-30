@@ -34,6 +34,12 @@ class Recipe(TimestampedModel, StatusModel):
     
 
 class RecipeIngredient(TimestampedModel):
+    recipe = models.ForeignKey(
+        "recipe.Recipe",
+        on_delete=models.CASCADE,
+        related_name="ingredient",
+        verbose_name=_("Рецепт"),
+    )
     product = models.ForeignKey(
         "product.Product",
         on_delete=models.PROTECT,

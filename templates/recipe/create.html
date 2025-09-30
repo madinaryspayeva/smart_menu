@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+
+{% comment %} <form method="post">
+    {% csrf_token %}
+
+    <h3>Рецепт</h3>
+    {{ form.as_p }}
+
+    <h3>Ингредиенты</h3>
+    {{ ingredients.management_form }}
+
+    {% for ingredient in ingredients %}
+        <div class="ingredient-form">
+            {{ ingredient.as_p }}
+        </div>
+    {% endfor %}
+
+    <button type="submit">Сохранить</button>
+</form> {% endcomment %}
+
+    
+
+    <div class="max-w-4xl mx-auto">
+        <!-- Заголовок -->
+        <div class="text-center mb-8">
+            <h1 class="text-5xl font-oswald text-coral-red mb-2">Добавить новый рецепт</h1>
+            <p class="text-dark-gray text-lg font-light">Поделитесь своим кулинарным творением с миром</p>
+        </div>
+
+        <!-- Форма -->
+        <form method="POST" class="auth-form bg-white rounded-2xl p-8">
+        {% csrf_token %}
+
+            <div class="space-y-6">
+                <!-- Название рецепта -->
+                <div>
+                    <label for="id_name" class="block text-sm font-medium text-dark-gray mb-2">
+                        Название рецепта *
+                    </label>
+                    <input type="text" 
+                           name="name" 
+                           id="id_name" 
+                           required
+                           class="form-input"
+                           placeholder="Введите название вашего рецепта">
+                </div>
+
+                <!-- Количество порций и тип блюда -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="id_servings" class="block text-sm font-medium text-dark-gray mb-2">
+                            Количество порций *
+                        </label>
+                        <input type="number" 
+                               name="servings" 
+                               id="id_servings" 
+                               min="1"
+                               required
+                               class="form-input"
+                               placeholder="Например: 4">
+                    </div>
+
+                    <div>
+                        <label for="id_meal_type" class="block text-sm font-medium text-dark-gray mb-2">
+                            Тип блюда *
+                        </label>
+                        <select name="meal_type" 
+                                id="id_meal_type" 
+                                required
+                                class="form-input">
+                            <option value="">Выберите тип блюда</option>
+                            <option value="breakfast">Завтрак</option>
+                            <option value="lunch">Обед</option>
+                            <option value="dinner">Ужин</option>
+                            <option value="dessert">Десерт</option>
+                            <option value="snack">Перекус</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Описание -->
+                <div>
+                    <label for="id_description" class="block text-sm font-medium text-dark-gray mb-2">
+                        Описание рецепта *
+                    </label>
+                    <textarea name="description" 
+                              id="id_description" 
+                              rows="4"
+                              required
+                              class="form-input resize-none"
+                              placeholder="Опишите процесс приготовления..."></textarea>
+                </div>
+
+                <!-- Изображение -->
+                <div>
+                    <label for="id_image" class="block text-sm font-medium text-dark-gray mb-2">
+                        Изображение рецепта
+                    </label>
+                    <div class="flex items-center justify-center w-full">
+                        <label for="id_image" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-pastel-pink rounded-lg cursor-pointer bg-light-pink hover:bg-pastel-pink/10 transition-colors duration-300">
+                            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                <svg class="w-8 h-8 mb-3 text-coral-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                <p class="mb-2 text-sm text-coral-red"><span class="font-semibold">Нажмите для загрузки</span></p>
+                                <p class="text-xs text-dark-gray">PNG, JPG, JPEG (Макс. 5MB)</p>
+                            </div>
+                            <input type="file" name="image" id="id_image" class="hidden" accept="image/*">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Ингредиенты -->
+                <div id="ingredients-section">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+                        <label class="block text-lg font-medium text-dark-gray whitespace-nowrap">
+                            Ингредиенты *
+                        </label>
+                        <button type="button" 
+                                onclick="addIngredient()"
+                                class="button success text-sm w-full sm:w-auto">
+                            + Добавить ингредиент
+                        </button>
+                    </div>
+                    
+                    <div id="ingredients-container" class="space-y-4">
+                        <!-- Ингредиенты будут добавляться динамически -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Кнопки отправки -->
+            <div class="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t border-gray-200">
+                <button type="submit" class="primary btn">
+                    <span class="relative z-10">Создать рецепт</span>
+                </button>
+                <button type="button" class="secondary btn text-center">
+                    Отмена
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- JavaScript для динамического добавления ингредиентов -->
+    <script>
+        let ingredientCount = 0;
+
+        function addIngredient() {
+            ingredientCount++;
+            const container = document.getElementById('ingredients-container');
+            
+            const ingredientHtml = `
+                <div class="ingredient-item card bg-light-pink p-4 rounded-lg border border-pastel-pink">
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                        <div class="md:col-span-5">
+                            <label class="block text-sm font-medium text-dark-gray mb-2">
+                                Продукт
+                            </label>
+                            <select name="ingredient_${ingredientCount}_product" 
+                                    required
+                                    class="form-input">
+                                <option value="">Выберите продукт</option>
+                                <option value="1">Мука</option>
+                                <option value="2">Сахар</option>
+                                <option value="3">Яйца</option>
+                                <option value="4">Молоко</option>
+                                <option value="5">Масло</option>
+                                <option value="6">Соль</option>
+                                <option value="7">Перец</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-3">
+                            <label class="block text-sm font-medium text-dark-gray mb-2">
+                                Количество
+                            </label>
+                            <input type="number" 
+                                   name="ingredient_${ingredientCount}_quantity" 
+                                   min="1"
+                                   required
+                                   class="form-input"
+                                   placeholder="0">
+                        </div>
+                        <div class="md:col-span-3">
+                            <label class="block text-sm font-medium text-dark-gray mb-2">
+                                Единица измерения
+                            </label>
+                            <select name="ingredient_${ingredientCount}_unit" 
+                                    required
+                                    class="form-input">
+                                <option value="">Выберите единицу</option>
+                                <option value="g">Граммы</option>
+                                <option value="kg">Килограммы</option>
+                                <option value="ml">Миллилитры</option>
+                                <option value="l">Литры</option>
+                                <option value="tsp">Чайные ложки</option>
+                                <option value="tbsp">Столовые ложки</option>
+                                <option value="pcs">Штуки</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-1">
+                            <button type="button" 
+                                    onclick="removeIngredient(this)"
+                                    class="button danger w-full py-2 px-3 text-sm">
+                                ✕
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.insertAdjacentHTML('beforeend', ingredientHtml);
+        }
+
+        function removeIngredient(button) {
+            button.closest('.ingredient-item').remove();
+        }
+
+        // Добавляем первый ингредиент при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            addIngredient();
+        });
+    </script>
+
+{% endblock %}
