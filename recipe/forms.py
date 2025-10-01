@@ -1,7 +1,7 @@
 # forms.py
 from django import forms
 from django.forms import inlineformset_factory
-from recipe.choices import MealType
+from recipe.choices import MealType, Unit
 from recipe.models import Recipe, RecipeIngredient
 
 
@@ -41,7 +41,13 @@ class RecipeIngredientForm(forms.ModelForm):
             }),
             "unit": forms.Select(attrs={"class": "form-input"}),
         }
-
+    
+    unit = forms.ChoiceField(
+        choices=[("", "Ед. изм.")] + list(Unit.choices),
+        required=True,
+        label="Единица измерения"
+    )
+   
 
 RecipeIngredientFormSet = inlineformset_factory(
     Recipe,
