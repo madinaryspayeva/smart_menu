@@ -143,62 +143,20 @@
     </div>
 
 
-    <!-- Универсальная модалка -->
-<div id="modal" 
-     class="fixed inset-0 hidden items-center justify-center 
-            bg-white/30 backdrop-blur-sm z-50 transition-opacity duration-300">
-  
-  <div id="modal-content" 
-       class="transform scale-95 opacity-0 transition-all duration-300 w-full h-auto flex items-center justify-center p-4">
-  </div>
-</div>
+   {% include "product/partials/modal.html" %}
 
-    <script>
-      function openModal() {
-          const modal = document.getElementById("modal");
-          const content = document.getElementById("modal-content");
 
-          modal.classList.remove("hidden");
-          modal.classList.add("flex");
-
-          // Плавное появление
-          setTimeout(() => {
-              content.classList.remove("scale-95", "opacity-0");
-              content.classList.add("scale-100", "opacity-100");
-          }, 10);
-      }
-
-      function closeModal() {
-          const modal = document.getElementById("modal");
-          const content = document.getElementById("modal-content");
-
-          // Плавное исчезновение
-          content.classList.remove("scale-100", "opacity-100");
-          content.classList.add("scale-95", "opacity-0");
-
-          setTimeout(() => {
-              modal.classList.add("hidden");
-              modal.classList.remove("flex");
-          }, 300); // должно совпадать с duration-300
-      }
-
-      // Закрытие по клику на фон
-      document.getElementById("modal").addEventListener("click", function(e) {
-          if (e.target === this) {
-              closeModal();
-          }
-      });
-
-      document.body.addEventListener("productChanged", function () {
-      // закрываем модалку
+<script>
+  document.body.addEventListener("productChanged", function () {
       closeModal();
 
-      // перезагружаем список продуктов
+      // обновляем всю страницу (список продуктов)
       htmx.ajax("GET", window.location.href, {
           target: "body",
           swap: "innerHTML"
       });
   });
 </script>
+
 
 {% endblock %}

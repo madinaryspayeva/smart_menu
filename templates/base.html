@@ -40,27 +40,5 @@
     </main>
     <footer>Common footer for all templates</footer>
 
-
-{% comment %} 
-    <script>
-        // Функции для открытия/закрытия модальных окон
-        function openModal(modalId) {
-            document.getElementById(modalId).classList.remove('hidden');
-        }
-        
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.add('hidden');
-        }
-        
-        // Закрытие модальных окон при клике вне их области
-        window.onclick = function(event) {
-            const modals = document.querySelectorAll('#viewModal, #editModal, #deleteModal');
-            modals.forEach(modal => {
-                if (event.target === modal) {
-                    closeModal(modal.id);
-                }
-            });
-        }
-    </script> {% endcomment %}
 </body>
 </html>

@@ -120,6 +120,14 @@
                                 class="button success text-sm w-full sm:w-auto">
                             + Добавить ингредиент
                         </button>
+                        <button type="button" 
+                                hx-get="{% url 'product:add' %}"
+                                hx-target="#modal-content"
+                                hx-trigger="click"
+                                onclick="openModal()"
+                                class="button secondary text-sm w-full sm:w-auto">
+                            + Добавить продукт
+                        </button>
                     </div>
 
                     {{ ingredients.management_form }}
@@ -205,6 +213,9 @@
         </form>
     </div>
 
+
+       {% include "product/partials/modal.html" %}
+
     <!-- JavaScript для динамического добавления ингредиентов -->
  <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -276,6 +287,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // НЕ добавляем форму автоматически — добавляем только по кнопке
 });
+
+document.body.addEventListener("productChanged", function () {
+      closeModal();
+
+      // обновляем только блок со списком продуктов (селект)
+      htmx.ajax("GET", "{% url 'product:select_options' %}", {
+          target: "#ingredients-container",   // контейнер с формами ингредиентов
+          swap: "innerHTML"
+      });
+  });
 </script>
 
 
