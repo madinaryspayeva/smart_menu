@@ -45,6 +45,11 @@ class ProductListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["categories"] = Category.choices
+        
+        get_copy = self.request.GET.copy()
+        get_copy.pop("page", None)
+        context["querystring"] = get_copy.urlencode()
+        
         return context
 
 
