@@ -1,8 +1,10 @@
-from django.http import HttpResponse
+import json
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.core.exceptions import PermissionDenied
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse_lazy 
+from django.views import View
 from django.views.generic import (
     CreateView,
     UpdateView,
@@ -49,7 +51,7 @@ class ProductListView(ListView):
         get_copy = self.request.GET.copy()
         get_copy.pop("page", None)
         context["querystring"] = get_copy.urlencode()
-        
+
         return context
 
 
@@ -66,20 +68,24 @@ class ProductCreateView(CreateView):
 
     def form_valid(self, form):
         form.instance.created_by = self.request.user
-        response = super().form_valid(form)
+        product = form.save()
 
         if self.request.headers.get("HX-Request"):
-            return HttpResponse(
-                headers={"HX-Trigger": "productChanged"}
-            )
-        return response
+            payload = {"productChanged": {
+                "id": str(product.id),
+                "name": product.name
+            }}
+            response = HttpResponse("")
+            response.headers["HX-Trigger"] = json.dumps(payload)
+            return response
+        
+        return super().form_valid(form)
 
     def form_invalid(self, form):
         context = self.get_context_data(form=form)
         if self.request.headers.get("HX-Request"):
             return render(self.request, self.template_name, context)
         return super().form_invalid(form)
-
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -133,4 +139,8 @@ class ProductDetailView(DetailView):
     context_object_name = "product"
 
 
-
+class ProductSelectOptionsView(View):
+    def get(self, request):
+        products = list(Product.objects.all().values("id", "name"))
+        return JsonResponse(products, safe=False)
+    

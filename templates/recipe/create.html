@@ -217,86 +217,97 @@
        {% include "product/partials/modal.html" %}
 
     <!-- JavaScript для динамического добавления ингредиентов -->
- <script>
-document.addEventListener('DOMContentLoaded', function () {
-  const container = document.getElementById('ingredients-container');
-  const totalFormsInput = document.querySelector('input[name="{{ ingredients.prefix }}-TOTAL_FORMS"]') 
-                          || document.querySelector('input[name$="-TOTAL_FORMS"]');
 
-  function enableInputs(root) {
-    (root || document).querySelectorAll('input, select, textarea').forEach(i => {
-      i.removeAttribute('readonly');
-      i.removeAttribute('disabled');
-      i.style.pointerEvents = 'auto';
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const container = document.getElementById('ingredients-container');
+      const totalFormsInput = document.querySelector('input[name="{{ ingredients.prefix }}-TOTAL_FORMS"]') 
+                              || document.querySelector('input[name$="-TOTAL_FORMS"]');
+
+      function enableInputs(root) {
+        (root || document).querySelectorAll('input, select, textarea').forEach(i => {
+          i.removeAttribute('readonly');
+          i.removeAttribute('disabled');
+          i.style.pointerEvents = 'auto';
+        });
+      }
+
+      window.addIngredient = function () {
+        if (!totalFormsInput) {
+          console.error('TOTAL_FORMS input not found for formset. Check prefix.');
+          return;
+        }
+        const currentIndex = parseInt(totalFormsInput.value, 10);
+        let template = document.getElementById('empty-form').innerHTML;
+        template = template.replace(/__prefix__/g, currentIndex);
+        container.insertAdjacentHTML('beforeend', template);
+        totalFormsInput.value = currentIndex + 1;
+
+        // включаем инпуты в только что добавленной форме
+        const added = container.lastElementChild;
+        enableInputs(added);
+      };
+
+      container.addEventListener('click', function (e) {
+        const btn = e.target.closest('.remove-ingredient');
+        if (!btn) return;
+        const item = btn.closest('.ingredient-item');
+        if (!item) return;
+
+        const deleteInput = item.querySelector('input[name$="-DELETE"]');
+        if (deleteInput) {
+          if (deleteInput.type === 'checkbox') deleteInput.checked = true;
+          else deleteInput.value = 'on';
+          item.style.display = 'none';
+          return;
+        }
+
+        item.remove();
+        reindexForms();
+      });
+
+      function reindexForms() {
+        const forms = container.querySelectorAll('.ingredient-item');
+        forms.forEach((formEl, idx) => {
+          formEl.querySelectorAll('[name]').forEach(el => {
+            el.name = el.name.replace(/-\d+-/, `-${idx}-`);
+          });
+          formEl.querySelectorAll('[id]').forEach(el => {
+            el.id = el.id.replace(/-\d+-/, `-${idx}-`);
+          });
+          formEl.querySelectorAll('label[for]').forEach(label => {
+            const f = label.getAttribute('for');
+            if (f) label.setAttribute('for', f.replace(/-\d+-/, `-${idx}-`));
+          });
+        });
+        if (totalFormsInput) totalFormsInput.value = forms.length;
+      }
+
+      // 🔥 Обработка события productChanged от HTMX
+      document.body.addEventListener("productChanged", function (e) {
+        console.log("🔥 Событие productChanged:", e.detail);
+        const data = e.detail;
+        if (!data) return;
+
+        const selects = document.querySelectorAll('select[name$="-product"]');
+
+        selects.forEach((select, index) => {
+          // Добавляем новый вариант, если его нет
+          if (![...select.options].some(opt => opt.value === data.id)) {
+            const option = new Option(data.name, data.id);
+            select.add(option);
+          }
+
+          // Если последняя форма и пустой select — выбираем новый продукт
+          if (index === selects.length - 1 && !select.value) {
+            select.value = data.id;
+            select.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+        });
+
+        if (typeof closeModal === "function") closeModal();
+      });
     });
-  }
-
-  window.addIngredient = function () {
-    if (!totalFormsInput) {
-      console.error('TOTAL_FORMS input not found for formset. Check prefix.');
-      return;
-    }
-    const currentIndex = parseInt(totalFormsInput.value, 10);
-    let template = document.getElementById('empty-form').innerHTML;
-    template = template.replace(/__prefix__/g, currentIndex);
-    container.insertAdjacentHTML('beforeend', template);
-    totalFormsInput.value = currentIndex + 1;
-
-    // включаем инпуты в только что добавленной форме
-    const added = container.lastElementChild;
-    enableInputs(added);
-  };
-
-  // удаление — делегирование
-  container.addEventListener('click', function (e) {
-    const btn = e.target.closest('.remove-ingredient');
-    if (!btn) return;
-    const item = btn.closest('.ingredient-item');
-    if (!item) return;
-
-    // если есть поле DELETE (существующая запись), пометим на удаление и скроем
-    const deleteInput = item.querySelector('input[name$="-DELETE"]');
-    if (deleteInput) {
-      if (deleteInput.type === 'checkbox') deleteInput.checked = true;
-      else deleteInput.value = 'on';
-      item.style.display = 'none';
-      return;
-    }
-
-    // если новая — просто удаляем и переиндексируем
-    item.remove();
-    reindexForms();
-  });
-
-  function reindexForms() {
-    const forms = container.querySelectorAll('.ingredient-item');
-    forms.forEach((formEl, idx) => {
-      formEl.querySelectorAll('[name]').forEach(el => {
-        el.name = el.name.replace(/-\d+-/, `-${idx}-`);
-      });
-      formEl.querySelectorAll('[id]').forEach(el => {
-        el.id = el.id.replace(/-\d+-/, `-${idx}-`);
-      });
-      formEl.querySelectorAll('label[for]').forEach(label => {
-        const f = label.getAttribute('for');
-        if (f) label.setAttribute('for', f.replace(/-\d+-/, `-${idx}-`));
-      });
-    });
-    if (totalFormsInput) totalFormsInput.value = forms.length;
-  }
-
-  // НЕ добавляем форму автоматически — добавляем только по кнопке
-});
-
-document.body.addEventListener("productChanged", function () {
-      closeModal();
-
-      // обновляем только блок со списком продуктов (селект)
-      htmx.ajax("GET", "{% url 'product:select_options' %}", {
-          target: "#ingredients-container",   // контейнер с формами ингредиентов
-          swap: "innerHTML"
-      });
-  });
 </script>
 
 
