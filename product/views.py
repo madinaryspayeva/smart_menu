@@ -137,10 +137,3 @@ class ProductDetailView(DetailView):
     model = Product
     template_name = "product/detail.html"
     context_object_name = "product"
-
-
-class ProductSelectOptionsView(View):
-    def get(self, request):
-        products = list(Product.objects.all().values("id", "name"))
-        return JsonResponse(products, safe=False)
-    

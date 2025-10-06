@@ -5,7 +5,6 @@ from .views import (
     ProductDetailView,
     ProductUpdateView,
     ProductDeleteView,
-    ProductSelectOptionsView,
 )
 
 app_name = "product"
@@ -16,5 +15,4 @@ urlpatterns = [
     path("<uuid:pk>/", ProductDetailView.as_view(), name="detail"),
     path("<uuid:pk>/edit/", ProductUpdateView.as_view(), name="edit"),
     path("<uuid:pk>/delete/", ProductDeleteView.as_view(), name="delete"),
-    path("select-options/", ProductSelectOptionsView.as_view(), name="select_options")
 ]
