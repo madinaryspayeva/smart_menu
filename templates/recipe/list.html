@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen py-6 sm:py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Заголовок страницы -->
+        <div class="text-center mb-8 sm:mb-12">
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bebas-neue text-coral-red mb-3 sm:mb-4">Наши рецепты</h1>
+            <p class="text-lg sm:text-xl text-dark-gray font-light max-w-3xl mx-auto px-2">
+                Откройте для себя мир вкусных и простых в приготовлении блюд. 
+                Каждый рецепт - это маленькое кулинарное приключение!
+            </p>
+        </div>
+
+        <!-- Фильтры и поиск - ИСПРАВЛЕННАЯ ВЕРСИЯ -->
+        <div class="bg-white rounded-2xl p-4 sm:p-6 auth-form mb-6 sm:mb-8 border border-pastel-pink/30">
+            <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
+                <!-- Левая часть - поиск и селект -->
+                <div class="flex flex-col md:flex-row gap-4 xl:items-center xl:flex-1">
+                    <!-- Поиск -->
+                    <div class="flex-1 min-w-0">
+                        <div class="relative">
+                            <input 
+                                hx-get="{{ request.path }}"
+                                hx-trigger="input changed delay:300ms, search"
+                                hx-target="#recipe-results"
+                                hx-select="#recipe-results" 
+                                hx-include="[name='meal_type']"       
+                                type="text"
+                                name="q"
+                                value="{{ request.GET.q }}"
+                                placeholder="Поиск рецептов..." 
+                                class="form-input pl-12 w-full"
+                            >
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-coral-red"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Фильтр по типу блюд -->
+                    <div class="md:w-48">
+                        <select 
+                            hx-get="{{ request.path }}"
+                            hx-trigger="change"
+                            hx-target="#recipe-results"
+                            hx-select="#recipe-results" 
+                            hx-include="[name='q']"
+                            name="meal_type" 
+                        class="form-input w-full text-sm sm:text-base">
+                            <option value="">Все типы блюд</option>
+                            {% for value, label in meal_types  %}
+                                <option value="{{ value }}" {% if request.GET.meal_type == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Правая часть - кнопки -->
+                <div class="flex flex-col sm:flex-row gap-3 xl:flex-shrink-0">
+                    <button class="button secondary whitespace-nowrap text-sm sm:text-base">
+                        <i class="fas fa-filter mr-2"></i>
+                        Фильтры
+                    </button>
+                    
+                    <button class="button success whitespace-nowrap text-sm sm:text-base">
+                        <i class="fas fa-plus mr-2"></i>
+                        Новый рецепт
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="recipe-results">
+        <!-- Сетка рецептов - 2 колонки на десктопе, 1 на мобильном -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-8 sm:mb-12">
+            {% for recipe in recipes %}
+            <!-- Карточка рецепта 1 -->
+                <div class="recipe-card">
+                    <!-- Изображение -->
+                    <div class="relative h-48 sm:h-56 lg:h-64 overflow-hidden">
+                        <img 
+                            src="{{ recipe.image.url }}"
+                            alt="{{ recipe.name }}" 
+                            class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                        >
+                        <div class="absolute top-3 sm:top-4 left-3 sm:left-4">
+                            <span class="category-badge px-2 sm:px-3 text-xs sm:text-sm">
+                                {{ recipe.meal_type }}
+                            </span>
+                        </div>
+                        <div class="absolute top-3 sm:top-4 right-3 sm:right-4">
+                            <button class="bg-white/90 hover:bg-white text-coral-red w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all duration-300 shadow-md text-sm">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Контент -->
+                    <div class="p-4 sm:p-6">
+                        <h3 class="text-lg sm:text-xl font-oswald text-dark-gray font-semibold mb-2 sm:mb-3 line-clamp-1">
+                            {{ recipe.name }}
+                        </h3>
+                        
+                        <p class="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2">
+                           {{ recipe.description  }}
+                        </p>
+
+                        <!-- Детали -->
+                        <div class="flex items-center justify-between text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">
+                            <div class="flex items-center space-x-2 sm:space-x-4">
+                                {% comment %} <div class="flex items-center">
+                                    <i class="fas fa-clock mr-1 sm:mr-2 text-coral-red text-xs"></i>
+                                    <span>25 мин</span>
+                                </div> {% endcomment %}
+                                <div class="flex items-center">
+                                    <i class="fas fa-utensils mr-1 sm:mr-2 text-coral-red text-xs"></i>
+                                    <span>{{ recipe.servings }}</span>
+                                </div>
+                                {% comment %} <div class="flex items-center">
+                                    <i class="fas fa-fire mr-1 sm:mr-2 text-coral-red text-xs"></i>
+                                    <span>320 ккал</span>
+                                </div> {% endcomment %}
+                            </div>
+                        </div>
+
+                        <!-- Ингредиенты теги -->
+                        {% with all_ingredients=recipe.ingredient.all %}
+                            {% with total=all_ingredients|length %}
+                                <div class="flex flex-wrap gap-1 sm:gap-2 mb-3 sm:mb-4">
+                                    {% for ingredient in all_ingredients|slice:":2" %}
+                                        <span class="ingredient-tag px-2 sm:px-3">
+                                            {{ ingredient.product.name }}
+                                        </span>
+                                    {% endfor %}
+
+                                    {% if total > 2 %}
+                                        <span class="ingredient-tag px-2 sm:px-3">
+                                            + {{ total|add:"-2" }} 
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            {% endwith %}
+                        {% endwith %}
+
+                        <!-- Кнопка -->
+                        <button class="primary btn w-full text-sm sm:text-base">
+                            <span class="relative z-10">Смотреть рецепт</span>
+                        </button>
+                    </div>
+                </div>
+           {% endfor%}
+        </div>
+
+        <!-- Пагинация -->
+        {% if page_obj.has_other_pages %}
+        <div class="flex justify-center mb-8">
+            <div class="bg-white rounded-xl p-4 border-2 border-pastel-pink">
+            <div class="flex space-x-2">
+                
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if querystring %}&{{ querystring }}{% endif %}"
+                    class="btn bg-lemon-light text-amber-900 border border-lemon-border py-2 px-4 rounded-lg font-medium hover:bg-lemon">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                {% if num == page_obj.number %}
+                    <button class="btn bg-gradient-to-r from-pastel-pink to-amber-400 text-white py-2 px-4 rounded-lg font-medium">{{ num }}</button>
+                {% else %}
+                    <a href="?page={{ num }}{% if querystring %}&{{ querystring }}{% endif %}"
+                    class="btn bg-lemon-light text-amber-900 border border-lemon-border py-2 px-4 rounded-lg font-medium hover:bg-lemon">
+                    {{ num }}
+                    </a>
+                {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if querystring %}&{{ querystring }}{% endif %}"
+                    class="btn bg-lemon-light text-amber-900 border border-lemon-border py-2 px-4 rounded-lg font-medium hover:bg-lemon">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+                {% endif %}
+            </div>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+        <!-- CTA секция -->
+        <div class="bg-gradient-to-r from-pastel-pink to-amber-400 rounded-2xl p-6 sm:p-8 text-center mt-12 sm:mt-16 auth-form">
+            <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bebas-neue text-white mb-3 sm:mb-4">Создайте свой рецепт!</h2>
+            <p class="text-white/90 text-base sm:text-lg mb-4 sm:mb-6 max-w-2xl mx-auto px-2">
+                Поделитесь своими кулинарными шедеврами с сообществом. Это просто и бесплатно!
+            </p>
+            <button class="bg-white text-coral-red px-6 sm:px-8 py-2 sm:py-3 rounded-lg font-semibold text-base sm:text-lg hover:bg-gray-100 transition-colors duration-300">
+                <i class="fas fa-plus mr-2"></i>
+                Добавить рецепт
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock content %}

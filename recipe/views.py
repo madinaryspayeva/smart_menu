@@ -10,6 +10,7 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 
 from product.models import Product
+from recipe.choices import MealType
 from recipe.models import Recipe
 from recipe.forms import RecipeForm, RecipeIngredientFormSet
 
@@ -48,3 +49,28 @@ class RecipeListView(ListView):
     model = Recipe
     template_name = "recipe/list.html"
     context_object_name = "recipes"
+    paginate_by = 6
+
+    def get_queryset(self):
+        queryset = super().get_queryset().order_by("-created")
+
+        search = self.request.GET.get("q")
+        if search:
+            queryset = queryset.filter(name__icontains=search)
+        
+        meal_type = self.request.GET.get("meal_type")
+        if meal_type:
+            queryset = queryset.filter(meal_type=meal_type)
+        
+        #добавить поиск по ингредиентам
+
+        return queryset
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["meal_types"] = MealType.choices
+        return context
+
+
+
+

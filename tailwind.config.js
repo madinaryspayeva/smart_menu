@@ -15,12 +15,14 @@ module.exports = {
                         'lemon-dark': '#facc15',
                         'lemon-light': '#fef9c3',
                         'lemon-border': '#eab308',
-                        'mint': '#6ee7b7', // Примерный цвет для mint
+                        'mint': '#6ee7b7', 
                         'green': {
                             400: '#4ade80',
                             900: '#14532d'
                         },
-                        'dark-gray': '#374151'
+                        'dark-gray': '#374151',
+                        'soft-white': '#fafafa',
+                        'card-border': '#f3f4f6'
                     },
                     fontFamily: {
                         'oswald': ['Oswald', 'sans-serif'],
