@@ -1,3 +1,4 @@
+import uuid
 from django.shortcuts import render
 from django.views.generic import (
     CreateView, 
@@ -62,13 +63,50 @@ class RecipeListView(ListView):
         if meal_type:
             queryset = queryset.filter(meal_type=meal_type)
         
-        #добавить поиск по ингредиентам
-
+        products_param = self.request.GET.get("products")
+        if products_param:
+            product_ids = []
+            for product_id in products_param.split(","):
+                try:
+                    uuid_obj = uuid.UUID(product_id)
+                    product_ids.append(uuid_obj)
+                except (ValueError, AttributeError):
+                    continue
+            
+            if product_ids:
+                for product_id in product_ids: #почему здесь цикл можно ли улучшить фтльтрацию?
+                    queryset = queryset.filter(ingredient__product_id=product_id)
+                
+                queryset = queryset.distinct()
         return queryset
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["meal_types"] = MealType.choices
+
+        selected_products_ids = []
+        products_params = self.request.GET.get("products")
+        if products_params:
+            for product_id in products_params.split(","):
+                try:
+                    uuid_obj = uuid.UUID(product_id)
+                    selected_products_ids.append(uuid_obj)
+                except (ValueError, AttributeError):
+                    continue
+
+        selected_products = Product.objects.filter(id__in=selected_products_ids)
+        context["selected_products"] = selected_products
+
+        context["all_products"] = Product.objects.all()[:50]
+
+        querystring = ""
+        if self.request.GET:
+            params = self.request.GET.copy()
+            if 'page' in params:
+                del params['page']
+            querystring = params.urlencode()
+        context["querystring"] = querystring
+        
         return context
 
 

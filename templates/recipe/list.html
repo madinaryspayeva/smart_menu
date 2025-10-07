@@ -12,7 +12,7 @@
             </p>
         </div>
 
-        <!-- Фильтры и поиск - ИСПРАВЛЕННАЯ ВЕРСИЯ -->
+        <!-- Фильтры и поиск -->
         <div class="bg-white rounded-2xl p-4 sm:p-6 auth-form mb-6 sm:mb-8 border border-pastel-pink/30">
             <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
                 <!-- Левая часть - поиск и селект -->
@@ -58,7 +58,9 @@
 
                 <!-- Правая часть - кнопки -->
                 <div class="flex flex-col sm:flex-row gap-3 xl:flex-shrink-0">
-                    <button class="button secondary whitespace-nowrap text-sm sm:text-base">
+                    <button type="button" 
+                            onclick="openProductFilter()"
+                            class="button secondary whitespace-nowrap text-sm sm:text-base">
                         <i class="fas fa-filter mr-2"></i>
                         Фильтры
                     </button>
@@ -71,11 +73,121 @@
             </div>
         </div>
 
+      
+       <!-- Модальное окно фильтрации по продуктам -->
+<div id="product-filter-modal" class="fixed inset-0 z-50 hidden">
+    <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onclick="closeProductFilter()"></div>
+    
+    <div class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-xl auth-form border border-pastel-pink/30">
+            <!-- Заголовок -->
+            <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                <h3 class="text-xl font-oswald text-dark-gray font-semibold">
+                    Фильтр по продуктам
+                </h3>
+                <button type="button" 
+                        onclick="closeProductFilter()"
+                        class="text-gray-400 hover:text-coral-red transition-colors duration-200">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Контент -->
+            <div class="p-6">
+                <!-- Поиск продуктов -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-dark-gray mb-3">
+                        Добавьте продукты для поиска рецептов:
+                    </label>
+                    <div class="relative">
+                        <input 
+                            type="text"
+                            id="product-search"
+                            placeholder="Начните вводить название продукта..."
+                            class="form-input pl-12 w-full"
+                            hx-get="{% url 'product:search_filter' %}"
+                            hx-trigger="keyup changed delay:300ms"
+                            hx-target="#product-search-results"
+                            hx-swap="innerHTML"
+                            name="q"
+                        >
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-coral-red"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- Результаты поиска продуктов -->
+                    <div id="product-search-results" class="mt-2 max-h-40 overflow-y-auto hidden">
+                        <!-- Результаты будут подгружаться через HTMX -->
+                    </div>
+                </div>
+
+                <!-- Выбранные продукты -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-dark-gray mb-3">
+                        Выбранные продукты:
+                    </label>
+                    <div id="selected-products" class="flex flex-wrap gap-2 min-h-12 p-3 border border-dashed border-pastel-pink rounded-lg bg-light-pink/30">
+                        {% for product in selected_products %}
+                            <div class="selected-product-tag bg-white border border-pastel-pink rounded-full px-3 py-1 text-sm text-coral-red flex items-center gap-2"
+                                 data-product-id="{{ product.id }}">
+                                <span>{{ product.name }}</span>
+                                <button type="button" 
+                                        onclick="removeProductFromFilter('{{ product.id }}')"
+                                        class="text-coral-red hover:text-red-500 transition-colors duration-200">
+                                    <i class="fas fa-times text-xs"></i>
+                                </button>
+                            </div>
+                        {% empty %}
+                            <span class="text-gray-400 text-sm">Продукты не выбраны</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Инструкция -->
+                <div class="bg-lemon-light border border-lemon-border rounded-lg p-4 mb-6">
+                    <div class="flex items-start">
+                        <i class="fas fa-info-circle text-amber-600 mt-0.5 mr-3"></i>
+                        <div class="text-sm text-amber-800">
+                            <p class="font-medium mb-1">Как это работает?</p>
+                            <p class="text-xs">Добавьте продукты, которые должны быть в рецепте. Будут показаны рецепты, содержащие ВСЕ выбранные продукты.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Футер -->
+            <div class="flex justify-between items-center p-6 border-t border-gray-200">
+                <button type="button" 
+                        onclick="clearSelectedProducts()"
+                        class="button danger text-sm">
+                    <i class="fas fa-trash mr-2"></i>
+                    Очистить
+                </button>
+                
+                <div class="flex gap-3">
+                    <button type="button" 
+                            onclick="closeProductFilter()"
+                            class="button secondary text-sm">
+                        Отмена
+                    </button>
+                    <button type="button" 
+                            onclick="applyProductFilter()"
+                            class="button success text-sm">
+                        <i class="fas fa-check mr-2"></i>
+                        Применить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
         <div id="recipe-results">
-        <!-- Сетка рецептов - 2 колонки на десктопе, 1 на мобильном -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-8 sm:mb-12">
-            {% for recipe in recipes %}
-            <!-- Карточка рецепта 1 -->
+            <!-- Остальной код с рецептами -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-8 sm:mb-12">
+                {% for recipe in recipes %}
+                <!-- Карточка рецепта -->
                 <div class="recipe-card">
                     <!-- Изображение -->
                     <div class="relative h-48 sm:h-56 lg:h-64 overflow-hidden">
@@ -109,18 +221,10 @@
                         <!-- Детали -->
                         <div class="flex items-center justify-between text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">
                             <div class="flex items-center space-x-2 sm:space-x-4">
-                                {% comment %} <div class="flex items-center">
-                                    <i class="fas fa-clock mr-1 sm:mr-2 text-coral-red text-xs"></i>
-                                    <span>25 мин</span>
-                                </div> {% endcomment %}
                                 <div class="flex items-center">
                                     <i class="fas fa-utensils mr-1 sm:mr-2 text-coral-red text-xs"></i>
                                     <span>{{ recipe.servings }}</span>
                                 </div>
-                                {% comment %} <div class="flex items-center">
-                                    <i class="fas fa-fire mr-1 sm:mr-2 text-coral-red text-xs"></i>
-                                    <span>320 ккал</span>
-                                </div> {% endcomment %}
                             </div>
                         </div>
 
@@ -149,45 +253,43 @@
                         </button>
                     </div>
                 </div>
-           {% endfor%}
-        </div>
-
-        <!-- Пагинация -->
-        {% if page_obj.has_other_pages %}
-        <div class="flex justify-center mb-8">
-            <div class="bg-white rounded-xl p-4 border-2 border-pastel-pink">
-            <div class="flex space-x-2">
-                
-                {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}{% if querystring %}&{{ querystring }}{% endif %}"
-                    class="btn bg-lemon-light text-amber-900 border border-lemon-border py-2 px-4 rounded-lg font-medium hover:bg-lemon">
-                    <i class="fas fa-chevron-left"></i>
-                </a>
-                {% endif %}
-
-                {% for num in page_obj.paginator.page_range %}
-                {% if num == page_obj.number %}
-                    <button class="btn bg-gradient-to-r from-pastel-pink to-amber-400 text-white py-2 px-4 rounded-lg font-medium">{{ num }}</button>
-                {% else %}
-                    <a href="?page={{ num }}{% if querystring %}&{{ querystring }}{% endif %}"
-                    class="btn bg-lemon-light text-amber-900 border border-lemon-border py-2 px-4 rounded-lg font-medium hover:bg-lemon">
-                    {{ num }}
-                    </a>
-                {% endif %}
                 {% endfor %}
+            </div>
 
-                {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}{% if querystring %}&{{ querystring }}{% endif %}"
-                    class="btn bg-lemon-light text-amber-900 border border-lemon-border py-2 px-4 rounded-lg font-medium hover:bg-lemon">
-                    <i class="fas fa-chevron-right"></i>
-                </a>
-                {% endif %}
+            <!-- Пагинация -->
+            {% if page_obj.has_other_pages %}
+            <div class="flex justify-center mb-8">
+                <div class="bg-white rounded-xl p-4 border-2 border-pastel-pink">
+                    <div class="flex space-x-2">
+                        {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}{% if querystring %}&{{ querystring }}{% endif %}"
+                            class="btn bg-lemon-light text-amber-900 border border-lemon-border py-2 px-4 rounded-lg font-medium hover:bg-lemon">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                        {% if num == page_obj.number %}
+                            <button class="btn bg-gradient-to-r from-pastel-pink to-amber-400 text-white py-2 px-4 rounded-lg font-medium">{{ num }}</button>
+                        {% else %}
+                            <a href="?page={{ num }}{% if querystring %}&{{ querystring }}{% endif %}"
+                            class="btn bg-lemon-light text-amber-900 border border-lemon-border py-2 px-4 rounded-lg font-medium hover:bg-lemon">
+                            {{ num }}
+                            </a>
+                        {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if querystring %}&{{ querystring }}{% endif %}"
+                            class="btn bg-lemon-light text-amber-900 border border-lemon-border py-2 px-4 rounded-lg font-medium hover:bg-lemon">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
-            </div>
+            {% endif %}
         </div>
-        {% endif %}
-
-    </div>
 
         <!-- CTA секция -->
         <div class="bg-gradient-to-r from-pastel-pink to-amber-400 rounded-2xl p-6 sm:p-8 text-center mt-12 sm:mt-16 auth-form">
@@ -202,4 +304,178 @@
         </div>
     </div>
 </div>
+
+
+<script>
+// Глобальная переменная для хранения выбранных продуктов
+let selectedProducts = [];
+
+// Инициализация при загрузке страницы
+document.addEventListener("DOMContentLoaded", function() {
+    // Инициализируем selectedProducts из выбранных продуктов в модалке
+    const selectedProductTags = document.querySelectorAll('.selected-product-tag');
+    selectedProducts = Array.from(selectedProductTags).map(tag => {
+        const productName = tag.querySelector('span').textContent;
+        // Получаем UUID из атрибута data-product-id
+        const productId = tag.getAttribute('data-product-id');
+        return {
+            id: productId,
+            name: productName.trim()
+        };
+    });
+
+    // Инициализируем HTMX для поля поиска продуктов
+    htmx.process(document.getElementById('product-search'));
+});
+
+// Открытие модального окна
+function openProductFilter() {
+    document.getElementById('product-filter-modal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    
+    // Фокус на поле поиска при открытии
+    setTimeout(() => {
+        document.getElementById('product-search').focus();
+    }, 100);
+}
+
+// Закрытие модального окна
+function closeProductFilter() {
+    document.getElementById('product-filter-modal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+// Функция для выбора продукта из результатов поиска
+function selectProductForFilter(productId, productName) {
+    console.log('Выбор продукта:', productId, productName);
+    
+    // Проверяем, не добавлен ли уже продукт
+    if (!selectedProducts.some(product => product.id === productId)) {
+        selectedProducts.push({
+            id: productId,
+            name: productName
+        });
+        updateSelectedProductsDisplay();
+    }
+    
+    // Очищаем поле поиска и скрываем результаты
+    document.getElementById('product-search').value = '';
+    document.getElementById('product-search-results').classList.add('hidden');
+    document.getElementById('product-search-results').innerHTML = '';
+}
+
+// Обновление отображения выбранных продуктов
+function updateSelectedProductsDisplay() {
+    const container = document.getElementById('selected-products');
+    
+    if (selectedProducts.length === 0) {
+        container.innerHTML = '<span class="text-gray-400 text-sm">Продукты не выбраны</span>';
+        return;
+    }
+    
+    container.innerHTML = selectedProducts.map(product => `
+        <div class="selected-product-tag bg-white border border-pastel-pink rounded-full px-3 py-1 text-sm text-coral-red flex items-center gap-2"
+             data-product-id="${product.id}">
+            <span>${product.name}</span>
+            <button type="button" 
+                    onclick="removeProductFromFilter('${product.id}')"
+                    class="text-coral-red hover:text-red-500 transition-colors duration-200">
+                <i class="fas fa-times text-xs"></i>
+            </button>
+        </div>
+    `).join('');
+}
+
+// Удаление продукта из фильтра
+function removeProductFromFilter(productId) {
+    selectedProducts = selectedProducts.filter(product => product.id !== productId);
+    updateSelectedProductsDisplay();
+}
+
+// Очистка всех выбранных продуктов
+function clearSelectedProducts() {
+    selectedProducts = [];
+    updateSelectedProductsDisplay();
+}
+
+// Применение фильтра
+function applyProductFilter() {
+    if (selectedProducts.length === 0) {
+        alert('Добавьте хотя бы один продукт для фильтрации');
+        return;
+    }
+    
+    // Создаем URL с параметрами фильтрации
+    const productIds = selectedProducts.map(product => product.id).join(',');
+    const currentUrl = new URL(window.location.href);
+    
+    // Сохраняем существующие параметры
+    const existingParams = new URLSearchParams(currentUrl.search);
+    
+    // Создаем новые параметры
+    const newParams = new URLSearchParams();
+    
+    // Добавляем существующие параметры (кроме products и page)
+    for (const [key, value] of existingParams) {
+        if (key !== 'products' && key !== 'page') {
+            newParams.append(key, value);
+        }
+    }
+    
+    // Добавляем продукты
+    newParams.append('products', productIds);
+    
+    // Перенаправляем на обновленную страницу
+    window.location.href = `${currentUrl.pathname}?${newParams.toString()}`;
+}
+
+// Обработчик для показа/скрытия результатов поиска
+document.addEventListener('input', function(e) {
+    if (e.target.id === 'product-search') {
+        const resultsContainer = document.getElementById('product-search-results');
+        if (e.target.value.trim()) {
+            resultsContainer.classList.remove('hidden');
+        } else {
+            resultsContainer.classList.add('hidden');
+            resultsContainer.innerHTML = '';
+        }
+    }
+});
+
+// Закрытие результатов при клике вне
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('#product-search') && !e.target.closest('#product-search-results')) {
+        document.getElementById('product-search-results').classList.add('hidden');
+    }
+});
+
+// Обработчик для HTMX после подгрузки результатов
+document.body.addEventListener('htmx:afterSwap', function(evt) {
+    if (evt.detail.target.id === 'product-search-results') {
+        // Показываем контейнер результатов после подгрузки
+        if (evt.detail.target.innerHTML.trim()) {
+            evt.detail.target.classList.remove('hidden');
+        }
+    }
+});
+</script>
+
+<style>
+.selected-product-tag {
+    background: linear-gradient(135deg, #ffffff 0%, #fef9e7 100%);
+    border: 1px solid #ffd1d1;
+    box-shadow: 0 2px 4px rgba(212, 79, 79, 0.1);
+}
+
+#product-search-results {
+    border: 1px solid #ffd1d1;
+    border-radius: 0.5rem;
+    background: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#product-search-results button {
+    @apply w-full text-left px-4 py-2 hover:bg-pastel-pink hover:text-white transition-colors duration-200 border-b border-gray-100 last:border-b-0;
+}
+</style>
 {% endblock content %}

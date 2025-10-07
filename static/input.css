@@ -119,4 +119,31 @@
     border: 1px solid #ffd1d1;
     @apply text-coral-red px-3 py-1 rounded-full text-xs font-medium;
   }
+
+  .selected-product-tag {
+    background: linear-gradient(135deg, #ffffff 0%, #fef9e7 100%);
+    border: 1px solid #ffd1d1;
+    box-shadow: 0 2px 4px rgba(212, 79, 79, 0.1);
+}
+
+  #product-search-results {
+      border: 1px solid #ffd1d1;
+      border-radius: 0.5rem;
+      background: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  #product-search-results button {
+      @apply w-full text-left px-4 py-2 hover:bg-pastel-pink hover:text-white transition-colors duration-200 border-b border-gray-100 last:border-b-0;
+  }
+
+  /* Анимация для модального окна */
+  #product-filter-modal {
+      animation: fadeIn 0.2s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+  }
 }

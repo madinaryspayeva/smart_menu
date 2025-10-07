@@ -155,3 +155,16 @@ class ProductSearchView(View):
             'index': index  
         })
 
+
+class ProductSearchFilterView(View):
+    def get(self, request, *args, **kwargs):
+        query = request.GET.get('q', '')
+    
+        if query:
+            products = Product.objects.filter(name__icontains=query)[:10]
+        else:
+            products = Product.objects.none()
+        
+        return render(request, 'product/partials/search_results_filter.html', {
+            'products': products,
+        })
