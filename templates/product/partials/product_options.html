@@ -1,0 +1,15 @@
+{% for product in products %}
+<button type="button"
+        class="w-full text-left px-4 py-3 hover:bg-pastel-pink hover:text-white transition-colors duration-200 border-b border-gray-100 last:border-b-0"
+        onclick="selectProduct('{{ product.id }}', '{{ product.name|escapejs }}', '{{ index }}')">
+    <div class="font-medium">{{ product.name }}</div>
+    {% if product.category %}
+    <div class="text-xs text-gray-500 mt-1">{{ product.category.name }}</div>
+    {% endif %}
+</button>
+{% empty %}
+<div class="px-4 py-3 text-gray-500 text-sm text-center">
+    <i class="fas fa-search mr-2"></i>
+    {% if request.GET.q %}Не найдено продуктов по запросу "{{ request.GET.q }}"{% else %}Введите название продукта{% endif %}
+</div>
+{% endfor %}

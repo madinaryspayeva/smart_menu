@@ -1,5 +1,6 @@
 import json
 from django.http import HttpResponse, JsonResponse
+from django.template.loader import render_to_string
 from django.shortcuts import render
 from django.core.exceptions import PermissionDenied
 from django.utils.translation import gettext_lazy as _
@@ -137,3 +138,20 @@ class ProductDetailView(DetailView):
     model = Product
     template_name = "product/detail.html"
     context_object_name = "product"
+
+
+class ProductSearchView(View):
+    def get(self, request, *args, **kwargs):
+        query = request.GET.get('q', '')
+        index = request.GET.get('index', 0) 
+        
+        if query:
+            products = Product.objects.filter(name__icontains=query)[:10]
+        else:
+            products = Product.objects.none()
+        
+        return render(request, 'product/partials/product_options.html', {
+            'products': products,
+            'index': index  
+        })
+

@@ -9,6 +9,7 @@ from django.views.generic import (
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 
+from product.models import Product
 from recipe.models import Recipe
 from recipe.forms import RecipeForm, RecipeIngredientFormSet
 
@@ -21,6 +22,7 @@ class RecipeCreateView(CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["products"] = Product.objects.all()
         if self.request.POST:
             context["ingredients"] = RecipeIngredientFormSet(self.request.POST)
         else:
