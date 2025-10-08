@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from app import settings
 from app.models import TimestampedModel, StatusModel
 from recipe.choices import MealType, Unit
 
@@ -23,6 +24,13 @@ class Recipe(TimestampedModel, StatusModel):
         max_length=50,
         choices=MealType.choices,
         verbose_name=_("Тип блюда"),
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="recipes"
     )
 
     class Meta:

@@ -11,6 +11,7 @@ from django.views.generic import (
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 
+from product.mixins import OwnerOrSuperuserMixin
 from product.models import Product
 from recipe.choices import MealType
 from recipe.models import Recipe
@@ -30,6 +31,7 @@ class RecipeCreateView(CreateView):
             context["ingredients"] = RecipeIngredientFormSet(self.request.POST)
         else:
             context["ingredients"] = RecipeIngredientFormSet()
+        context["is_edit"] = False
         return context
     
     def form_valid(self, form):
@@ -45,6 +47,36 @@ class RecipeCreateView(CreateView):
             return redirect(self.success_url)
         
         return self.form_invalid(form)
+
+
+class RecipeUpdateView(OwnerOrSuperuserMixin, UpdateView):
+    model = Recipe
+    form_class = RecipeForm
+    template_name = "recipe/create.html"
+    success_url = reverse_lazy("recipe:list")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["products"] = Product.objects.all()
+        recipe = self.get_object()
+        if self.request.POST:
+            context["ingredients"] = RecipeIngredientFormSet(self.request.POST, instance=recipe)
+        else:
+            context["ingredients"] = RecipeIngredientFormSet(instance=recipe)
+        context["is_edit"] = True
+        return context
+    
+    def form_valid(self, form):
+        context = self.get_context_data()
+        formset = context["ingredients"]
+
+        if form.is_valid() and formset.is_valid():
+            self.object = form.save()
+            formset.instance = self.object
+            formset.save()
+            return redirect(self.success_url)
+        else:
+            return self.form_invalid(form)
 
            
 class RecipeListView(ListView):
