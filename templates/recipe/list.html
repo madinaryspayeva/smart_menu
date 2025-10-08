@@ -66,10 +66,10 @@
                         Фильтры
                     </button>
                     
-                    <button class="button success whitespace-nowrap text-sm sm:text-base">
+                    <a href="{% url 'recipe:add' %}" class="button success whitespace-nowrap text-center text-sm sm:text-base">
                         <i class="fas fa-plus mr-2"></i>
                         Новый рецепт
-                    </button>
+                    </a>
                 </div>
             </div>
         </div>
@@ -299,10 +299,10 @@
             <p class="text-white/90 text-base sm:text-lg mb-4 sm:mb-6 max-w-2xl mx-auto px-2">
                 Поделитесь своими кулинарными шедеврами с сообществом. Это просто и бесплатно!
             </p>
-            <button class="bg-white text-coral-red px-6 sm:px-8 py-2 sm:py-3 rounded-lg font-semibold text-base sm:text-lg hover:bg-gray-100 transition-colors duration-300">
+            <a href="{% url 'recipe:add' %}" class="bg-white text-coral-red px-6 sm:px-8 py-2 sm:py-3 rounded-lg font-semibold text-base sm:text-lg hover:bg-gray-100 transition-colors duration-300">
                 <i class="fas fa-plus mr-2"></i>
                 Добавить рецепт
-            </button>
+            </a>
         </div>
     </div>
 </div>
