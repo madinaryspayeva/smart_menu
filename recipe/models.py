@@ -19,6 +19,8 @@ class Recipe(TimestampedModel, StatusModel):
     image = models.ImageField(
         upload_to="recipes/",
         verbose_name=_("Изображение"),
+        blank=True,
+        null=True
     )
     meal_type = models.CharField(
         max_length=50,

@@ -21,7 +21,7 @@ from recipe.forms import RecipeForm, RecipeIngredientFormSet
 class RecipeCreateView(CreateView):
     model = Recipe
     form_class = RecipeForm
-    template_name = "recipe/create.html"
+    template_name = "recipe/form.html"
     success_url = reverse_lazy("recipe:list")
 
     def get_context_data(self, **kwargs):
@@ -39,7 +39,12 @@ class RecipeCreateView(CreateView):
         formset = context["ingredients"]
 
         if form.is_valid() and formset.is_valid():
-            self.object = form.save()
+            self.object = form.save(commit=False)
+            if not self.object.image:
+                self.object.image = "recipe/recipe/photo-1551218808-94e220e084d2 — копия.avif"
+            self.object.created_by = self.request.user
+            self.object.save()
+            
             ingredients = formset.save(commit=False)
             for ingredient in ingredients:
                 ingredient.recipe = self.object
@@ -52,7 +57,7 @@ class RecipeCreateView(CreateView):
 class RecipeUpdateView(OwnerOrSuperuserMixin, UpdateView):
     model = Recipe
     form_class = RecipeForm
-    template_name = "recipe/create.html"
+    template_name = "recipe/form.html"
     success_url = reverse_lazy("recipe:list")
 
     def get_context_data(self, **kwargs):

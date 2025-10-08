@@ -25,6 +25,11 @@ class RecipeForm(forms.ModelForm):
         label="Тип блюда"
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["image"].required = False
+            
+
 
 class RecipeIngredientForm(forms.ModelForm):
     class Meta:
