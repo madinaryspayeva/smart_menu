@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block content %}
+    
+    <div class="max-w-3xl mx-auto px-4 py-8">
+        <!-- Кнопка назад -->
+        <div class="mb-6">
+            <a href="{% url 'recipe:list' %}" class="inline-flex items-center text-coral-red hover:text-red-600 transition-colors">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Назад к рецептам
+            </a>
+        </div>
+
+        <!-- Основная карточка рецепта -->
+        <div class="recipe-card overflow-hidden mb-8">
+            <!-- Изображение -->
+            <div class="relative">
+                <img 
+                    src="{{ recipe.image.url }}"
+                    alt="{{ recipe.name }}" 
+                    class="w-full h-80 object-cover"
+                >
+                <div class="absolute top-4 left-4">
+                    <span class="category-badge px-4 py-2 text-sm font-semibold">
+                        {{ recipe.get_meal_type_display }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Контент -->
+            <div class="p-8">
+                <!-- Заголовок и описание -->
+                <div class="mb-8">
+                    <h1 class="text-4xl font-bebas-neue text-coral-red mb-4">
+                        {{ recipe.name }}
+                    </h1>
+                </div>
+
+                <!-- Детали рецепта -->
+                <div class="grid grid-cols-3 gap-4 mb-8">
+                    <div class="text-center p-4 bg-white rounded-xl border border-pastel-pink/30">
+                        <div class="text-2xl font-bold text-coral-red">{{ recipe.servings }}</div>
+                        <div class="text-sm text-gray-600">порции</div>
+                    </div>
+                    <div class="text-center p-4 bg-white rounded-xl border border-pastel-pink/30">
+                        <div class="text-2xl font-bold text-coral-red">15</div>
+                        <div class="text-sm text-gray-600">минут</div>
+                    </div>
+                    <div class="text-center p-4 bg-white rounded-xl border border-pastel-pink/30">
+                        <div class="flex items-center justify-center space-x-1">
+                            <i class="fas fa-star text-amber-400"></i>
+                            <span class="text-2xl font-bold text-coral-red">4.8</span>
+                        </div>
+                        <div class="text-sm text-gray-600">рейтинг</div>
+                    </div>
+                </div>
+
+                <!-- Кнопки действий с выпадающим меню -->
+                <div class="flex flex-col sm:flex-row gap-4 mb-8">
+                    <button class="primary-btn py-4 px-8 font-semibold text-lg flex-1 text-center hover:shadow-lg transition-shadow">
+                        <i class="fas fa-utensils mr-2"></i>
+                        Приготовить
+                    </button>
+                    
+                    <div class="flex gap-2">
+                        <!-- Кнопка избранное -->
+                        <button class="py-4 px-6 bg-white border-2 border-amber-300 text-amber-900 rounded-lg font-semibold hover:bg-amber-50 transition-colors">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                        
+                        <!-- Кнопка поделиться -->
+                        <button class="py-4 px-6 bg-white border-2 border-amber-300 text-amber-900 rounded-lg font-semibold hover:bg-amber-50 transition-colors">
+                            <i class="fas fa-share-alt"></i>
+                        </button>
+                        
+                        <!-- Выпадающее меню для действий -->
+                        <div class="relative" id="actions-dropdown">
+                            <button 
+                                class="py-4 px-6 bg-white border-2 border-gray-300 text-gray-600 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                                onclick="toggleActionsMenu()"
+                            >
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            
+                            <!-- Выпадающее меню -->
+                            <div 
+                                id="actions-menu"
+                                class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10 hidden"
+                            >
+                                <button class="w-full text-left px-4 py-2 text-blue-600 hover:bg-blue-50 transition-colors flex items-center">
+                                    <i class="fas fa-edit mr-3"></i>
+                                    Редактировать
+                                </button>
+                                <button class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition-colors flex items-center">
+                                    <i class="fas fa-trash mr-3"></i>
+                                    Удалить
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ингредиенты -->
+                <div class="mb-8">
+                    <h2 class="text-2xl font-oswald text-coral-red mb-4 flex items-center">
+                        <i class="fas fa-shopping-basket mr-3"></i>
+                        Ингредиенты
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+                        <div class="space-y-3">
+                        {% for ingredient in recipe.ingredient.all %}
+                            <div class="flex justify-between items-center p-3 bg-white rounded-lg border border-pastel-pink/30">
+                                <span class="font-medium">{{ ingredient.product.name }}</span>
+                                <span class="font-bold text-coral-red">{{ ingredient.quantity }} {{ ingredient.get_unit_display }}</span>
+                            </div>
+                        {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Способ приготовления -->
+                <div>
+                    <h2 class="text-2xl font-oswald text-coral-red mb-4 flex items-center">
+                        <i class="fas fa-list-ol mr-3"></i>
+                        Способ приготовления
+                    </h2>
+                    
+                    <div class="space-y-6">
+                        <div class="flex items-start">
+                            <div>
+                                <p class="text-gray-600 leading-relaxed whitespace-pre-line">
+                                   {{ recipe.description }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // Функция для переключения меню
+    function toggleActionsMenu() {
+        const menu = document.getElementById('actions-menu');
+        menu.classList.toggle('hidden');
+    }
+
+    // Закрытие меню при клике вне его
+    document.addEventListener('click', function(event) {
+        const dropdown = document.getElementById('actions-dropdown');
+        const menu = document.getElementById('actions-menu');
+        
+        if (dropdown && menu && !dropdown.contains(event.target)) {
+            menu.classList.add('hidden');
+        }
+    });
+    </script>
+
+{% endblock content %}

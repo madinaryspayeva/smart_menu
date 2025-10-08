@@ -250,9 +250,9 @@
                         {% endwith %}
 
                         <!-- Кнопка -->
-                        <button class="primary btn w-full text-sm sm:text-base">
+                        <a href="{% url 'recipe:detail' recipe.id %}" class="primary btn w-full text-sm sm:text-base">
                             <span class="relative z-10">Смотреть рецепт</span>
-                        </button>
+                        </a>
                     </div>
                 </div>
                 {% endfor %}

@@ -121,5 +121,7 @@ class RecipeListView(ListView):
         return context
 
 
-
-
+class RecipeDetailView(DetailView):
+    model = Recipe
+    template_name = "recipe/detail.html"
+    context_object_name = "recipe"

@@ -146,4 +146,71 @@
       from { opacity: 0; }
       to { opacity: 1; }
   }
+
+  .bg-light-pink { 
+        background-color: #fff5f5; 
+    }
+    
+  .bg-pastel-pink { 
+        background-color: #ff9a8b; 
+    }
+    
+  .text-coral-red { 
+        color: #d44f4f; 
+    }
+    
+  .border-pastel-pink { 
+        border-color: #ff9a8b; 
+    }
+    
+  .recipe-card {
+        background: linear-gradient(135deg, #fff5f5 0%, #ffecec 100%);
+        border: 1px solid #ffd1d1;
+        border-radius: 1rem;
+    }
+    
+  .category-badge {
+        background: linear-gradient(135deg, #ff9a8b 0%, #ff6b6b 100%);
+        color: white;
+        border-radius: 9999px;
+    }
+    
+  .ingredient-tag {
+        background: linear-gradient(135deg, #ffffff 0%, #fef9e7 100%);
+        border: 1px solid #ffd1d1;
+        color: #d44f4f;
+        border-radius: 9999px;
+    }
+    
+  .primary-btn {
+        background: linear-gradient(135deg, #ff9a8b 0%, #facc15 100%);
+        color: white;
+        border-radius: 0.5rem;
+    }
+    
+    /* Дополнительные классы для консистентности */
+  .bg-coral-red { 
+        background-color: #d44f4f; 
+    }
+    
+  .text-pastel-pink { 
+        color: #ff9a8b; 
+    }
+    
+  .border-coral-red { 
+        border-color: #d44f4f; 
+    }
+    
+  .hover-bg-pastel-pink:hover { 
+        background-color: #ff9a8b; 
+    }
+    
+  .hover-text-coral-red:hover { 
+        color: #d44f4f; 
+    }
+    
+  .focus-ring-pastel-pink:focus {
+        ring-color: #ff9a8b;
+        ring-width: 2px;
+    }
 }
