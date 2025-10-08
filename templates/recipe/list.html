@@ -11,6 +11,7 @@
                 Каждый рецепт - это маленькое кулинарное приключение!
             </p>
         </div>
+                <input type="hidden" name="products" id="hidden-products" value="{{ request.GET.products }}"> 
 
         <!-- Фильтры и поиск -->
         <div class="bg-white rounded-2xl p-4 sm:p-6 auth-form mb-6 sm:mb-8 border border-pastel-pink/30">
@@ -25,7 +26,7 @@
                                 hx-trigger="input changed delay:300ms, search"
                                 hx-target="#recipe-results"
                                 hx-select="#recipe-results" 
-                                hx-include="[name='meal_type']"       
+                                hx-include="[name='meal_type'], #hidden-products"       
                                 type="text"
                                 name="q"
                                 value="{{ request.GET.q }}"
@@ -45,7 +46,7 @@
                             hx-trigger="change"
                             hx-target="#recipe-results"
                             hx-select="#recipe-results" 
-                            hx-include="[name='q']"
+                            hx-include="[name='q'], #hidden-products"
                             name="meal_type" 
                         class="form-input w-full text-sm sm:text-base">
                             <option value="">Все типы блюд</option>
@@ -76,7 +77,7 @@
       
        <!-- Модальное окно фильтрации по продуктам -->
 <div id="product-filter-modal" class="fixed inset-0 z-50 hidden">
-    <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onclick="closeProductFilter()"></div>
+    <div class="fixed inset-0 bg-white/30 backdrop-blur-sm transition-opacity duration-300" onclick="closeProductFilter()"></div>
     
     <div class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div class="bg-white rounded-2xl shadow-xl auth-form border border-pastel-pink/30">
@@ -122,6 +123,7 @@
                     </div>
                 </div>
 
+         
                 <!-- Выбранные продукты -->
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-dark-gray mb-3">
@@ -157,10 +159,10 @@
             </div>
 
             <!-- Футер -->
-            <div class="flex justify-between items-center p-6 border-t border-gray-200">
+            <div class="flex justify-between items-center p-6 border-t border-gray-200 gap-3">
                 <button type="button" 
                         onclick="clearSelectedProducts()"
-                        class="button danger text-sm">
+                        class="button danger text-sm w-28 justify-center py-2.5">
                     <i class="fas fa-trash mr-2"></i>
                     Очистить
                 </button>
@@ -168,12 +170,12 @@
                 <div class="flex gap-3">
                     <button type="button" 
                             onclick="closeProductFilter()"
-                            class="button secondary text-sm">
+                            class="button secondary text-sm w-28 justify-center py-2.5">
                         Отмена
                     </button>
                     <button type="button" 
                             onclick="applyProductFilter()"
-                            class="button success text-sm">
+                            class="button success text-sm w-28 justify-center py-2.5">
                         <i class="fas fa-check mr-2"></i>
                         Применить
                     </button>
@@ -396,36 +398,33 @@ function removeProductFromFilter(productId) {
 function clearSelectedProducts() {
     selectedProducts = [];
     updateSelectedProductsDisplay();
+
+    const currentUrl = new URL(window.location.href);
+    const params = new URLSearchParams(currentUrl.search);
+    params.delete("products");
+    params.delete("page");
+
+    window.location.href = `${currentUrl.pathname}?${params.toString()}`;
 }
 
 // Применение фильтра
 function applyProductFilter() {
-    if (selectedProducts.length === 0) {
-        alert('Добавьте хотя бы один продукт для фильтрации');
-        return;
-    }
-    
-    // Создаем URL с параметрами фильтрации
-    const productIds = selectedProducts.map(product => product.id).join(',');
+    const productIds = selectedProducts.map(p => p.id).join(',');
+    document.getElementById('hidden-products').value = productIds;
+
     const currentUrl = new URL(window.location.href);
-    
-    // Сохраняем существующие параметры
-    const existingParams = new URLSearchParams(currentUrl.search);
-    
-    // Создаем новые параметры
+    const params = new URLSearchParams(currentUrl.search);
+
+    // сохраняем meal_type и q
+    const mealType = document.querySelector('[name="meal_type"]')?.value || '';
+    const q = document.querySelector('[name="q"]')?.value || '';
+
+    // формируем новые параметры
     const newParams = new URLSearchParams();
-    
-    // Добавляем существующие параметры (кроме products и page)
-    for (const [key, value] of existingParams) {
-        if (key !== 'products' && key !== 'page') {
-            newParams.append(key, value);
-        }
-    }
-    
-    // Добавляем продукты
-    newParams.append('products', productIds);
-    
-    // Перенаправляем на обновленную страницу
+    if (q) newParams.append('q', q);
+    if (mealType) newParams.append('meal_type', mealType);
+    if (productIds) newParams.append('products', productIds);
+
     window.location.href = `${currentUrl.pathname}?${newParams.toString()}`;
 }
 

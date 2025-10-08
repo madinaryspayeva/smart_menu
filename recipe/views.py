@@ -1,5 +1,6 @@
 import uuid
 from django.shortcuts import render
+from django.db.models import Count, Q
 from django.views.generic import (
     CreateView, 
     ListView,
@@ -77,7 +78,11 @@ class RecipeListView(ListView):
                 for product_id in product_ids: #почему здесь цикл можно ли улучшить фтльтрацию?
                     queryset = queryset.filter(ingredient__product_id=product_id)
                 
-                queryset = queryset.distinct()
+                queryset = queryset.annotate(
+                    matching_products=Count("ingredient__product_id", 
+                                            filter=Q(ingredient__product_id__in=product_ids)
+                                            )
+                    ).filter(matching_products=len(product_ids)).distinct()
         return queryset
     
     def get_context_data(self, **kwargs):
@@ -106,7 +111,13 @@ class RecipeListView(ListView):
                 del params['page']
             querystring = params.urlencode()
         context["querystring"] = querystring
-        
+
+        context["has_active_filters"] = bool (
+            self.request.GET.get("q") or
+            self.request.GET.get("meal_type") or
+            self.request.GET.get("products")
+        )
+
         return context
 
 
