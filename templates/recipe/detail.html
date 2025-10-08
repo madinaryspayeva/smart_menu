@@ -85,13 +85,13 @@
                             <!-- Выпадающее меню -->
                             <div 
                                 id="actions-menu"
-                                class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10 hidden"
-                            >
+                                class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10 hidden">
                                 <button class="w-full text-left px-4 py-2 text-blue-600 hover:bg-blue-50 transition-colors flex items-center">
                                     <i class="fas fa-edit mr-3"></i>
                                     Редактировать
                                 </button>
-                                <button class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition-colors flex items-center">
+                                <button class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition-colors flex items-center"
+                                        onclick="openDeleteModal()">
                                     <i class="fas fa-trash mr-3"></i>
                                     Удалить
                                 </button>
@@ -139,6 +139,8 @@
             </div>
         </div>
     </div>
+      <!-- Модальное окно удаления -->
+    {% include "recipe/delete.html" %}
 
     <script>
     // Функция для переключения меню
@@ -146,7 +148,24 @@
         const menu = document.getElementById('actions-menu');
         menu.classList.toggle('hidden');
     }
+    // Функции для модального окна удаления
+    function openDeleteModal() {
+        document.getElementById('delete-modal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        closeActionsMenu();
+    }
 
+    function closeDeleteModal() {
+        document.getElementById('delete-modal').classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+
+    function closeActionsMenu() {
+        const menu = document.getElementById('actions-menu');
+        if (menu) {
+            menu.classList.add('hidden');
+        }
+    }
     // Закрытие меню при клике вне его
     document.addEventListener('click', function(event) {
         const dropdown = document.getElementById('actions-dropdown');
@@ -154,6 +173,13 @@
         
         if (dropdown && menu && !dropdown.contains(event.target)) {
             menu.classList.add('hidden');
+        }
+    });
+
+    // Закрытие модального окна при нажатии Escape
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeDeleteModal();
         }
     });
     </script>

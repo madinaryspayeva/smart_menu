@@ -32,6 +32,7 @@
     --color-gray-500: oklch(55.1% 0.027 264.364);
     --color-gray-600: oklch(44.6% 0.03 256.802);
     --color-gray-700: oklch(37.3% 0.034 259.733);
+    --color-black: #000;
     --color-white: #fff;
     --spacing: 0.25rem;
     --container-md: 28rem;
@@ -404,6 +405,9 @@
   .h-12 {
     height: calc(var(--spacing) * 12);
   }
+  .h-16 {
+    height: calc(var(--spacing) * 16);
+  }
   .h-32 {
     height: calc(var(--spacing) * 32);
   }
@@ -446,8 +450,14 @@
   .w-12 {
     width: calc(var(--spacing) * 12);
   }
+  .w-16 {
+    width: calc(var(--spacing) * 16);
+  }
   .w-28 {
     width: calc(var(--spacing) * 28);
+  }
+  .w-32 {
+    width: calc(var(--spacing) * 32);
   }
   .w-48 {
     width: calc(var(--spacing) * 48);
@@ -669,6 +679,9 @@
   }
   .border-red-300 {
     border-color: var(--color-red-300);
+  }
+  .bg-black {
+    background-color: var(--color-black);
   }
   .bg-lemon-light {
     background-color: #fef9c3;

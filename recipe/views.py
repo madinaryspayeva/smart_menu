@@ -125,3 +125,9 @@ class RecipeDetailView(DetailView):
     model = Recipe
     template_name = "recipe/detail.html"
     context_object_name = "recipe"
+
+
+class RecipeDeleteView(DeleteView):
+    model = Recipe
+    template_name = "recipe/delete.html"
+    success_url = reverse_lazy("recipe:list")

@@ -1,0 +1,61 @@
+<div id="delete-modal" class="fixed inset-0 z-50 hidden">
+        <div class="fixed inset-0 bg-white/30 backdrop-blur-sm transition-opacity" onclick="closeDeleteModal()"></div>
+        
+        <div class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md">
+            <div class="bg-white rounded-2xl shadow-xl auth-form border border-pastel-pink/30">
+                <!-- Заголовок -->
+                <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                    <h3 class="text-xl font-oswald text-dark-gray font-semibold">
+                        Удаление рецепта
+                    </h3>
+                    <button 
+                        type="button" 
+                        onclick="closeDeleteModal()"
+                        class="text-gray-400 hover:text-coral-red transition-colors duration-200"
+                    >
+                        <i class="fas fa-times text-lg"></i>
+                    </button>
+                </div>
+
+                <!-- Контент -->
+                <div class="p-6">
+                    <div class="flex items-center justify-center mb-4">
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+                        </div>
+                    </div>
+                    
+                    <p class="text-center text-gray-600 mb-2">
+                        Вы уверены, что хотите удалить рецепт
+                    </p>
+                    <p class="text-center font-semibold text-coral-red text-lg mb-6">
+                        "{{ recipe.name }}"?
+                    </p>
+                    <p class="text-center text-sm text-gray-500">
+                        Это действие нельзя будет отменить.
+                    </p>
+                </div>
+
+                <!-- Футер -->
+                <div class="flex justify-between items-center p-6 border-t border-gray-200 gap-3">
+                    <button 
+                        type="button" 
+                        onclick="closeDeleteModal()"
+                        class="button secondary text-sm w-32 justify-center py-2.5"
+                    >
+                        Отмена
+                    </button>
+                    <form method="POST" action="{% url 'recipe:delete' recipe.id %}">
+                        {% csrf_token %}
+                        <button 
+                            type="submit"
+                            class="button danger text-sm w-32 justify-center py-2.5"
+                        >
+                            <i class="fas fa-trash mr-2"></i>
+                            Удалить
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
