@@ -79,26 +79,6 @@
             </div>
 
             <!-- Изображение -->
-            {% comment %} <div>
-                <label for="{{ form.image.id_for_label }}" class="block text-sm font-medium text-dark-gray mb-2">
-                    Изображение рецепта
-                </label>
-                <div class="flex items-center justify-center w-full">
-                    <label for="id_image" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-pastel-pink rounded-lg cursor-pointer bg-light-pink hover:bg-pastel-pink/10 transition-colors duration-300">
-                        <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                            <svg class="w-8 h-8 mb-3 text-coral-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                            </svg>
-                            <p class="mb-2 text-sm text-coral-red"><span class="font-semibold">Нажмите для загрузки</span></p>
-                            <p class="text-xs text-dark-gray">PNG, JPG, JPEG (Макс. 5MB)</p>
-                        </div>
-                        {{ form.image }}
-                    </label>
-                </div>
-            </div> {% endcomment %}
-
-            <!-- Изображение -->
-            <!-- Изображение -->
 <div>
     <label for="{{ form.image.id_for_label }}" class="block text-sm font-medium text-dark-gray mb-4">
         Изображение рецепта
@@ -182,6 +162,20 @@
 
                 {{ ingredients.management_form }}
 
+                <!-- Ошибки всего formset-а (например, дубликаты ингредиентов) -->
+                {% if ingredients.non_form_errors %}
+                <div class="p-4 mb-4 text-sm text-red-700 rounded-lg bg-red-100 border border-red-300" role="alert">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <strong>Ошибка в ингредиентах:</strong>
+                    <ul class="list-disc pl-5 mt-2 space-y-1">
+                        {% for error in ingredients.non_form_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+
                 <div id="ingredients-container" class="space-y-4">
                     {% for form in ingredients %}
                     <div class="ingredient-item card bg-light-pink p-4 rounded-lg border border-pastel-pink relative z-30" data-index="{{ forloop.counter0 }}">
@@ -233,6 +227,20 @@
                                 </button>
                             </div>
                         </div>
+
+                        {% if form.errors %}
+                            <div class="mt-2">
+                                {% for field, field_errors in form.errors.items %}
+                                    {% for error in field_errors %}
+                                        <p class="text-red-500 text-xs mt-1 flex items-center">
+                                            <i class="fas fa-exclamation-circle mr-1"></i>
+                                            {{ error }}
+                                        </p>
+                                    {% endfor %}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+
                     </div>
                     {% endfor %}
                 </div>

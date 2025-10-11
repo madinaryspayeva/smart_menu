@@ -1,6 +1,6 @@
 # forms.py
 from django import forms
-from django.forms import inlineformset_factory
+from django.forms import inlineformset_factory, BaseInlineFormSet
 from recipe.choices import MealType, Unit
 from recipe.models import Recipe, RecipeIngredient
 
@@ -52,6 +52,46 @@ class RecipeIngredientForm(forms.ModelForm):
         required=True,
         label="Единица измерения"
     )
+
+
+class BaseRecipeIngredientFormSet(BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+        seen_products = {}
+        duplicates = []
+
+        for form in self.forms:
+            if not hasattr(form, "cleaned_data"):
+                continue
+
+            if form.cleaned_data.get("DELETE"):
+                continue
+
+            product = form.cleaned_data.get("product")
+            if not product:
+                continue
+                
+            product_id = product.id
+
+            if product_id in seen_products:
+                duplicates.append(product)
+                form.add_error(
+                    "product",
+                    f"Продукт «{product.name}» уже добавлен в рецепте. Удалите дубликат."
+                )
+                seen_products[product_id].add_error(
+                    "product",
+                    f"Продукт «{product.name}» был добавлен ниже."
+                )
+            else:
+                seen_products[product_id] = form
+        
+        if duplicates:
+            duplicate_names = ", ".join(str(p) for p in duplicates)
+            raise forms.ValidationError(
+                f"Некоторые ингредиенты дублируются: {duplicate_names}."
+            )
+
    
 
 RecipeIngredientFormSet = inlineformset_factory(
@@ -61,4 +101,5 @@ RecipeIngredientFormSet = inlineformset_factory(
     fields=["product", "quantity", "unit"],
     extra=0,         
     can_delete=True,
+    formset=BaseRecipeIngredientFormSet,
 )
