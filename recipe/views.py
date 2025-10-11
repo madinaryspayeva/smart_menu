@@ -75,7 +75,7 @@ class RecipeUpdateView(OwnerOrSuperuserMixin, UpdateView):
         context = self.get_context_data()
         formset = context["ingredients"]
 
-        if form.is_valid() and formset.is_valid():
+        if form.is_valid() and formset.is_valid(): 
             self.object = form.save()
             formset.instance = self.object
             formset.save()

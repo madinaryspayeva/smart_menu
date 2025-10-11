@@ -185,6 +185,8 @@
                 <div id="ingredients-container" class="space-y-4">
                     {% for form in ingredients %}
                     <div class="ingredient-item card bg-light-pink p-4 rounded-lg border border-pastel-pink relative z-30" data-index="{{ forloop.counter0 }}">
+                    {{ form.id }}
+                    {{ form.DELETE.as_hidden }}
                         <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
                             <!-- Продукт -->
                             <div class="md:col-span-5 relative">
@@ -240,6 +242,10 @@
         <!-- Шаблон для новых форм -->
         <div id="empty-form" class="hidden">
             <div class="ingredient-item card bg-light-pink p-4 rounded-lg border border-pastel-pink relative z-30" data-index="__prefix__">
+        
+            {{ ingredients.empty_form.id }}
+            {{ ingredients.empty_form.DELETE.as_hidden }}
+
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
                     <!-- Продукт -->
                     <div class="md:col-span-5 relative">
@@ -299,6 +305,7 @@
 document.addEventListener("DOMContentLoaded", function () {
     const container = document.getElementById("ingredients-container");
     const totalFormsInput = document.querySelector('input[name$="-TOTAL_FORMS"]');
+    const initialFormsInput = document.querySelector('input[name$="-INITIAL_FORMS"]');
 
     // ✅ Добавление ингредиента
     window.addIngredient = function () {
@@ -306,120 +313,123 @@ document.addEventListener("DOMContentLoaded", function () {
         const emptyTemplate = document.getElementById("empty-form").innerHTML;
         const newHtml = emptyTemplate.replace(/__prefix__/g, currentIndex);
 
-        // Создаем временный элемент для вставки
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = newHtml;
         const newElement = tempDiv.firstElementChild;
 
-        // Вставляем новую форму
         container.appendChild(newElement);
-        
-        // Обновляем ID и атрибуты
-        updateFormIds(newElement, currentIndex);
-        
-        // Инициализируем HTMX для новой формы
-        htmx.process(newElement);
-        
-        // Обновляем счетчик форм
-        totalFormsInput.value = currentIndex + 1;
 
+        updateFormIds(newElement, currentIndex, true);
+        htmx.process(newElement);
+
+        totalFormsInput.value = currentIndex + 1;
         console.log('Добавлена новая форма с индексом:', currentIndex);
     };
 
-    // Функция для полного обновления ID формы
-    function updateFormIds(formElement, index) {
-        // Обновляем data-index
+    // ✅ Обновление ID и имён полей (без очистки данных)
+    function updateFormIds(formElement, index, isNew = false) {
         formElement.setAttribute('data-index', index);
-        
-        // Обновляем поле поиска
+
+        // поиск
         const searchInput = formElement.querySelector('.product-search-input');
         if (searchInput) {
             searchInput.setAttribute('data-index', index);
             searchInput.setAttribute('hx-target', `#product-results-${index}`);
             searchInput.setAttribute('hx-get', `{% url 'product:search' %}?index=${index}`);
-            searchInput.value = ''; // Очищаем поле
+            if (isNew) searchInput.value = '';
         }
-        
-        // Обновляем контейнер результатов
+
         const resultsContainer = formElement.querySelector('[id^="product-results-"]');
         if (resultsContainer) {
             resultsContainer.id = `product-results-${index}`;
-            resultsContainer.innerHTML = ''; // Очищаем результаты
-            resultsContainer.classList.add('hidden'); // Скрываем
+            if (isNew) {
+                resultsContainer.innerHTML = '';
+                resultsContainer.classList.add('hidden');
+            }
         }
-        
-        // Обновляем скрытое поле продукта
-        const hiddenInput = formElement.querySelector('input[name$="-product"]');
-        if (hiddenInput) {
-            hiddenInput.value = ''; // Очищаем значение
-        }
-        
-        // Обновляем имена всех полей
-        formElement.querySelectorAll("[name]").forEach(el => {
-            if (el.name.includes('__prefix__')) {
-                el.name = el.name.replace(/__prefix__/g, index);
-            } else {
-                el.name = el.name.replace(/-\d+-/, `-${index}-`);
+
+        formElement.querySelectorAll('[name]').forEach(el => {
+            const name = el.getAttribute('name') || '';
+            if (!name) return;
+
+            if (name.includes('__prefix__')) {
+                el.setAttribute('name', name.replace(/__prefix__/g, index));
+            } else if (name.match(/-\d+-/)) {
+                el.setAttribute('name', name.replace(/-\d+-/g, `-${index}-`));
             }
         });
-        
-        // Обновляем ID всех элементов
-        formElement.querySelectorAll("[id]").forEach(el => {
-            if (el.id.includes('__prefix__')) {
-                el.id = el.id.replace(/__prefix__/g, index);
-            } else if (el.id.match(/-\d+-/)) {
-                el.id = el.id.replace(/-\d+-/, `-${index}-`);
+
+        formElement.querySelectorAll('[id]').forEach(el => {
+            const id = el.id || '';
+            if (!id) return;
+
+            if (id.includes('__prefix__')) {
+                el.id = id.replace(/__prefix__/g, index);
+            } else if (id.match(/-\d+-/)) {
+                el.id = id.replace(/-\d+-/g, `-${index}-`);
             }
         });
-        
-        // Обновляем label for
-        formElement.querySelectorAll("label[for]").forEach(label => {
-            const forAttr = label.getAttribute("for");
-            if (forAttr) {
-                if (forAttr.includes('__prefix__')) {
-                    label.setAttribute("for", forAttr.replace(/__prefix__/g, index));
-                } else if (forAttr.match(/-\d+-/)) {
-                    label.setAttribute("for", forAttr.replace(/-\d+-/, `-${index}-`));
-                }
+
+        formElement.querySelectorAll('label[for]').forEach(label => {
+            const forAttr = label.getAttribute('for') || '';
+            if (!forAttr) return;
+
+            if (forAttr.includes('__prefix__')) {
+                label.setAttribute('for', forAttr.replace(/__prefix__/g, index));
+            } else if (forAttr.match(/-\d+-/)) {
+                label.setAttribute('for', forAttr.replace(/-\d+-/g, `-${index}-`));
             }
         });
     }
 
-    // ❌ Удаление ингредиента
+    // ✅ Удаление ингредиента по кнопке ✕ без чекбокса (фикс)
     container.addEventListener("click", function (e) {
         const btn = e.target.closest(".remove-ingredient");
         if (!btn) return;
-        
+
         const item = btn.closest(".ingredient-item");
         if (!item) return;
-        
-        item.remove();
-        reindexForms();
+
+        const deleteInput = item.querySelector('input[name$="-DELETE"]');
+
+        if (deleteInput) {
+            // Это существующая форма → просто помечаем как удалённую
+            deleteInput.value = "on";
+            item.classList.add("opacity-50");
+            item.style.pointerEvents = "none";
+            item.style.display = "none"; // скрываем визуально
+            console.log("🗑️ Существующий ингредиент помечен как удалённый");
+        } else {
+            // Это новая форма → просто удаляем
+            item.remove();
+            const visibleItems = container.querySelectorAll(".ingredient-item:not([style*='display: none'])");
+            totalFormsInput.value = visibleItems.length;
+            console.log("🗑️ Новый ингредиент удалён из DOM");
+        }
     });
 
-    // Переиндексация всех форм после удаления
+
+
+    // 🔁 Переиндексация всех форм
     function reindexForms() {
         const forms = container.querySelectorAll(".ingredient-item");
         forms.forEach((formEl, idx) => {
-            updateFormIds(formEl, idx);
+            updateFormIds(formEl, idx, false);
         });
         totalFormsInput.value = forms.length;
     }
 
-    // Обработчик для показа/скрытия результатов
+    // 🔍 Показ/скрытие результатов поиска
     document.addEventListener('input', function(e) {
         if (e.target.classList.contains('product-search-input')) {
             const index = e.target.getAttribute('data-index');
             const resultsContainer = document.getElementById(`product-results-${index}`);
-            if (resultsContainer) {
-                resultsContainer.classList.remove('hidden');
-            }
+            if (resultsContainer) resultsContainer.classList.remove('hidden');
         }
     });
 
-    // Скрываем результаты при клике вне поля
     document.addEventListener('click', function(e) {
-        if (!e.target.classList.contains('product-search-input') && 
+        if (!e.target.classList.contains('product-search-input') &&
             !e.target.closest('[id^="product-results-"]')) {
             document.querySelectorAll('[id^="product-results-"]').forEach(container => {
                 container.classList.add('hidden');
@@ -427,20 +437,14 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // Инициализируем HTMX для существующих форм
+    // Инициализация HTMX для уже существующих форм
     htmx.process(container);
 });
 
-// Функция выбора продукта из результатов
+// ✅ Выбор продукта
 function selectProduct(productId, productName, index) {
-    console.log('Выбор продукта:', productId, productName, 'для формы:', index);
-    
-    // Находим нужную форму по индексу
     const ingredientItem = document.querySelector(`.ingredient-item[data-index="${index}"]`);
-    if (!ingredientItem) {
-        console.error('Форма с индексом', index, 'не найдена');
-        return;
-    }
+    if (!ingredientItem) return;
 
     const searchInput = ingredientItem.querySelector('.product-search-input');
     const hiddenInput = ingredientItem.querySelector('input[name$="-product"]');
@@ -449,130 +453,108 @@ function selectProduct(productId, productName, index) {
     if (searchInput && hiddenInput) {
         searchInput.value = productName;
         hiddenInput.value = productId;
-        
-        console.log('Продукт выбран в форме:', index, 'Продукт:', productName);
     }
 
     if (resultsContainer) {
         resultsContainer.innerHTML = '';
         resultsContainer.classList.add('hidden');
     }
+
+    console.log(`✅ Продукт выбран: ${productName} (${productId}) для формы ${index}`);
 }
 
-// Обработчик события добавления нового продукта
+// ✅ Добавление нового продукта через модалку
 document.body.addEventListener("productChanged", function (e) {
     const data = e.detail;
     if (!data) return;
 
-    console.log('Новый продукт добавлен:', data);
-
-    // Находим последнюю добавленную форму
     const forms = document.querySelectorAll('.ingredient-item');
     const lastForm = forms[forms.length - 1];
-    
+
     if (lastForm) {
         const index = lastForm.getAttribute('data-index');
         const searchInput = lastForm.querySelector('.product-search-input');
         const hiddenInput = lastForm.querySelector('input[name$="-product"]');
-        
+
         if (searchInput && hiddenInput) {
             searchInput.value = data.name;
             hiddenInput.value = data.id;
-            console.log('Продукт автоматически выбран в новой форме:', index);
         }
     }
 
-    if (typeof closeModal === "function") {
-        closeModal();
-    }
+    if (typeof closeModal === "function") closeModal();
 });
 
-// Добавьте в script
-// Drag & drop для загрузки изображения
+// 🖼️ Drag & Drop изображение
 const imageInput = document.getElementById('id_image');
 const imageLabel = document.querySelector('label[for="id_image"]');
 
 if (imageLabel && imageInput) {
-    // Обработчики для drag & drop
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        imageLabel.addEventListener(eventName, preventDefaults, false);
+        imageLabel.addEventListener(eventName, e => {
+            e.preventDefault();
+            e.stopPropagation();
+        });
     });
 
-    function preventDefaults(e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-
     ['dragenter', 'dragover'].forEach(eventName => {
-        imageLabel.addEventListener(eventName, highlight, false);
+        imageLabel.addEventListener(eventName, () => {
+            imageLabel.classList.add('bg-pastel-pink/20', 'border-coral-red');
+        });
     });
 
     ['dragleave', 'drop'].forEach(eventName => {
-        imageLabel.addEventListener(eventName, unhighlight, false);
+        imageLabel.addEventListener(eventName, () => {
+            imageLabel.classList.remove('bg-pastel-pink/20', 'border-coral-red');
+        });
     });
 
-    function highlight() {
-        imageLabel.classList.add('bg-pastel-pink/20', 'border-coral-red');
-    }
-
-    function unhighlight() {
-        imageLabel.classList.remove('bg-pastel-pink/20', 'border-coral-red');
-    }
-
-    imageLabel.addEventListener('drop', handleDrop, false);
-
-    function handleDrop(e) {
-        const dt = e.dataTransfer;
-        const files = dt.files;
+    imageLabel.addEventListener('drop', e => {
+        const files = e.dataTransfer.files;
         imageInput.files = files;
-        
-        // Показываем превью
-        if (files[0]) {
-            showImagePreview(files[0]);
-        }
-    }
-
-    // Обработчик изменения через выбор файла
-    imageInput.addEventListener('change', function(e) {
-        if (e.target.files[0]) {
-            showImagePreview(e.target.files[0]);
-        }
+        if (files[0]) showImagePreview(files[0]);
     });
 
-    
+    imageInput.addEventListener('change', e => {
+        if (e.target.files[0]) showImagePreview(e.target.files[0]);
+    });
+
     function showImagePreview(file) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            // Убираем существующее превью если есть
             const existingPreview = document.getElementById('dynamic-image-preview');
-            if (existingPreview) {
-                existingPreview.remove();
-            }
+            if (existingPreview) existingPreview.remove();
 
-            // Создаем новое превью
             const preview = document.createElement('div');
             preview.id = 'dynamic-image-preview';
             preview.className = 'mt-4 flex flex-col sm:flex-row items-center sm:items-start gap-4 p-4 bg-green-50 rounded-xl border border-green-200';
             preview.innerHTML = `
                 <div class="flex-shrink-0">
-                    <img src="${e.target.result}" 
-                        alt="Предпросмотр" 
-                        class="w-32 h-32 sm:w-40 sm:h-40 object-cover rounded-lg border-2 border-green-400 shadow-sm">
+                    <img src="${e.target.result}" alt="Предпросмотр" class="w-32 h-32 sm:w-40 sm:h-40 object-cover rounded-lg border-2 border-green-400 shadow-sm">
                 </div>
                 <div class="text-center sm:text-left flex-1 min-w-0">
-                    <p class="font-medium text-green-700 mb-2 break-words">Новое изображение</p>
-                    <p class="text-sm text-green-600 break-words">Файл: ${file.name}</p>
+                    <p class="font-medium text-green-700 mb-2">Новое изображение</p>
+                    <p class="text-sm text-green-600">Файл: ${file.name}</p>
                     <p class="text-sm text-green-600">Размер: ${(file.size / 1024 / 1024).toFixed(2)} MB</p>
                 </div>
             `;
-            
-            // Вставляем после label
             imageLabel.parentNode.insertBefore(preview, imageLabel.nextSibling);
         };
         reader.readAsDataURL(file);
     }
 }
+
+// 🧹 Очистка "__prefix__" и финальный сабмит
+document.querySelector('form').addEventListener('submit', function (e) {
+    // Убираем шаблонные поля "__prefix__"
+    document.querySelectorAll('[name^="ingredient-__prefix__"]').forEach(el => el.remove());
+
+    console.log('=== FormData before submit ===');
+    new FormData(this).forEach((value, key) => console.log(key, value));
+});
 </script>
+
+
 
 <style>
 .form-input {
