@@ -1,5 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.core.validators import MinValueValidator
+from decimal import Decimal
 from app import settings
 from app.models import TimestampedModel, StatusModel
 from recipe.choices import MealType, Unit
@@ -56,7 +58,10 @@ class RecipeIngredient(TimestampedModel):
         related_name="ingredients",
         verbose_name=_("Продукт"),
     )
-    quantity = models.PositiveBigIntegerField(
+    quantity = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.0'))],
         verbose_name=_("Количество"),
     )
     unit = models.CharField(
