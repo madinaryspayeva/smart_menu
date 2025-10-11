@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
 <div class="min-h-screen py-6 sm:py-8">
@@ -194,7 +195,7 @@
                     <!-- Изображение -->
                     <div class="relative h-48 sm:h-56 lg:h-64 overflow-hidden">
                         <img 
-                            src="{{ recipe.image.url }}"
+                            src="{% if recipe.image %} {{ recipe.image.url }} {% else %} {% static 'default.avif' %} {% endif %}"
                             alt="{{ recipe.name }}" 
                             class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                         >

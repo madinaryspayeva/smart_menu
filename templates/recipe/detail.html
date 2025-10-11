@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
     
@@ -16,7 +17,7 @@
             <!-- Изображение -->
             <div class="relative">
                 <img 
-                    src="{{ recipe.image.url }}"
+                    src="{% if recipe.image %}{{ recipe.image.url }}{% else %}{% static 'default.avif' %}{% endif %}"
                     alt="{{ recipe.name }}" 
                     class="w-full h-80 object-cover"
                 >

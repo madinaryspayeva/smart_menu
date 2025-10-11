@@ -40,8 +40,6 @@ class RecipeCreateView(CreateView):
 
         if form.is_valid() and formset.is_valid():
             self.object = form.save(commit=False)
-            if not self.object.image:
-                self.object.image = "recipe/recipe/photo-1551218808-94e220e084d2 — копия.avif"
             self.object.created_by = self.request.user
             self.object.save()
             
