@@ -10,9 +10,11 @@ class RecipeSourceSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecipeSource
         fields = [
+            "id",
             "url",
             "title",
             "status",
             "metadata",
             "parsed_recipe",
         ]
+        read_only_fields = fields

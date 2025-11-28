@@ -102,3 +102,7 @@ class RecipeSource(TimestampedModel, StatusModel):
     class Meta:
         verbose_name = _("Источник рецепта")
         verbose_name_plural = _("Источники рецептов")
+    
+    def __str__(self):
+        return f"Recipe Source: {self.url}, {self.title}, {self.status}, {self.metadata}, {self.parsed_recipe}"
+    
