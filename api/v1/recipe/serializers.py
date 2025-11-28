@@ -1,0 +1,18 @@
+from rest_framework import serializers
+from recipe.models import RecipeSource
+
+
+class ParseUrlSerializer(serializers.Serializer):
+    url = serializers.URLField()
+
+
+class RecipeSourceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RecipeSource
+        fields = [
+            "url",
+            "title",
+            "status",
+            "metadata",
+            "parsed_recipe",
+        ]

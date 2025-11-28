@@ -26,7 +26,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
     path('product/', include('product.urls', namespace='product')), 
-    path('recipe/', include('recipe.urls', namespace='recipe'))
+    path('recipe/', include('recipe.urls', namespace='recipe')),
+    path('v1/', include('api.v1.urls')),
 ]
 
 if settings.DEBUG:

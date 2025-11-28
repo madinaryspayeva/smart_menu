@@ -3,7 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator
 from decimal import Decimal
 from app import settings
-from app.models import TimestampedModel, StatusModel
+from app.models import StatusChoices, TimestampedModel, StatusModel
 from recipe.choices import MealType, Unit
 
 
@@ -69,3 +69,36 @@ class RecipeIngredient(TimestampedModel):
         choices=Unit.choices,
         verbose_name=_("Единица измерения"),
     )
+
+    class Meta:
+        verbose_name = _("Ингредиент")
+        verbose_name_plural = _("Ингредиенты")
+
+
+class RecipeSource(TimestampedModel, StatusModel):
+    url = models.URLField(
+        verbose_name=_("Ссылка"),
+        unique=True,
+    )
+    title = models.CharField(
+        max_length=512,
+        blank=True,
+        null=True,
+    )
+    status = models.CharField(
+        max_length=10,
+        choices=StatusChoices.choices,
+        default=StatusChoices.PENDING, 
+        verbose_name=_('Статус')
+    )
+    metadata = models.JSONField(
+        default=dict,
+    )
+    parsed_recipe = models.JSONField(
+        default=dict,
+        blank=True,
+    )
+
+    class Meta:
+        verbose_name = _("Источник рецепта")
+        verbose_name_plural = _("Источники рецептов")

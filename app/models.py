@@ -17,6 +17,10 @@ __all__ = [
 class StatusChoices(models.TextChoices):
     PUBLIC = "public", _("Публичный")
     PRIVATE = "private", _("Приватный")
+    PENDING = "pending", _("В ожидании")
+    PROCESSING = "processing", _("В обработке")
+    DONE = "done", _("Готов")
+    ERROR = "error", _("Ошибка")
 
 
 class DefaultModel(models.Model):
