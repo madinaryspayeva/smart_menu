@@ -217,6 +217,11 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Asia/Almaty'
 TIME_ZONE = 'Asia/Almaty'
 
+CELERY_IMPORTS = (
+    'api.v1.recipe.tasks',
+)
+
+
 # Настройки для планирования задач (Celery Beat)
 CELERY_BEAT_SCHEDULE = {
     'cleanup-sessions-every-day': {
