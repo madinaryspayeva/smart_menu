@@ -98,11 +98,15 @@ class RecipeSource(TimestampedModel, StatusModel):
         default=dict,
         blank=True,
     )
+    error_message = models.TextField(
+        blank=True,
+        null=True,
+    )
 
     class Meta:
         verbose_name = _("Источник рецепта")
         verbose_name_plural = _("Источники рецептов")
     
     def __str__(self):
-        return f"Recipe Source: {self.url}, {self.title}, {self.status}, {self.metadata}, {self.parsed_recipe}"
+        return f"Recipe Source: {self.url}, {self.title}, {self.status}, {self.metadata}, {self.parsed_recipe}, {self.error_message}"
     

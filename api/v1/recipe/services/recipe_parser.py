@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 from django.core.exceptions import ValidationError
 
-import recipe.constants as selectors
+import api.v1.recipe.constants as selectors
 
 
 class RecipeParserService:
@@ -74,9 +74,6 @@ class RecipeParserService:
         if not result['instructions']:
             instructions = self._find_list_by_selectors(soup, selectors.INSTRUCTIONS_SELECTORS)
             result['instructions'] = [self._clean_text(step) for step in instructions]
-        
-        if not result['prep_time']:
-            result['prep_time'] = self._find_by_selectors(soup, selectors.PREP_TIME_SELECTORS)
         
         if not result['cook_time']:
             result['cook_time'] = self._find_by_selectors(soup, selectors.COOK_TIME_SELECTORS)

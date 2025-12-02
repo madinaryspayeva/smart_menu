@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
 from api.v1.recipe.serializers import ParseUrlSerializer, RecipeSourceSerializer
+from api.v1.recipe.tasks import parse_recipe_url
 from app.models import StatusChoices
 from recipe.models import RecipeSource
 
@@ -28,7 +29,9 @@ class ParseUrlAPIView(generics.CreateAPIView):
             StatusChoices.PENDING,
             StatusChoices.ERROR,
         ]:
-            print("PEEEEENDIIIIING") #ADD CELERY TASK
+            print("START!!!!!!!!!!!!")
+            parse_recipe_url.delay(recipe_source.id)
+            print("END!!!!!!!!!!!!")
         
         return Response({
             "id": recipe_source.id,

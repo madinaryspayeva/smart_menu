@@ -18,14 +18,6 @@ TITLE_SELECTORS = [
     'h1' 
 ]
 
-PREP_TIME_SELECTORS = [
-    '[class*="prep-time"]',
-    '.wprm-recipe-prep_time', 
-    '[itemprop="prepTime"]',
-    '.tasty-recipes-prep-time',
-    '.prep-time'
-]
-
 COOK_TIME_SELECTORS = [
     '[class*="cook-time"]',
     '.wprm-recipe-cook_time',
@@ -40,7 +32,8 @@ SERVINGS_SELECTORS = [
     '[itemprop="recipeYield"]',
     '.tasty-recipes-yield',
     '.recipe-servings',
-    '.servings'
+    '.servings',
+    '.el'
 ]
 
 IMAGE_SELECTORS = [
@@ -59,7 +52,14 @@ INGREDIENTS_SELECTORS = [
     '.tasty-recipes-ingredients li',
     '[itemprop="recipeIngredient"]',
     '.ingredient-list li',
-    'ul.ingredients li'
+    'ul.ingredients li',
+    'table.prod tr',
+    '.prod tr',
+    '.ingr',
+    'table.ingredients tr',           
+    'table.recipe-ingredients tr',   
+    '.ingredient-table tr',          
+    'tr[itemprop="recipeIngredient"]', 
 ]
 
 INSTRUCTIONS_SELECTORS = [
@@ -69,5 +69,6 @@ INSTRUCTIONS_SELECTORS = [
     '.tasty-recipes-instructions li',
     '[itemprop="recipeInstructions"]',
     '.direction-list li',
-    'ol.instructions li'
+    'ol.instructions li',
+    '.how'
 ]
