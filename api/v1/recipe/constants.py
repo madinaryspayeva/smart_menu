@@ -23,7 +23,7 @@ COOK_TIME_SELECTORS = [
     '.wprm-recipe-cook_time',
     '[itemprop="cookTime"]', 
     '.tasty-recipes-cook-time',
-    '.cook-time'
+    '.cook-time',
 ]
 
 SERVINGS_SELECTORS = [
@@ -33,7 +33,7 @@ SERVINGS_SELECTORS = [
     '.tasty-recipes-yield',
     '.recipe-servings',
     '.servings',
-    '.el'
+    '.el',
 ]
 
 IMAGE_SELECTORS = [
@@ -42,7 +42,10 @@ IMAGE_SELECTORS = [
     '.wp-post-image',
     '[itemprop="image"]',
     '.wprm-recipe-image img',
-    'img.recipe-photo'
+    'img.recipe-photo',
+    'table.main_image img',
+    'table[class*="main_image"]',
+    '.main_image table',
 ]
 
 INGREDIENTS_SELECTORS = [
@@ -70,5 +73,6 @@ INSTRUCTIONS_SELECTORS = [
     '[itemprop="recipeInstructions"]',
     '.direction-list li',
     'ol.instructions li',
-    '.how'
+    '.stepbystep',
+    '.step_n',
 ]
