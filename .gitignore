@@ -109,3 +109,8 @@ venv.bak/
 .idea/*
 
 .env.docker
+
+# Celery
+celerybeat-schedule
+celerybeat-schedule.*
+*.pid 

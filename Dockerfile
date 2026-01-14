@@ -1,6 +1,8 @@
 FROM python:3.13-slim-bullseye
 ENV PYTHONUNBUFFERED=1
 
+RUN apt-get update && apt-get install -y ffmpeg
+
 RUN mkdir /code
 
 WORKDIR /code
@@ -12,8 +14,3 @@ COPY pyproject.toml poetry.lock ./
 RUN poetry install --no-root
 
 COPY . .
-RUN chmod 755 /code/start-django.sh
-
-EXPOSE 8000
-
-ENTRYPOINT [ "/code/start-django.sh" ]

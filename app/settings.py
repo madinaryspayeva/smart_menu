@@ -60,6 +60,7 @@ THIRD_PARTY_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
+    'django_celery_beat',
 ]
 
 PROJECT_APPS = [
@@ -233,6 +234,8 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': 3600.0,  # Каждый час
     },
 }
+
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
