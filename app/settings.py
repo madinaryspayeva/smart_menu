@@ -222,19 +222,6 @@ CELERY_IMPORTS = (
     'api.v1.recipe.tasks',
 )
 
-
-# Настройки для планирования задач (Celery Beat)
-CELERY_BEAT_SCHEDULE = {
-    'cleanup-sessions-every-day': {
-        'task': 'myapp.tasks.cleanup_expired_sessions',
-        'schedule': 86400.0,  # Каждые 24 часа
-    },
-    'send-daily-report': {
-        'task': 'myapp.tasks.send_daily_report',
-        'schedule': 3600.0,  # Каждый час
-    },
-}
-
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 CELERY_TASK_TRACK_STARTED = True
