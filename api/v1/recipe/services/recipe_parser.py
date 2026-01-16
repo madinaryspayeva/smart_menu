@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 import api.v1.recipe.constants as selectors
 
 
-class RecipeParserService:
+class WebParserService:
     """
     Сервис для парсинга рецептов с сайтов
     """

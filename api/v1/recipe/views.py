@@ -29,9 +29,7 @@ class ParseUrlAPIView(generics.CreateAPIView):
             StatusChoices.PENDING,
             StatusChoices.ERROR,
         ]:
-            print("START!!!!!!!!!!!!")
             parse_recipe_url.delay(recipe_source.id)
-            print("END!!!!!!!!!!!!")
         
         return Response({
             "id": recipe_source.id,
