@@ -36,11 +36,10 @@ class VideoParserService:
         Основной метод - парсит видео по URL
         """
 
-        audio_path, description, title = self._extract_audio_and_description(url)
+        audio_path, description, = self._extract_audio_and_description(url)
         transcript =  self._transcribe_audio(audio_path)
 
         full_text = {
-            "title":title,
             "description":description,
             "transcript":transcript,
         }
@@ -55,18 +54,17 @@ class VideoParserService:
             info = ydl.extract_info(url, download=True)
 
             description = info.get("description", "") or ""
-            title = info.get("title", "") or ""
 
             downloaded_file = ydl.prepare_filename(info)
             audio_path = os.path.splitext(downloaded_file)[0] + ".mp3" 
             # read documentation to optimize 
-        return audio_path, description, title
+        return audio_path, description
     
     def _transcribe_audio(self, audio_path:str) -> str:
         """
         Транскрибирует аудио
         """
-        
+
         model = self.get_model()
         result = model.transcribe(audio_path)
         return result["text"]

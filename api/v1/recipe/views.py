@@ -28,6 +28,7 @@ class ParseUrlAPIView(generics.CreateAPIView):
         if created or recipe_source.status in [
             StatusChoices.PENDING,
             StatusChoices.ERROR,
+            StatusChoices.DONE
         ]:
             parse_video_url.delay(recipe_source.id)
             # parse_recipe_url.delay(recipe_source.id)

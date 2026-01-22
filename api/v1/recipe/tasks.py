@@ -5,6 +5,27 @@ from recipe.models import RecipeSource
 from app.models import StatusChoices
 from api.v1.recipe.services.recipe_parser import WebParserService
 from api.v1.recipe.services.video_parser import VideoParserService
+from api.v1.recipe.services.llm import LLMService
+
+
+
+schema = {
+  "title": "string",
+  "description": "string",
+  "ingredients": [
+    {
+      "name": "string",
+      "amount": "number | null"
+    }
+  ],
+  "steps": [
+    {
+      "step": "string"
+    }
+  ],
+  "tips": ["string"],
+  "source_notes": "string"
+}
 
 
 
@@ -54,7 +75,16 @@ def parse_video_url(self, recipe_source_id):
         recipe_source.save()
 
         parser = VideoParserService()
-        parsed_data = parser.parse_video(recipe_source.url)
+        video_data = parser.parse_video(recipe_source.url)
+
+
+        llm_parser = LLMService()
+
+        parsed_data = llm_parser.llm_json(
+            prompt=video_data["transcript"] + "\n" + video_data["description"],  
+            schema_hint=schema
+        )
+        
         recipe_source.parsed_recipe = parsed_data
         recipe_source.title = parsed_data.get("title", "Без названия")
         recipe_source.status = StatusChoices.DONE
@@ -73,3 +103,12 @@ def parse_video_url(self, recipe_source_id):
         recipe_source.error_message = str(e)
         recipe_source.save()
         return {'status': 'error', 'error': str(e)}
+    
+
+
+
+
+
+"""
+{'title': 'Японский омлет', 'description': 'Приготовлен по рецепту, который поразил нас своим вкусом и текстурой. Включает в себя 5 яиц, кипяток, соль для приготовления на пару.', 'ingredients': [{'name': 'яйца', 'amount': '5'}, {'name': 'вода', 'amount': '150 мл'}, {'name': 'соль', 'amount': '2 гр'}], 'steps': [{'step': 'Взбить яйца до однородности (можно процедить), удалить пену.'}, {'step': 'Готовим на пару 15 минут до консистенции как на видео.'}], 'tips': ['Подаем с зеленым луком, кунжутным маслом и соевым соусом'], 'source_notes': '#Омлет #японскийомлет #яйца #рецепт'}
+"""
