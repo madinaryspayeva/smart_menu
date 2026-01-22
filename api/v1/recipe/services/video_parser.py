@@ -2,6 +2,9 @@ import yt_dlp
 import os
 import tempfile
 import whisper
+from faster_whisper import WhisperModel
+
+
 
 
 
@@ -28,7 +31,11 @@ class VideoParserService:
     @classmethod
     def get_model(cls):
         if cls._model is None:
-            cls._model = whisper.load_model("base", device="cpu")
+            cls._model = WhisperModel(
+                "small", 
+                device="cpu",   #TODO for production need to change?
+                compute_type="int8",
+            )
         return cls._model
 
     def parse_video(self, url:str) -> str:
@@ -66,5 +73,9 @@ class VideoParserService:
         """
 
         model = self.get_model()
-        result = model.transcribe(audio_path)
-        return result["text"]
+        result, _ = model.transcribe(
+            audio_path,
+            beam_size=1,
+            vad_filter=True,
+        )
+        return " ".join(seg.text for seg in result)

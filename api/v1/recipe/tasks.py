@@ -12,20 +12,27 @@ from api.v1.recipe.services.llm import LLMService
 schema = {
   "title": "string",
   "description": "string",
+
+  "meal_type": "breakfast | lunch | dinner | snack | dessert | drink | baby_food",
+
   "ingredients": [
     {
       "name": "string",
-      "amount": "number | null"
+      "amount": "number | null",
+      "unit": "gr | kg | ml | l | pc | tsp | tbsp | cup | to_taste | null"
     }
   ],
+
   "steps": [
     {
       "step": "string"
     }
   ],
+
   "tips": ["string"],
   "source_notes": "string"
 }
+
 
 
 
@@ -81,7 +88,7 @@ def parse_video_url(self, recipe_source_id):
         llm_parser = LLMService()
 
         parsed_data = llm_parser.llm_json(
-            prompt=video_data["transcript"] + "\n" + video_data["description"],  
+            prompt=video_data["description"] + " " + video_data["transcript"],
             schema_hint=schema
         )
         
@@ -104,11 +111,3 @@ def parse_video_url(self, recipe_source_id):
         recipe_source.save()
         return {'status': 'error', 'error': str(e)}
     
-
-
-
-
-
-"""
-{'title': 'Японский омлет', 'description': 'Приготовлен по рецепту, который поразил нас своим вкусом и текстурой. Включает в себя 5 яиц, кипяток, соль для приготовления на пару.', 'ingredients': [{'name': 'яйца', 'amount': '5'}, {'name': 'вода', 'amount': '150 мл'}, {'name': 'соль', 'amount': '2 гр'}], 'steps': [{'step': 'Взбить яйца до однородности (можно процедить), удалить пену.'}, {'step': 'Готовим на пару 15 минут до консистенции как на видео.'}], 'tips': ['Подаем с зеленым луком, кунжутным маслом и соевым соусом'], 'source_notes': '#Омлет #японскийомлет #яйца #рецепт'}
-"""
