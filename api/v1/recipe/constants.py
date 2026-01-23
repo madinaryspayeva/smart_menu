@@ -1,8 +1,14 @@
+import re
+
+from recipe.choices import MealType, Unit
+
+
 """
 Константы с CSS селекторами для парсинга рецептов
 """
 
 # Структурированные данные (JSON-LD)
+
 STRUCTURED_DATA_SELECTORS = [
     'script[type="application/ld+json"]'
 ]
@@ -76,3 +82,70 @@ INSTRUCTIONS_SELECTORS = [
     '.stepbystep',
     '.step_n',
 ]
+
+
+LLM_SCHEMA = """
+    {
+    "title": "string",
+    "description": "string",
+    "meal_type": "string | null",
+    "ingredients": [
+        {
+        "raw": "string"
+        }
+    ],
+    "steps": [
+        {
+        "step": "string"
+        }
+    ],
+    "tips": ["string"]
+    }
+"""
+
+
+MEAL_TYPES_VALUES = {choice.value for choice in MealType}
+
+UNIT_VALUES = {choice.value for choice in Unit}
+
+UNIT_SYNONYMS = {
+    "по вкусу": Unit.TO_TASTE,
+    "небольшой пучок": Unit.TO_TASTE,
+    "пучок": Unit.TO_TASTE,
+    "стакан": Unit.CUP,
+    "ст.л.": Unit.TBSP,
+    "ст.л": Unit.TBSP,
+    "ч.л.": Unit.TSP,
+    "ч.л": Unit.TSP,
+    "зубчик": Unit.PC,
+    "зубчика": Unit.PC,
+    "шт": Unit.PC,
+    "грамм": Unit.GR,
+    "гр": Unit.GR,
+    "г": Unit.GR,
+    "кг": Unit.KG,
+    "мл": Unit.ML,
+    "л": Unit.L,
+}
+
+MEAL_TYPE_SYNONYMS = {
+    "завтрак": MealType.BREAKFAST,
+    "утром": MealType.BREAKFAST,
+
+    "обед": MealType.LUNCH,
+
+    "ужин": MealType.DINNER,
+    "на ужин": MealType.DINNER,
+
+    "десерт": MealType.DESSERT,
+    "сладкое": MealType.DESSERT,
+
+    "напиток": MealType.DRINK,
+    "коктейль": MealType.DRINK,
+    "чай": MealType.DRINK,
+    "кофе": MealType.DRINK,
+
+    "детское": MealType.BABY_FOOD,
+}
+
+AMOUNT_RE = re.compile(r"(\d+(?:[.,]\d+)?|\d+/\d+)")

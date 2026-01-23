@@ -2,6 +2,8 @@ import os
 import ollama
 import json
 
+from api.v1.recipe.constants import LLM_SCHEMA
+
 
 class LLMService:
     """
@@ -12,23 +14,21 @@ class LLMService:
         self.client = ollama.Client(host=os.getenv("HOST"))
         self.model = os.getenv("MODEL")
     
-    def llm_json(self, prompt: str, schema_hint: str ) -> dict:
+    def llm_json(self, prompt: str) -> dict:
         full_prompt = f"""
-                        Ты извлекаешь данные из текста рецепта.
-                        Верни ТОЛЬКО валидный JSON строго по схеме.
-                        Все дроби типа 1/2 преобразуй в десятичные числа, например 0.5.
-                        Если данных нет — используй null или пустые массивы.
-                        Никакого текста вне JSON.
+                        You are extracting data from a recipe text.
+                        Return ONLY valid JSON strictly according to the schema.
+                        No text outside of JSON.
 
-                        Правила:
-                        - unit и meal_type выбирай ТОЛЬКО из перечисленных значений
-                        - если данные не указаны явно — используй null
-                        - не придумывай ингредиенты
+                        Rules:
+                        - if meal_type is explicitly mentioned in the text — use it
+                        - if meal_type is not mentioned — try to determine it from context (ingredients, description, steps)
+                        - do not invent ingredients
 
-                        Схема:
-                        {schema_hint}
+                        Schema:
+                        {LLM_SCHEMA}
 
-                        Запрос:
+                        Request:
                         {prompt}
                     """
         
@@ -45,8 +45,7 @@ class LLMService:
             }
         )
 
-        content = response["message"]["content"]
-        content = self._extract_json(content)
+        content = self._extract_json(response["message"]["content"])
 
         try:
             return json.loads(content)
@@ -63,4 +62,3 @@ class LLMService:
         content = content.replace("'", '"')
 
         return content
-

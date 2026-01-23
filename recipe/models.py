@@ -29,6 +29,11 @@ class Recipe(TimestampedModel, StatusModel):
         choices=MealType.choices,
         verbose_name=_("Тип блюда"),
     )
+    tips = models.TextField(
+        verbose_name=_("Примечания"),
+        null=True,
+        blank=True,
+    )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,

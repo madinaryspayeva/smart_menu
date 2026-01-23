@@ -1,39 +1,12 @@
 from celery import shared_task
 from django.core.exceptions import ObjectDoesNotExist
 
+from api.v1.recipe.services.recipe_builder import RecipeBuilderService
 from recipe.models import RecipeSource
 from app.models import StatusChoices
 from api.v1.recipe.services.recipe_parser import WebParserService
 from api.v1.recipe.services.video_parser import VideoParserService
 from api.v1.recipe.services.llm import LLMService
-
-
-
-schema = {
-  "title": "string",
-  "description": "string",
-
-  "meal_type": "breakfast | lunch | dinner | snack | dessert | drink | baby_food",
-
-  "ingredients": [
-    {
-      "name": "string",
-      "amount": "number | null",
-      "unit": "gr | kg | ml | l | pc | tsp | tbsp | cup | to_taste | null"
-    }
-  ],
-
-  "steps": [
-    {
-      "step": "string"
-    }
-  ],
-
-  "tips": ["string"],
-  "source_notes": "string"
-}
-
-
 
 
 
@@ -87,11 +60,14 @@ def parse_video_url(self, recipe_source_id):
 
         llm_parser = LLMService()
 
-        parsed_data = llm_parser.llm_json(
-            prompt=video_data["description"] + " " + video_data["transcript"],
-            schema_hint=schema
+        raw_data = llm_parser.llm_json(
+            prompt=video_data["description"] + " " + video_data["transcript"]
         )
         
+        print(raw_data, "!!!!!!!!!!!!!!RAW DATA!!!!!!!!!!!!!")
+        parsed_data = RecipeBuilderService().build_recipe(raw_data)
+        
+        print(parsed_data, "!!!!!!!!!!!!!!CORREDCT RECIPE!!!!!!!!!!!!!")
         recipe_source.parsed_recipe = parsed_data
         recipe_source.title = parsed_data.get("title", "Без названия")
         recipe_source.status = StatusChoices.DONE
