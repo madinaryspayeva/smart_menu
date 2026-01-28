@@ -109,24 +109,91 @@ MEAL_TYPES_VALUES = {choice.value for choice in MealType}
 UNIT_VALUES = {choice.value for choice in Unit}
 
 UNIT_SYNONYMS = {
+    # --- без количества ---
     "по вкусу": Unit.TO_TASTE,
-    "небольшой пучок": Unit.TO_TASTE,
+    "to taste": Unit.TO_TASTE,
+    "pinch": Unit.TO_TASTE,
+    "a pinch": Unit.TO_TASTE,
+    "handful": Unit.TO_TASTE,
     "пучок": Unit.TO_TASTE,
-    "стакан": Unit.CUP,
-    "ст.л.": Unit.TBSP,
-    "ст.л": Unit.TBSP,
-    "ч.л.": Unit.TSP,
-    "ч.л": Unit.TSP,
+    "небольшой пучок": Unit.TO_TASTE,
+
+    # --- штуки ---
+    "шт": Unit.PC,
+    "piece": Unit.PC,
+    "pieces": Unit.PC,
+    "pc": Unit.PC,
+    "clove": Unit.PC,
+    "cloves": Unit.PC,
     "зубчик": Unit.PC,
     "зубчика": Unit.PC,
-    "шт": Unit.PC,
-    "грамм": Unit.GR,
-    "гр": Unit.GR,
+
+    # --- масса ---
     "г": Unit.GR,
+    "гр": Unit.GR,
+    "g": Unit.GR,
+    "gram": Unit.GR,
+    "grams": Unit.GR,
+
     "кг": Unit.KG,
+    "kg": Unit.KG,
+    "kilogram": Unit.KG,
+    "kilograms": Unit.KG,
+
+    "lb": Unit.KG,
+    "lbs": Unit.KG,
+    "pound": Unit.KG,
+    "pounds": Unit.KG,
+
+    "oz": Unit.GR,
+    "ounce": Unit.GR,
+    "ounces": Unit.GR,
+
+    # --- объем ---
     "мл": Unit.ML,
+    "ml": Unit.ML,
+
     "л": Unit.L,
+    "l": Unit.L,
+    "liter": Unit.L,
+    "liters": Unit.L,
+
+    "cup": Unit.CUP,
+    "cups": Unit.CUP,
+    "стакан": Unit.CUP,
+    "стакана": Unit.CUP,
+    "стаканов": Unit.CUP,
+    "ст": Unit.CUP,
+    "ст.": Unit.CUP,
+
+    "tsp": Unit.TSP,
+    "teaspoon": Unit.TSP,
+    "teaspoons": Unit.TSP,
+    "ч.л.": Unit.TSP,
+    "ч.л": Unit.TSP,
+
+    "tbsp": Unit.TBSP,
+    "tablespoon": Unit.TBSP,
+    "tablespoons": Unit.TBSP,
+    "ст.л.": Unit.TBSP,
+    "ст.л": Unit.TBSP,
 }
+
+CONVERSION = {
+        # масса → граммы
+        "oz": 28.3495,
+        "ounce": 28.3495,
+        "ounces": 28.3495,
+
+        "lb": 453.592,
+        "lbs": 453.592,
+        "pound": 453.592,
+        "pounds": 453.592,
+
+        # объем → мл
+        "cup": 240,
+        "cups": 240,
+    }
 
 MEAL_TYPE_SYNONYMS = {
     "завтрак": MealType.BREAKFAST,

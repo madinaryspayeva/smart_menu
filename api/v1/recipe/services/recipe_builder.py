@@ -1,5 +1,6 @@
+import re
 from api.v1.recipe.constants import AMOUNT_RE, LLM_SCHEMA, MEAL_TYPE_SYNONYMS, UNIT_SYNONYMS
-from api.v1.recipe.utils.helpers import clean_name
+from api.v1.recipe.utils.helpers import UnitConverter, clean_name
 from recipe.choices import Unit
 
 
@@ -63,23 +64,35 @@ class RecipeBuilderService:
     
     def _parse_ingredient(self, raw: dict) -> dict:
         text = raw.get("raw")
+        if not isinstance(text, str):
+            return {
+                "name": None,
+                "amount": None,
+                "unit": None,
+            }
+        
+        raw_unit = self._parse_unit(text)
+        amount = None if raw_unit == Unit.TO_TASTE.value else self._parse_amount(text)
 
-        unit = self._parse_unit(text)
-        amount = None if unit == Unit.TO_TASTE.value else self._parse_amount(text)
+        amount, unit = UnitConverter.convert(amount, raw_unit)
 
         name = text
+
         if amount:
             name = AMOUNT_RE.sub("", name)
+        
         if unit and unit != Unit.TO_TASTE.value:
             for key, u in UNIT_SYNONYMS.items():
-                if u.value == unit and key in name.lower():
-                    name = name.lower().replace(key, "")        
+                if u == unit:
+                    pattern = rf"\b{re.escape(key)}\b"
+                    name = re.sub(pattern, "", name, flags=re.IGNORECASE)
         
-        name  = clean_name(name)
+        name = clean_name(name)
 
         return {
-            "name": name,
-            "amount": amount,
-            "unit": unit,
-        }
+        "name": name.strip(),
+        "amount": amount,
+        "unit": unit
+    }
+        
     
