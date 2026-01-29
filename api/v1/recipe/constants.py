@@ -104,10 +104,6 @@ LLM_SCHEMA = """
 """
 
 
-MEAL_TYPES_VALUES = {choice.value for choice in MealType}
-
-UNIT_VALUES = {choice.value for choice in Unit}
-
 UNIT_SYNONYMS = {
     # --- без количества ---
     "по вкусу": Unit.TO_TASTE,
@@ -178,6 +174,17 @@ UNIT_SYNONYMS = {
     "ст.л.": Unit.TBSP,
     "ст.л": Unit.TBSP,
 }
+
+UNIT_KEYS = sorted(UNIT_SYNONYMS.keys(), key=len, reverse=True)
+
+AMOUNT_UNIT_RE = re.compile(
+    rf"""
+    (?P<amount>\d+(?:[.,]\d+)?|\d+/\d+)? 
+    \s*[-–]?\s*
+    (?P<unit>{'|'.join(map(re.escape, UNIT_KEYS))})
+    """,
+    re.IGNORECASE | re.VERBOSE
+)
 
 CONVERSION = {
         # масса → граммы

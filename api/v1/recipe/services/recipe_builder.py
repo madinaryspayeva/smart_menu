@@ -1,5 +1,5 @@
 import re
-from api.v1.recipe.constants import AMOUNT_RE, LLM_SCHEMA, MEAL_TYPE_SYNONYMS, UNIT_SYNONYMS
+from api.v1.recipe.constants import AMOUNT_RE, AMOUNT_UNIT_RE, MEAL_TYPE_SYNONYMS, UNIT_SYNONYMS
 from api.v1.recipe.utils.helpers import UnitConverter, clean_name
 from recipe.choices import Unit
 
@@ -29,16 +29,6 @@ class RecipeBuilderService:
             "steps": raw.get("steps"),
             "tips": raw.get("tips"),
         }
-
-    def _parse_unit(self, text: str) -> str | None:
-        if not isinstance(text, str):
-            return None
-        
-        for key, unit in UNIT_SYNONYMS.items():
-            if key in text.lower():
-                return unit.value
-        
-        return None
     
     def _parse_meal_type(self, text: str | None) -> str | None:
         if not text or not isinstance(text, str):
@@ -64,6 +54,7 @@ class RecipeBuilderService:
     
     def _parse_ingredient(self, raw: dict) -> dict:
         text = raw.get("raw")
+    
         if not isinstance(text, str):
             return {
                 "name": None,
@@ -71,28 +62,44 @@ class RecipeBuilderService:
                 "unit": None,
             }
         
-        raw_unit = self._parse_unit(text)
-        amount = None if raw_unit == Unit.TO_TASTE.value else self._parse_amount(text)
+        original_text = text.lower()
 
-        amount, unit = UnitConverter.convert(amount, raw_unit)
-
-        name = text
-
-        if amount:
-            name = AMOUNT_RE.sub("", name)
+        # Проверка "по вкусу" и подобных единиц без чисел
+        for key, unit in UNIT_SYNONYMS.items():
+            if unit == Unit.TO_TASTE and key in original_text:
+                name = re.sub(re.escape(key), "", text, flags=re.IGNORECASE)
+                return{
+                    "name": clean_name(name),
+                    "amount": None,
+                    "unit": Unit.TO_TASTE.value, 
+                }
         
-        if unit and unit != Unit.TO_TASTE.value:
-            for key, u in UNIT_SYNONYMS.items():
-                if u == unit:
-                    pattern = rf"\b{re.escape(key)}\b"
-                    name = re.sub(pattern, "", name, flags=re.IGNORECASE)
-        
-        name = clean_name(name)
+        # amount + unit
+        match = AMOUNT_UNIT_RE.search(text)
+
+        amount = None
+        unit = None
+
+        if match:
+            raw_amount = match.group("amount")
+            raw_unit = match.group("unit").lower()
+
+            unit_enum = UNIT_SYNONYMS.get(raw_unit)
+            raw_unit_value = unit_enum.value if unit_enum else None
+
+            if raw_amount:
+                amount = self._parse_amount(raw_amount)
+
+            amount, unit = UnitConverter.convert(amount, raw_unit_value)
+
+            # вырезаем amount + unit из текста
+            text = text[:match.start()] + text[match.end():]
+
+        name = clean_name(text)
 
         return {
-        "name": name.strip(),
-        "amount": amount,
-        "unit": unit
-    }
-        
-    
+            "name": name,
+            "amount": amount,
+            "unit": unit,
+        }
+ 
