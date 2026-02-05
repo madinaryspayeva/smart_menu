@@ -1,6 +1,6 @@
 import re
 import sys
-from api.v1.recipe.constants import AMOUNT_RE, AMOUNT_UNIT_RE, MEAL_TYPE_SYNONYMS, UNIT_SYNONYMS
+from api.v1.recipe.constants import AMOUNT_UNIT_RE, MEAL_TYPE_SYNONYMS, UNIT_SYNONYMS
 from api.v1.recipe.utils.helpers import UnitConverter, clean_name
 from recipe.choices import Unit
 
@@ -42,26 +42,37 @@ class RecipeBuilderService:
         return None
     
     def _parse_amount(self, text: str) -> float | None:
-        print(text, "TEXT FROM RAW AMOUNT!!!!!!")
-        match = AMOUNT_RE.search(text)
-        if not match:
+        """
+        Парсит строку с числом, дробью или смешанным числом.
+        Примеры:
+            "150"     -> 150.0
+            "1,5"     -> 1.5
+            "1/2"     -> 0.5
+            "1 1/2"   -> 1.5
+        """
+        if not text or not isinstance(text, str):
             return None
-        
-        value = match.group(1)
 
-        # Если есть диапазон, берем среднее значение
-        if "-" in text or "–" in text:
-            parts = re.findall(r"(\d+(?:[.,]\d+)?)", text)
-            if len(parts) == 2:
-                nums = [float(p.replace(",", ".")) for p in parts]
-                return round(sum(nums) / len(nums), 2)
-        
-        
-        if "/" in value:
-            num, den = value.split("/")
+        text = text.strip()
+
+        # --- смешанные дроби: "1 1/2" ---
+        mixed_match = re.match(r"(\d+)\s+(\d+)/(\d+)", text)
+        if mixed_match:
+            whole, num, den = mixed_match.groups()
+            return float(whole) + round(float(num) / float(den), 2)
+
+        # --- простая дробь: "1/2" ---
+        fraction_match = re.match(r"(\d+)/(\d+)", text)
+        if fraction_match:
+            num, den = fraction_match.groups()
             return round(float(num) / float(den), 2)
-        
-        return float(value.replace(",", "."))
+
+        # --- десятичное или целое число: "150", "1.5", "1,5" ---
+        number_match = re.match(r"\d+(?:[.,]\d+)?", text)
+        if number_match:
+            return float(number_match.group(0).replace(",", "."))
+
+        return None
     
     def _parse_ingredient(self, raw: dict) -> dict:
         text = raw.get("raw").lower()
@@ -79,7 +90,6 @@ class RecipeBuilderService:
         # Проверка "по вкусу" и подобных единиц без чисел
         for key, unit in UNIT_SYNONYMS.items():
             if unit == Unit.TO_TASTE and key in text:
-                print(f"{unit}-UNIT, {key}-KEY!!!!!!!!!!!!!!")
                 pattern = re.compile(re.escape(key), re.IGNORECASE)     
                 name = pattern.sub("", text)
                 return{
@@ -88,19 +98,24 @@ class RecipeBuilderService:
                     "unit": Unit.TO_TASTE.value, 
                 }
         
-        # amount + unit
-        match = AMOUNT_UNIT_RE.search(text)
-        print(match, "!!!!!MATCH!!!!!!")
         amount = None
         unit = None
 
+        # проверка на диапозон
+        range_match = RANGE_RE.search(text)
+        # print(range_match, "RANGE MATCH")
+        if range_match:
+            a, b = range_match.groups()
+            amount = round((float(a) + float(b)) / 2, 2)
+            text = text.replace(range_match.group(0), "")
+
+        # amount + unit
+        match = AMOUNT_UNIT_RE.search(text)
+        
         if match:
             raw_amount = match.group("amount")
             raw_unit = match.group("unit").lower()
 
-            print(raw_amount, "!!!!!AMOUNT!!!!!!")
-            print(raw_unit, "!!!!!UNIT!!!!!!")
-            
             unit_enum = UNIT_SYNONYMS.get(raw_unit)
             raw_unit_value = unit_enum.value if unit_enum else None
 

@@ -230,5 +230,3 @@ MEAL_TYPE_SYNONYMS = {
 
     "детское": MealType.BABY_FOOD,
 }
-
-AMOUNT_RE = re.compile(r"(\d+(?:[.,]\d+)?|\d+/\d+)")
