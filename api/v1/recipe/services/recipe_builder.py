@@ -1,9 +1,10 @@
 import re
+import sys
 from api.v1.recipe.constants import AMOUNT_RE, AMOUNT_UNIT_RE, MEAL_TYPE_SYNONYMS, UNIT_SYNONYMS
 from api.v1.recipe.utils.helpers import UnitConverter, clean_name
 from recipe.choices import Unit
 
-
+RANGE_RE = re.compile(r"(\d+(?:[.,]\d+)?)\s*[-–]\s*(\d+(?:[.,]\d+)?)")
 
 class RecipeBuilderService:
     """
@@ -41,11 +42,21 @@ class RecipeBuilderService:
         return None
     
     def _parse_amount(self, text: str) -> float | None:
+        print(text, "TEXT FROM RAW AMOUNT!!!!!!")
         match = AMOUNT_RE.search(text)
         if not match:
             return None
         
         value = match.group(1)
+
+        # Если есть диапазон, берем среднее значение
+        if "-" in text or "–" in text:
+            parts = re.findall(r"(\d+(?:[.,]\d+)?)", text)
+            if len(parts) == 2:
+                nums = [float(p.replace(",", ".")) for p in parts]
+                return round(sum(nums) / len(nums), 2)
+        
+        
         if "/" in value:
             num, den = value.split("/")
             return round(float(num) / float(den), 2)
@@ -53,7 +64,7 @@ class RecipeBuilderService:
         return float(value.replace(",", "."))
     
     def _parse_ingredient(self, raw: dict) -> dict:
-        text = raw.get("raw")
+        text = raw.get("raw").lower()
     
         if not isinstance(text, str):
             return {
@@ -62,12 +73,15 @@ class RecipeBuilderService:
                 "unit": None,
             }
         
-        original_text = text.lower()
-
+        # text  #рис(круглозернистый)-150гр.
+        print(text, "!!!!!!!TEXT!!!!!!!")
+        
         # Проверка "по вкусу" и подобных единиц без чисел
         for key, unit in UNIT_SYNONYMS.items():
-            if unit == Unit.TO_TASTE and key in original_text:
-                name = re.sub(re.escape(key), "", text, flags=re.IGNORECASE)
+            if unit == Unit.TO_TASTE and key in text:
+                print(f"{unit}-UNIT, {key}-KEY!!!!!!!!!!!!!!")
+                pattern = re.compile(re.escape(key), re.IGNORECASE)     
+                name = pattern.sub("", text)
                 return{
                     "name": clean_name(name),
                     "amount": None,
@@ -76,7 +90,7 @@ class RecipeBuilderService:
         
         # amount + unit
         match = AMOUNT_UNIT_RE.search(text)
-
+        print(match, "!!!!!MATCH!!!!!!")
         amount = None
         unit = None
 
@@ -84,6 +98,9 @@ class RecipeBuilderService:
             raw_amount = match.group("amount")
             raw_unit = match.group("unit").lower()
 
+            print(raw_amount, "!!!!!AMOUNT!!!!!!")
+            print(raw_unit, "!!!!!UNIT!!!!!!")
+            
             unit_enum = UNIT_SYNONYMS.get(raw_unit)
             raw_unit_value = unit_enum.value if unit_enum else None
 

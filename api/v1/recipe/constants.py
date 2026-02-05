@@ -118,15 +118,21 @@ UNIT_SYNONYMS = {
     "шт": Unit.PC,
     "piece": Unit.PC,
     "pieces": Unit.PC,
+    "шт.": Unit.PC,
     "pc": Unit.PC,
     "clove": Unit.PC,
     "cloves": Unit.PC,
     "зубчик": Unit.PC,
     "зубчика": Unit.PC,
+    "слайса": Unit.PC,
+    "слайс": Unit.PC,
+    "slice": Unit.PC,
+    "slices": Unit.PC,
 
     # --- масса ---
     "г": Unit.GR,
     "гр": Unit.GR,
+    "гр.": Unit.GR,
     "g": Unit.GR,
     "gram": Unit.GR,
     "grams": Unit.GR,
@@ -147,6 +153,7 @@ UNIT_SYNONYMS = {
 
     # --- объем ---
     "мл": Unit.ML,
+    "мл.": Unit.ML,
     "ml": Unit.ML,
 
     "л": Unit.L,
@@ -179,9 +186,11 @@ UNIT_KEYS = sorted(UNIT_SYNONYMS.keys(), key=len, reverse=True)
 
 AMOUNT_UNIT_RE = re.compile(
     rf"""
-    (?P<amount>\d+(?:[.,]\d+)?|\d+/\d+)? 
+    (?P<amount>\d+(?:[.,]\d+)?|\d+/\d+)
     \s*[-–]?\s*
     (?P<unit>{'|'.join(map(re.escape, UNIT_KEYS))})
+    \b
+    \.?
     """,
     re.IGNORECASE | re.VERBOSE
 )
