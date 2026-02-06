@@ -17,12 +17,12 @@ class UnitConverter:
         if amount is None or not raw_unit:
             return amount, raw_unit
 
-        key = raw_unit.lower() #oz
+        key = raw_unit.lower() 
 
         if key not in CONVERSION:
-            return amount, UNIT_SYNONYMS.get(key)
+            return amount, raw_unit
         
-        factor = CONVERSION[key]
+        factor = CONVERSION.get(key)
         target_unit = UNIT_SYNONYMS.get(key)
 
         return round(amount * factor, 2), target_unit

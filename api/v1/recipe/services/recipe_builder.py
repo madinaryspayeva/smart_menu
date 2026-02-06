@@ -84,9 +84,6 @@ class RecipeBuilderService:
                 "unit": None,
             }
         
-        # text  #рис(круглозернистый)-150гр.
-        print(text, "!!!!!!!TEXT!!!!!!!")
-        
         # Проверка "по вкусу" и подобных единиц без чисел
         for key, unit in UNIT_SYNONYMS.items():
             if unit == Unit.TO_TASTE and key in text:
@@ -103,7 +100,7 @@ class RecipeBuilderService:
 
         # проверка на диапозон
         range_match = RANGE_RE.search(text)
-        # print(range_match, "RANGE MATCH")
+        
         if range_match:
             a, b = range_match.groups()
             amount = round((float(a) + float(b)) / 2, 2)
@@ -115,16 +112,14 @@ class RecipeBuilderService:
         if match:
             raw_amount = match.group("amount")
             raw_unit = match.group("unit").lower()
-
-            unit_enum = UNIT_SYNONYMS.get(raw_unit)
-            raw_unit_value = unit_enum.value if unit_enum else None
+         
+            unit = getattr(UNIT_SYNONYMS.get(raw_unit), "value", None)
 
             if raw_amount:
                 amount = self._parse_amount(raw_amount)
 
-            amount, unit = UnitConverter.convert(amount, raw_unit_value)
+            amount, unit = UnitConverter.convert(amount, unit) 
 
-            # вырезаем amount + unit из текста
             text = text[:match.start()] + text[match.end():]
 
         name = clean_name(text)

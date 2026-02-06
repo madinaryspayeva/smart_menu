@@ -134,6 +134,7 @@ UNIT_SYNONYMS = {
     "гр": Unit.GR,
     "гр.": Unit.GR,
     "g": Unit.GR,
+    "gr": Unit.GR,
     "gram": Unit.GR,
     "grams": Unit.GR,
 
