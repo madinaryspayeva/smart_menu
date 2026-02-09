@@ -12,31 +12,29 @@ class RecipeBuilderService:
     """
     
     def build_recipe(self, raw: dict) -> dict:
-        meal_type = raw.get("meal_type")
-
-        if not meal_type:
-            context = " ".join(filter(None, [
-            raw.get("title"),
-            raw.get("description"),
-            " ".join(step["step"] for step in raw.get("steps", []))
-        ]))
-        meal_type = self._parse_meal_type(context)
 
         return {
             "title": raw.get("title"),
             "description": raw.get("description"),
-            "meal_type": meal_type,
+            "meal_type": self._parse_meal_type(raw),
             "ingredients": [self._parse_ingredient(ing) for ing in raw.get("ingredients")],
             "steps": raw.get("steps"),
             "tips": raw.get("tips"),
         }
     
-    def _parse_meal_type(self, text: str | None) -> str | None:
-        if not text or not isinstance(text, str):
-            return None
+    def _parse_meal_type(self, raw: str | None) -> str | None:
+        context = raw.get("meal_type")
+
+        if not context:
+            context = " ".join(filter(None, [
+            raw.get("title"),
+            raw.get("description"),
+            " ".join(step["step"] for step in raw.get("steps", []))
+        ]))
 
         for key, meal_type in MEAL_TYPE_SYNONYMS.items():
-            if key in text.lower():
+            pattern = r"\b{}\b".format(re.escape(key.lower()))
+            if re.search(pattern, context.lower()):
                 return meal_type.value
         
         return None
@@ -118,7 +116,7 @@ class RecipeBuilderService:
             if raw_amount:
                 amount = self._parse_amount(raw_amount)
 
-            amount, unit = UnitConverter.convert(amount, unit) 
+            amount, unit = UnitConverter.convert(amount, unit)  #TODO fix cup problem
 
             text = text[:match.start()] + text[match.end():]
 

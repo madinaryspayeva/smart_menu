@@ -213,21 +213,76 @@ CONVERSION = {
     }
 
 MEAL_TYPE_SYNONYMS = {
+    # BREAKFAST
     "завтрак": MealType.BREAKFAST,
     "утром": MealType.BREAKFAST,
+    "на завтрак": MealType.BREAKFAST,
+    "breakfast": MealType.BREAKFAST,
+    "morning": MealType.BREAKFAST,
 
+    # LUNCH
     "обед": MealType.LUNCH,
+    "на обед": MealType.LUNCH,
+    "lunch": MealType.LUNCH,
 
+    # DINNER
     "ужин": MealType.DINNER,
     "на ужин": MealType.DINNER,
+    "dinner": MealType.DINNER,
+    "supper": MealType.DINNER,
 
+    # SOUP 
+    "суп": MealType.SOUP,
+    "супчик": MealType.SOUP,
+    "борщ": MealType.SOUP,
+    "щи": MealType.SOUP,
+    "уха": MealType.SOUP,
+    "soup": MealType.SOUP,
+    "stew": MealType.SOUP,       
+    "chowder": MealType.SOUP,
+    "bisque": MealType.SOUP,
+
+    # DESSERT
     "десерт": MealType.DESSERT,
     "сладкое": MealType.DESSERT,
+    "сладости": MealType.DESSERT,
+    "dessert": MealType.DESSERT,
+    "sweet": MealType.DESSERT,
+    "sweets": MealType.DESSERT,
 
+    # DRINK
     "напиток": MealType.DRINK,
-    "коктейль": MealType.DRINK,
-    "чай": MealType.DRINK,
-    "кофе": MealType.DRINK,
+    "напитки": MealType.DRINK,
+    "drink": MealType.DRINK,
+    "drinks": MealType.DRINK,
+    "beverage": MealType.DRINK,
 
+    "коктейль": MealType.DRINK,
+    "cocktail": MealType.DRINK,
+
+    "чай": MealType.DRINK,
+    "tea": MealType.DRINK,
+
+    "кофе": MealType.DRINK,
+    "coffee": MealType.DRINK,
+
+    # BABY FOOD
     "детское": MealType.BABY_FOOD,
+    "детское питание": MealType.BABY_FOOD,
+    "baby": MealType.BABY_FOOD,
+    "baby food": MealType.BABY_FOOD,
+    "kids": MealType.BABY_FOOD,
+    "kids food": MealType.BABY_FOOD,
+
+    # SNACK
+    "перекус": MealType.SNACK,
+    "snack": MealType.SNACK,
+    "snacks": MealType.SNACK,
+
+    # SIDE DISH 
+    "side dish": MealType.SIDE_DISH,
+    "side": MealType.SIDE_DISH,
+    "side item": MealType.SIDE_DISH,
+    "side order": MealType.SIDE_DISH,
+    "accompaniment": MealType.SIDE_DISH,
 }

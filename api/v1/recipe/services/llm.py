@@ -1,6 +1,7 @@
 import os
 import ollama
 import json
+from json_repair import repair_json
 
 from api.v1.recipe.constants import LLM_SCHEMA
 
@@ -75,17 +76,16 @@ class LLMService:
         content = self._extract_json(response["message"]["content"])
 
         try:
-            return json.loads(content)
+            return json.loads(repair_json(content))
         except json.JSONDecodeError:
             raise ValueError(f"Invalid JSON from LLM: {content}")
 
     def _extract_json(self, content: str) -> str:
         content = content.strip()
-        
+
         if content.startswith("```"):
-            content = content.strip("`")
+            content = content.strip("`").strip()
             if content.lower().startswith("json"):
                 content = content[4:].strip()
-        content = content.replace("'", '"')
 
         return content

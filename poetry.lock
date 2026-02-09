@@ -1336,6 +1336,21 @@ MarkupSafe = ">=2.0"
 i18n = ["Babel (>=2.7)"]
 
 [[package]]
+name = "json-repair"
+version = "0.56.0"
+description = "A package to repair broken json strings"
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+files = [
+    {file = "json_repair-0.56.0-py3-none-any.whl", hash = "sha256:41005b8c1d4ca74dcb902bab6049467d4feb5e18e1d1621b6ca73c48dae04798"},
+    {file = "json_repair-0.56.0.tar.gz", hash = "sha256:d6159e9b32a8a310a7e016862a255c4ce19221417f80847a5be146f0cca753a7"},
+]
+
+[package.extras]
+schema = ["jsonschema (>=4.21)", "pydantic (>=2)"]
+
+[[package]]
 name = "kombu"
 version = "5.6.1"
 description = "Messaging library for Python."
@@ -3443,4 +3458,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13, <3.14"
-content-hash = "9390aea6d5f665e13bc1e760ff7d925938211a77fb7f5d540eed788ef76dfd38"
+content-hash = "6e4cdc135f449ec4897a98b628b05d7862d4589492075d232cc84c55da08ea45"

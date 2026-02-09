@@ -28,6 +28,7 @@ dependencies = [
     "openai-whisper (>=20250625,<20250626)",
     "ollama (>=0.6.1,<0.7.0)",
     "faster-whisper (>=1.2.1,<2.0.0)",
+    "json-repair (>=0.56.0,<0.57.0)",
 ]
 
 

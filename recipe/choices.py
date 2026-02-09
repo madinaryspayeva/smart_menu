@@ -6,10 +6,13 @@ class MealType(models.TextChoices):
         BREAKFAST = "breakfast", _("Завтрак")
         LUNCH = "lunch", _("Обед")
         DINNER = "dinner", _("Ужин")
+        SOUP = "soup", _("Суп")
         SNACK = "snack", _("Перекус")
         DESSERT = "dessert", _("Десерт")
         DRINK = "drink", _("Напиток")
         BABY_FOOD = "baby_food", _("Детское питание")
+        SIDE_DISH = "side_dish", _("Гарнир")
+        
 
 
 class Unit(models.TextChoices):
