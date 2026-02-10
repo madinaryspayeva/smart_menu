@@ -5,9 +5,6 @@ import whisper
 from faster_whisper import WhisperModel
 
 
-
-
-
 class VideoParserService:
     """
     Сервис для парсинга видео
@@ -43,14 +40,15 @@ class VideoParserService:
         Основной метод - парсит видео по URL
         """
 
-        audio_path, description, = self._extract_audio_and_description(url)
+        audio_path, description, thumbnail = self._extract_audio_and_description(url)
         transcript =  self._transcribe_audio(audio_path)
 
-        full_text = {
+        full_data = {
             "description":description,
             "transcript":transcript,
+            "thumbnail": thumbnail,
         }
-        return  full_text
+        return  full_data
     
     def _extract_audio_and_description(self, url:str) -> str:
         """
@@ -61,11 +59,12 @@ class VideoParserService:
             info = ydl.extract_info(url, download=True)
 
             description = info.get("description", "") or ""
+            thumbnail = info.get("thumbnail", "")
 
             downloaded_file = ydl.prepare_filename(info)
             audio_path = os.path.splitext(downloaded_file)[0] + ".mp3" 
             # read documentation to optimize 
-        return audio_path, description
+        return audio_path, description, thumbnail
     
     def _transcribe_audio(self, audio_path:str) -> str:
         """

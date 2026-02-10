@@ -206,10 +206,6 @@ CONVERSION = {
         "lbs": 453.592,
         "pound": 453.592,
         "pounds": 453.592,
-
-        # объем → мл
-        "cup": 240,
-        "cups": 240,
     }
 
 MEAL_TYPE_SYNONYMS = {
