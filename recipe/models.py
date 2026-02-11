@@ -4,7 +4,7 @@ from django.core.validators import MinValueValidator
 from decimal import Decimal
 from app import settings
 from app.models import StatusChoices, TimestampedModel, StatusModel
-from recipe.choices import MealType, Unit
+from recipe.choices import MealType, Source, Unit
 
 
 class Recipe(TimestampedModel, StatusModel):
@@ -36,10 +36,9 @@ class Recipe(TimestampedModel, StatusModel):
     )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        null=True,
-        blank=True,
         on_delete=models.SET_NULL,
-        related_name="recipes"
+        null=True,
+        related_name="created_recipes"
     )
 
     class Meta:
@@ -83,7 +82,11 @@ class RecipeIngredient(TimestampedModel):
 class RecipeSource(TimestampedModel, StatusModel):
     url = models.URLField(
         verbose_name=_("Ссылка"),
-        unique=True,
+    )
+    source = models.CharField(
+        max_length=50,
+        choices=Source.choices,
+        verbose_name=_("Источник"),
     )
     title = models.CharField(
         max_length=512,
@@ -107,11 +110,23 @@ class RecipeSource(TimestampedModel, StatusModel):
         blank=True,
         null=True,
     )
+    added_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="added_recipe_sources"
+    )
 
     class Meta:
         verbose_name = _("Источник рецепта")
         verbose_name_plural = _("Источники рецептов")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["url", "added_by"],
+                name="unique_recipe_per_user"
+            )
+        ]
     
     def __str__(self):
-        return f"Recipe Source: {self.url}, {self.title}, {self.status}, {self.metadata}, {self.parsed_recipe}, {self.error_message}"
+        return f"Recipe Source: {self.url}, {self.title}, {self.status}, {self.source}, {self.parsed_recipe}, {self.error_message}"
     

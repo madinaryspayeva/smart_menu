@@ -3,8 +3,10 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
 from api.v1.recipe.serializers import ParseUrlSerializer, RecipeSourceSerializer
+from api.v1.recipe.services.url_classifier import UrlClassifier
 from api.v1.recipe.tasks import parse_recipe_url, parse_video_url
 from app.models import StatusChoices
+from recipe.choices import Source
 from recipe.models import RecipeSource
 
 
@@ -15,25 +17,32 @@ class ParseUrlAPIView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
         url = serializer.validated_data["url"]
 
+        classifier = UrlClassifier()
+        url_info = classifier.classify(url)
+
+        print(url_info, "!!!!!URL INFO!!!!")
         recipe_source, created = RecipeSource.objects.get_or_create(
             url=url,
+            added_by=request.user,
             defaults={
                 "status": StatusChoices.PENDING,
+                "source": url_info.source,
             }
         )
 
         if created or recipe_source.status in [
             StatusChoices.PENDING,
             StatusChoices.ERROR,
-            StatusChoices.DONE,
             StatusChoices.PROCESSING,
+            StatusChoices.DONE,
         ]:
-            parse_video_url.delay(recipe_source.id)
-            # parse_recipe_url.delay(recipe_source.id)
-        
+            if url_info.source == Source.WEBSITE:
+                parse_recipe_url.delay(recipe_source.id)
+            else:  
+                parse_video_url.delay(recipe_source.id)
+            
         return Response({
             "id": recipe_source.id,
             "status": recipe_source.get_status_display(),

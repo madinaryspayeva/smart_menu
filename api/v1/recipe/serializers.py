@@ -12,6 +12,8 @@ class RecipeSourceSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "url",
+            "source",
+            "added_by",
             "title",
             "status",
             "metadata",

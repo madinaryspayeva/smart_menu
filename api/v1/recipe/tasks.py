@@ -58,7 +58,11 @@ def parse_video_url(self, recipe_source_id):
     
         llm_parser = LLMService()
         normalized_data = llm_parser.normalize_text(video_data["description"] + " " + video_data["transcript"])
+        print(normalized_data, "!!!!!NORMALIZED DATA!!!!")
+
         raw_data = llm_parser.llm_json(prompt=normalized_data)
+
+        print(raw_data, "!!!!!RAW DATA!!!!")
         raw_data["thumbnail"] = video_data["thumbnail"]
 
         parsed_data = RecipeBuilderService().build_recipe(raw_data)
