@@ -7,7 +7,54 @@ from app.models import StatusChoices, TimestampedModel, StatusModel
 from recipe.choices import MealType, Source, Unit
 
 
+class RecipeSource(TimestampedModel, StatusModel):
+    url = models.URLField(
+        verbose_name=_("Ссылка"),
+        unique=True,
+    )
+    source = models.CharField(
+        max_length=50,
+        choices=Source.choices,
+        verbose_name=_("Источник"),
+    )
+    title = models.CharField(
+        max_length=512,
+        blank=True,
+        null=True,
+    )
+    status = models.CharField(
+        max_length=10,
+        choices=StatusChoices.choices,
+        default=StatusChoices.PENDING, 
+        verbose_name=_('Статус')
+    )
+    metadata = models.JSONField(
+        default=dict,
+    )
+    parsed_recipe = models.JSONField(
+        default=dict,
+        blank=True,
+    )
+    error_message = models.TextField(
+        blank=True,
+        null=True,
+    )
+
+    class Meta:
+        verbose_name = _("Источник рецепта")
+        verbose_name_plural = _("Источники рецептов")
+    
+    def __str__(self):
+        return f"Recipe Source: {self.url}, {self.title}, {self.status}, {self.source}, {self.parsed_recipe}, {self.error_message}"
+
+
 class Recipe(TimestampedModel, StatusModel):
+    source = models.ForeignKey(
+        RecipeSource,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="recipes",
+    )
     name = models.CharField(
         max_length=255,
         verbose_name=_("Название"),
@@ -36,9 +83,9 @@ class Recipe(TimestampedModel, StatusModel):
     )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         null=True,
-        related_name="created_recipes"
+        related_name="recipes"
     )
 
     class Meta:
@@ -77,56 +124,3 @@ class RecipeIngredient(TimestampedModel):
     class Meta:
         verbose_name = _("Ингредиент")
         verbose_name_plural = _("Ингредиенты")
-
-
-class RecipeSource(TimestampedModel, StatusModel):
-    url = models.URLField(
-        verbose_name=_("Ссылка"),
-    )
-    source = models.CharField(
-        max_length=50,
-        choices=Source.choices,
-        verbose_name=_("Источник"),
-    )
-    title = models.CharField(
-        max_length=512,
-        blank=True,
-        null=True,
-    )
-    status = models.CharField(
-        max_length=10,
-        choices=StatusChoices.choices,
-        default=StatusChoices.PENDING, 
-        verbose_name=_('Статус')
-    )
-    metadata = models.JSONField(
-        default=dict,
-    )
-    parsed_recipe = models.JSONField(
-        default=dict,
-        blank=True,
-    )
-    error_message = models.TextField(
-        blank=True,
-        null=True,
-    )
-    added_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name="added_recipe_sources"
-    )
-
-    class Meta:
-        verbose_name = _("Источник рецепта")
-        verbose_name_plural = _("Источники рецептов")
-        constraints = [
-            models.UniqueConstraint(
-                fields=["url", "added_by"],
-                name="unique_recipe_per_user"
-            )
-        ]
-    
-    def __str__(self):
-        return f"Recipe Source: {self.url}, {self.title}, {self.status}, {self.source}, {self.parsed_recipe}, {self.error_message}"
-    

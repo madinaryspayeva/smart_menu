@@ -13,7 +13,6 @@ class RecipeSourceSerializer(serializers.ModelSerializer):
             "id",
             "url",
             "source",
-            "added_by",
             "title",
             "status",
             "metadata",
