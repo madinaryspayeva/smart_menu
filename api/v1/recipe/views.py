@@ -33,7 +33,7 @@ class ParseUrlAPIView(generics.CreateAPIView):
             }
         )
 
-        if created or recipe_source.status in [ StatusChoices.ERROR, ]:
+        if created or recipe_source.status in [ StatusChoices.ERROR, StatusChoices.PROCESSING ]: #remove not from created
             recipe_source.status = StatusChoices.PROCESSING
             recipe_source.save(update_fields=["status"])
             
@@ -42,45 +42,51 @@ class ParseUrlAPIView(generics.CreateAPIView):
             else:  
                 parse_video_url.delay(recipe_source.id, request.user.id)
         
-        recipe = None
-        if recipe_source.status == StatusChoices.DONE and recipe_source.parsed_recipe:
-            parsed = recipe_source.parsed_recipe
-            with transaction.atomic():
-                recipe = Recipe.objects.create(
-                    source=recipe_source,
-                    created_by=request.user,
-                    name=parsed.get("title"),
-                    description="\n".join(step.get("step", "") for step in parsed.get("steps", [])),
-                    meal_type=parsed.get("meal_type") or "",
-                    tips=parsed.get("tips"),
-                )
+        # проверяем наличие рецепта у request.user
+        recipe = Recipe.objects.filter(
+            source=recipe_source,
+            created_by=request.user,
+        ).first()
 
-                thumbnail_url = parsed.get("thumbnail")
-                if thumbnail_url:
-                    image_bytes, filename = ImageService.download_image(thumbnail_url)
-                    ImageService.save_image_to_model(recipe, "image", image_bytes, filename)
-
-                for ing in parsed.get("ingredients", []):
-                    quantity = ing.get("amount")
-                    unit = ing.get("unit")
-
-                    product = Product.objects.filter(
-                        name__iexact=ing.get("name"),
+        if not recipe:
+            if recipe_source.status == StatusChoices.DONE and recipe_source.parsed_recipe:
+                parsed = recipe_source.parsed_recipe
+                with transaction.atomic():
+                    recipe = Recipe.objects.create(
+                        source=recipe_source,
                         created_by=request.user,
-                    ).first()
-
-                    if not product:
-                        product = Product.objects.create(
-                            name=ing.get("name"),
-                            created_by=request.user,
-                        )
-                    
-                    RecipeIngredient.objects.create(
-                        recipe=recipe,
-                        product=product,
-                        quantity=quantity,
-                        unit=unit
+                        name=parsed.get("title"),
+                        description="\n".join(step.get("step", "") for step in parsed.get("steps", [])),
+                        meal_type=parsed.get("meal_type") or "",
+                        tips=parsed.get("tips"),
                     )
+
+                    thumbnail_url = parsed.get("thumbnail")
+                    if thumbnail_url:
+                        image_bytes, filename = ImageService.download_image(thumbnail_url)
+                        ImageService.save_image_to_model(recipe, "image", image_bytes, filename)
+
+                    for ing in parsed.get("ingredients", []):
+                        quantity = ing.get("amount")
+                        unit = ing.get("unit")
+
+                        product = Product.objects.filter(
+                            name__iexact=ing.get("name"),
+                            created_by=request.user,
+                        ).first()
+
+                        if not product:
+                            product = Product.objects.create(
+                                name=ing.get("name"),
+                                created_by=request.user,
+                            )
+                        
+                        RecipeIngredient.objects.create(
+                            recipe=recipe,
+                            product=product,
+                            quantity=quantity,
+                            unit=unit
+                        )
 
             
         return Response({

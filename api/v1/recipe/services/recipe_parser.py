@@ -52,10 +52,10 @@ class WebParserService:
             "source_url": url,
             "title": None,
             "ingredients": [],
-            "instructions": [],
+            "steps": [],
             "cook_time": None,
             "servings": None,
-            "image": None,
+            "thumbnail": None,
         } 
 
         # 1. Пробуем структурированные данные (JSON-LD)
@@ -69,11 +69,11 @@ class WebParserService:
         
         if not result['ingredients']:
             ingredients = self._find_list_by_selectors(soup, selectors.INGREDIENTS_SELECTORS)
-            result['ingredients'] = [self._clean_text(ing) for ing in ingredients]
+            result['ingredients'] = [{"raw": self._clean_text(ing)} for ing in ingredients]
         
-        if not result['instructions']:
+        if not result['steps']:
             instructions = self._find_list_by_selectors(soup, selectors.INSTRUCTIONS_SELECTORS)
-            result['instructions'] = [self._clean_text(step) for step in instructions]
+            result['steps'] = [{"step": self._clean_text(step)} for step in instructions]
         
         if not result['cook_time']:
             result['cook_time'] = self._find_by_selectors(soup, selectors.COOK_TIME_SELECTORS)
@@ -81,8 +81,8 @@ class WebParserService:
         if not result['servings']:
             result['servings'] = self._find_by_selectors(soup, selectors.SERVINGS_SELECTORS)
         
-        if not result['image']:
-            result['image'] = self._find_image(soup)
+        if not result['thumbnail']:
+            result['thumbnail'] = self._find_image(soup)
         
         return result
 
@@ -117,7 +117,7 @@ class WebParserService:
 
         ingredients = data.get("recipeIngredient", [])
         if isinstance(ingredients, list):
-            result["ingredients"] = [self._clean_text(ingredient) for ingredient in ingredients]
+            result["ingredients"] = [{"raw": self._clean_text(ingredient)} for ingredient in ingredients]
 
 
         instructions = data.get("recipeInstructions", [])
@@ -128,7 +128,7 @@ class WebParserService:
                     instructions_text.append(step.get("text"))
                 elif isinstance(step, str):
                     instructions_text.append(step)
-                result["instructions"] = [self._clean_text(step) for step in instructions_text]
+            result["steps"] = [{"step": self._clean_text(step)} for step in instructions_text]
 
 
         result["cook_time"] = data.get("cookTime")
@@ -139,11 +139,11 @@ class WebParserService:
 
         image = data.get("image")
         if isinstance(image, dict):
-            result["image"] = image.get("url")
+            result["thumbnail"] = image.get("url")
         elif isinstance(image, list) and len(image) > 0:
-            result["image"] = image[0].get("url") if isinstance(image[0], dict) else image[0]
+            result["thumbnail"] = image[0].get("url") if isinstance(image[0], dict) else image[0]
         elif isinstance(image, str):
-            result["image"] = image 
+            result["thumbnail"] = image 
 
         return result
     

@@ -183,6 +183,7 @@ UNIT_SYNONYMS = {
     "ст.л.": Unit.TBSP,
     "ст.л": Unit.TBSP,
     "ст л": Unit.TBSP,
+    "ст. л.": Unit.TBSP,
 }
 
 UNIT_KEYS = sorted(UNIT_SYNONYMS.keys(), key=len, reverse=True)
