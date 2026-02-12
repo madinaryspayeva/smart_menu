@@ -13,7 +13,7 @@ class RecipeSource(TimestampedModel, StatusModel):
         unique=True,
     )
     source = models.CharField(
-        max_length=50,
+        max_length=255,
         choices=Source.choices,
         verbose_name=_("Источник"),
     )
@@ -61,15 +61,17 @@ class Recipe(TimestampedModel, StatusModel):
     )
     servings = models.PositiveIntegerField(
         verbose_name=_("Количество порций"),
+        null=True,
+        blank=True,
     )
     description = models.TextField(
         verbose_name=_("Описание"),
     )
     image = models.ImageField(
         upload_to="recipes/",
+        blank=True, 
+        null=True,
         verbose_name=_("Изображение"),
-        blank=True,
-        null=True
     )
     meal_type = models.CharField(
         max_length=50,
@@ -112,12 +114,16 @@ class RecipeIngredient(TimestampedModel):
     quantity = models.DecimalField(
         max_digits=10,
         decimal_places=2,
+        null=True,
+        blank=True,
         validators=[MinValueValidator(Decimal('0.0'))],
         verbose_name=_("Количество"),
     )
     unit = models.CharField(
         max_length=50,
         choices=Unit.choices,
+        null=True,
+        blank=True,
         verbose_name=_("Единица измерения"),
     )
 

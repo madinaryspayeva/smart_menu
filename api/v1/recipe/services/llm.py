@@ -15,22 +15,32 @@ class LLMService:
         self.client = ollama.Client(host=os.getenv("HOST"))
         self.model = os.getenv("MODEL")
     
-    def normalize_text(self, text: str) -> str:
+    def extract_recipe(self, raw_text: str) -> dict:
         prompt = f"""
                     You are given a raw transcript of a cooking video.
                     The text may contain speech recognition errors.
 
-                    Task:
-                    - restore correct words
-                    - fix spelling and obvious transcription mistakes
-                    - keep the original meaning
-                    - preserve the original language
-                    - output plain text only
+                    Your tasks:
+                    1. Fix obvious transcription errors.
+                    2. Extract structured recipe data.
+                    3. Detect meal_type from context (breakfast, lunch, dinner, soup, dessert, drink, snack, baby_food, side_dish).
+
+                    Rules:
+                    - Do NOT invent ingredients.
+                    - If meal type is unclear — choose the most appropriate based on context.
+                    - If still unclear — use null.
+                    - Return ONLY valid JSON.
+                    - No explanations.
+                    - No markdown.
+                    - No text outside JSON.
+
+                    Schema:
+                    {LLM_SCHEMA}
 
                     Text:
-                    {text}
-                """
-        
+                    {raw_text}
+        """
+
         response = self.client.chat(
             model=self.model,
             messages=[{
@@ -38,37 +48,9 @@ class LLMService:
                 "content": prompt
             }],
             options={
-                "temperature": 0.2,
-                "num_ctx": 2048,
-            }
-        )
-
-        return response["message"]["content"].strip()
-    
-    def llm_json(self, prompt: str) -> dict:
-        full_prompt = f"""
-                        You are extracting data from a recipe text. 
-                        Return ONLY valid JSON strictly according to the schema. 
-                        No text outside of JSON. 
-                        Rules: 
-                        - do not invent ingredients
-
-                        Schema:
-                        {LLM_SCHEMA}
-
-                        Request:
-                        {prompt}
-                    """
-        
-        response = self.client.chat(
-            model=self.model,
-            messages=[{
-                "role": "user",
-                "content": full_prompt
-            }],
-            options={
                 "temperature": 0.1,
                 "num_ctx": 2048,
+                "num_predict": 700,    
                 "repeat_penalty": 1.1,
             }
         )

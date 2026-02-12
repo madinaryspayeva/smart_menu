@@ -16,7 +16,6 @@ class RecipeBuilderService:
         return {
             "title": raw.get("title"),
             "description": raw.get("description"),
-            "thumbnail": raw.get("thumbnail"),
             "meal_type": self._parse_meal_type(raw),
             "ingredients": [self._parse_ingredient(ing) for ing in raw.get("ingredients")],
             "steps": raw.get("steps"),

@@ -175,12 +175,14 @@ UNIT_SYNONYMS = {
     "teaspoons": Unit.TSP,
     "ч.л.": Unit.TSP,
     "ч.л": Unit.TSP,
+    "ч л": Unit.TSP,
 
     "tbsp": Unit.TBSP,
     "tablespoon": Unit.TBSP,
     "tablespoons": Unit.TBSP,
     "ст.л.": Unit.TBSP,
     "ст.л": Unit.TBSP,
+    "ст л": Unit.TBSP,
 }
 
 UNIT_KEYS = sorted(UNIT_SYNONYMS.keys(), key=len, reverse=True)
