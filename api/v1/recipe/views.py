@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404
 from django.db import transaction
 
 from api.v1.recipe.serializers import ParseUrlSerializer, RecipeSourceSerializer
+from api.v1.recipe.services.image_service import ImageService
 from api.v1.recipe.services.url_classifier import UrlClassifier
 from api.v1.recipe.tasks import parse_recipe_url, parse_video_url
 from app.models import StatusChoices
@@ -52,8 +53,12 @@ class ParseUrlAPIView(generics.CreateAPIView):
                     description="\n".join(step.get("step", "") for step in parsed.get("steps", [])),
                     meal_type=parsed.get("meal_type") or "",
                     tips=parsed.get("tips"),
-                    image=parsed.get("thumbnail"),
                 )
+
+                thumbnail_url = parsed.get("thumbnail")
+                if thumbnail_url:
+                    image_bytes, filename = ImageService.download_image(thumbnail_url)
+                    ImageService.save_image_to_model(recipe, "image", image_bytes, filename)
 
                 for ing in parsed.get("ingredients", []):
                     quantity = ing.get("amount")
