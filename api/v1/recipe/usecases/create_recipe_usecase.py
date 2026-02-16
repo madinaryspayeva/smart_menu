@@ -1,6 +1,7 @@
 from dataclasses import asdict
 from api.v1.recipe.interfaces.recipe_parser import IRecipeBuilderService, IRecipeParserService, IRecipeRepository
 from api.v1.recipe.interfaces.uow import IUnitOfWork
+from api.v1.recipe.mappers.recipe_mapper import RecipeMapper
 from api.v1.recipe.services.llm import LLMService
 
 
@@ -41,7 +42,8 @@ class CreateRecipeUseCase:
         final_dto = self.builder.build(dto)
 
         with self.uow:
-            self.repository.update_source_parsed_data(source_id, asdict(final_dto))
+            parsed_dict = RecipeMapper.dto_to_dict(final_dto)
+            self.repository.update_source_parsed_data(source_id, parsed_dict)
             recipe = self.repository.save(source_id, user_id, final_dto)
         
         return recipe
@@ -56,5 +58,8 @@ class CreateRecipeFromExistingSourceUseCase:
         self.repository = repository
     
     def execute(self, user_id: str, source_id: str):
-        dto = self.repository.get_parsed_data_from_source(source_id)
+        parsed_dict = self.repository.get_parsed_data_from_source(source_id)
+        
+        dto = RecipeMapper.dict_to_dto(parsed_dict)
+
         return self.repository.create_from_dto(dto, user_id, source_id)
