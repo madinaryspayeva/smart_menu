@@ -1,13 +1,10 @@
 from celery import shared_task
-from django.core.exceptions import ObjectDoesNotExist
-from django.db import transaction
 
 from api.v1.recipe.repositories.recipe_repository import RecipeRepository
-from api.v1.recipe.services.image_service import ImageService
 from api.v1.recipe.services.recipe_builder import RecipeBuilderService
+from api.v1.recipe.uow.django_uow import DjangoUnitOfWork
 from api.v1.recipe.usecases.create_recipe_usecase import CreateRecipeUseCase
-from product.models import Product
-from recipe.models import Recipe, RecipeIngredient, RecipeSource
+from recipe.models import RecipeSource
 from app.models import StatusChoices
 from api.v1.recipe.services.web_parser import WebParserService
 from api.v1.recipe.services.video_parser import VideoParserService
@@ -24,9 +21,15 @@ def parse_web_recipe(self, source_id: str, user_id: str, url: str):
         parser=WebParserService(),
         builder=RecipeBuilderService(),
         repository=RecipeRepository(),
+        uow=DjangoUnitOfWork()
     )
 
-    use_case.execute(source_id, user_id, url)
+    try:
+        use_case.execute(source_id, user_id, url)
+    except Exception:
+        RecipeSource.objects.filter(id=source_id).update(status=StatusChoices.ERROR)
+        raise
+
  
     
 
@@ -41,7 +44,13 @@ def parse_video_recipe(self, source_id: str, user_id: str, url: str):
         parser=VideoParserService(),
         builder=RecipeBuilderService(),
         repository=RecipeRepository(),
+        uow=DjangoUnitOfWork(),
+        llm=LLMService()
     )
 
-    use_case.execute(source_id, user_id, url)
+    try:
+        use_case.execute(source_id, user_id, url)
+    except Exception:
+        RecipeSource.objects.filter(id=source_id).update(status=StatusChoices.ERROR)
+        raise
     

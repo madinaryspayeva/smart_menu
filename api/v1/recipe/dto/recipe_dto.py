@@ -4,10 +4,10 @@ from typing import List, Optional
 
 @dataclass
 class IngredientDTO:
-    raw: Optional[str]
-    name: str
-    amount: Optional[float]
-    unit: Optional[str]
+    name: Optional[str] = None
+    amount: Optional[float] = None
+    unit: Optional[str] = None
+    raw: Optional[str] = None
 
 
 @dataclass

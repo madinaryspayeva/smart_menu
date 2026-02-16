@@ -2,7 +2,7 @@ import requests
 import json
 import re
 from bs4 import BeautifulSoup
-from urllib.parse import urlparse
+
 from django.core.exceptions import ValidationError
 
 import api.v1.recipe.constants as selectors
@@ -35,7 +35,7 @@ class WebParserService(IRecipeParserService):
             recipe_data = self._parse_recipe_data(soup, url)
 
             ingredients = [
-                IngredientDTO(name=i["raw"], amount=None, unit=None)
+                IngredientDTO(raw=i["raw"], name=None, amount=None, unit=None)
                 for i in recipe_data.get("ingredients", [])
             ]
             steps = [
@@ -87,7 +87,7 @@ class WebParserService(IRecipeParserService):
             result['ingredients'] = [{"raw": self._clean_text(ing)} for ing in ingredients]
         
         if not result['steps']:
-            instructions = self._find_list_by_selectors(soup, selectors.INSTRUCTIONS_SELECTORS)
+            instructions = self._find_steps(soup, selectors.INSTRUCTIONS_SELECTORS)
             result['steps'] = [{"step": self._clean_text(step)} for step in instructions]
         
         if not result['cook_time']:
@@ -176,11 +176,26 @@ class WebParserService(IRecipeParserService):
             if elements:
                 texts = []
                 for element in elements:
-                    text = self._clean_text(element.get_text())
-                    if text:
-                        texts.append(text)
+                    spans = element.select("span")
+                    for span in spans:
+                        text = self._clean_text(span.get_text())
+                        if text:
+                            texts.append(text)
                 return texts
         return []
+    
+    def _find_steps(self, soup, selectors):
+    
+        steps = []
+        for selector in selectors:
+            elements = soup.select(selector)
+            for element in elements:
+                p_tags = element.select("p")
+                for p in p_tags:
+                    text = self._clean_text(p.get_text())
+                    if text:
+                        steps.append(text)
+        return steps
     
     def _find_image(self, soup):
         for selector in selectors.IMAGE_SELECTORS:

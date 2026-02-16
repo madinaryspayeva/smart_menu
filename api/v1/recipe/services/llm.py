@@ -59,11 +59,11 @@ class LLMService:
         content = self._extract_json(response["message"]["content"])
         data = json.loads(repair_json(content))
 
-        ingredients = [IngredientDTO(name=i.get("name"), amount=i.get("amount"), unit=i.get("unit")) for i in data.get("ingredients", [])]
+        ingredients = [IngredientDTO(raw=i.get("raw")) for i in data.get("ingredients", [])]
         steps = [StepDTO(step=s.get("step")) for s in data.get("steps", [])]
 
         return RecipeDTO(
-            name=data.get("title"),
+            title=data.get("title"),
             description=data.get("description"),
             meal_type=data.get("meal_type"),
             ingredients=ingredients,
