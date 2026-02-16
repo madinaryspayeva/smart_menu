@@ -6,7 +6,7 @@ from django.db import transaction
 from api.v1.recipe.serializers import ParseUrlSerializer, RecipeSourceSerializer
 from api.v1.recipe.services.image_service import ImageService
 from api.v1.recipe.services.url_classifier import UrlClassifier
-from api.v1.recipe.tasks import parse_recipe_url, parse_video_url
+from api.v1.recipe.tasks import parse_video_recipe, parse_web_recipe
 from app.models import StatusChoices
 from product.models import Product
 from recipe.choices import MealType, Source
@@ -38,9 +38,9 @@ class ParseUrlAPIView(generics.CreateAPIView):
             recipe_source.save(update_fields=["status"])
             
             if url_info.source == Source.WEBSITE:
-                parse_recipe_url.delay(recipe_source.id, request.user.id)
+                parse_web_recipe.delay(recipe_source.id, request.user.id, url_info.final_url)
             else:  
-                parse_video_url.delay(recipe_source.id, request.user.id)
+                parse_video_recipe.delay(recipe_source.id, request.user.id, url_info.final_url)
         
         # проверяем наличие рецепта у request.user
         recipe = Recipe.objects.filter(

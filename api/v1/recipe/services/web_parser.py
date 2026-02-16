@@ -6,9 +6,11 @@ from urllib.parse import urlparse
 from django.core.exceptions import ValidationError
 
 import api.v1.recipe.constants as selectors
+from api.v1.recipe.dto.recipe_dto import IngredientDTO, RecipeDTO, StepDTO
+from api.v1.recipe.interfaces.recipe_parser import IRecipeParserService
 
 
-class WebParserService:
+class WebParserService(IRecipeParserService):
     """
     Сервис для парсинга рецептов с сайтов
     """
@@ -20,24 +22,37 @@ class WebParserService:
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         })
     
-    def parse_recipe_from_url(self, url):
+    def parse(self, url: str) -> RecipeDTO:
         """
-        Основной метод - парсит рецепт по URL
+        Основной метод - парсит рецепт по URL и возвращает RecipeDTO
         """
         try:
-            response = self.session.get(url, timeout=self.timeout)
-            response.raise_for_status()
+            resp = self.session.get(url, timeout=self.timeout)
+            resp.raise_for_status()
 
-            soup = BeautifulSoup(response.content, "html.parser")
+            soup = BeautifulSoup(resp.content, "html.parser")
 
-            result = self._parse_recipe_data(soup, url)
+            recipe_data = self._parse_recipe_data(soup, url)
 
-            if not result.get('title'):
-                raise ValidationError("Не удалось найти название рецепта")
-            if not result.get('ingredients'):
-                raise ValidationError("Не удалось найти ингредиенты")
-                
-            return result
+            ingredients = [
+                IngredientDTO(name=i["raw"], amount=None, unit=None)
+                for i in recipe_data.get("ingredients", [])
+            ]
+            steps = [
+                StepDTO(step=s["step"])
+                for s in recipe_data.get("steps", [])
+            
+            ]
+
+            return RecipeDTO(
+                title=recipe_data.get("title"),
+                description=recipe_data.get("description"),
+                meal_type=recipe_data.get("meal_type"),
+                ingredients=ingredients,
+                steps=steps,
+                tips=recipe_data.get("tips"),
+                thumbnail=recipe_data.get("thumbnail")
+            )
         
         except requests.RequestException as e:
             raise ValidationError(f"Ошибка загрузки страницы: {e}")

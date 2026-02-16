@@ -4,6 +4,7 @@ import json
 from json_repair import repair_json
 
 from api.v1.recipe.constants import LLM_SCHEMA
+from api.v1.recipe.dto.recipe_dto import IngredientDTO, RecipeDTO, StepDTO
 
 
 class LLMService:
@@ -15,7 +16,7 @@ class LLMService:
         self.client = ollama.Client(host=os.getenv("HOST"))
         self.model = os.getenv("MODEL")
     
-    def extract_recipe(self, raw_text: str) -> dict:
+    def extract_recipe(self, raw_text: str) -> RecipeDTO:
         prompt = f"""
                     You are given a raw transcript of a cooking video.
                     The text may contain speech recognition errors.
@@ -56,11 +57,20 @@ class LLMService:
         )
 
         content = self._extract_json(response["message"]["content"])
+        data = json.loads(repair_json(content))
 
-        try:
-            return json.loads(repair_json(content))
-        except json.JSONDecodeError:
-            raise ValueError(f"Invalid JSON from LLM: {content}")
+        ingredients = [IngredientDTO(name=i.get("name"), amount=i.get("amount"), unit=i.get("unit")) for i in data.get("ingredients", [])]
+        steps = [StepDTO(step=s.get("step")) for s in data.get("steps", [])]
+
+        return RecipeDTO(
+            name=data.get("title"),
+            description=data.get("description"),
+            meal_type=data.get("meal_type"),
+            ingredients=ingredients,
+            steps=steps,
+            tips=data.get("tips"),
+            thumbnail=data.get("thumbnail"),
+        )
 
     def _extract_json(self, content: str) -> str:
         content = content.strip()

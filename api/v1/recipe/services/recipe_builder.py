@@ -1,35 +1,42 @@
 import re
 import sys
 from api.v1.recipe.constants import AMOUNT_UNIT_RE, MEAL_TYPE_SYNONYMS, UNIT_SYNONYMS
+from api.v1.recipe.dto.recipe_dto import IngredientDTO, RecipeDTO
+from api.v1.recipe.interfaces.recipe_parser import IRecipeBuilderService
 from api.v1.recipe.utils.helpers import UnitConverter, clean_name
 from recipe.choices import Unit
 
 RANGE_RE = re.compile(r"(\d+(?:[.,]\d+)?)\s*[-–]\s*(\d+(?:[.,]\d+)?)")
 
-class RecipeBuilderService:
+class RecipeBuilderService(IRecipeBuilderService):
     """
     Сервис для построения корректной структуры рецепта
     """
     
-    def build_recipe(self, raw: dict) -> dict:
+    def build(self, dto: RecipeDTO) -> RecipeDTO:
 
-        return {
-            "title": raw.get("title"),
-            "description": raw.get("description"),
-            "meal_type": self._parse_meal_type(raw),
-            "ingredients": [self._parse_ingredient(ing) for ing in raw.get("ingredients")],
-            "steps": raw.get("steps"),
-            "tips": raw.get("tips"),
-        }
+        normalized_ingredients = [
+            self._parse_ingredient(ing) for ing in dto.ingredients
+        ]
+
+        return RecipeDTO(
+            title=dto.title,
+            description=dto.description,
+            meal_type=self._parse_meal_type(dto),
+            ingredients=normalized_ingredients,
+            steps=dto.steps,
+            tips=dto.tips,
+            thumbnail=dto.thumbnail,
+        )
     
-    def _parse_meal_type(self, raw: str | None) -> str | None:
-        context = raw.get("meal_type")
+    def _parse_meal_type(self, dto: RecipeDTO):
+        context = dto.meal_type
 
         if not context:
             context = " ".join(filter(None, [
-            raw.get("title"),
-            raw.get("description"),
-            " ".join(step["step"] for step in raw.get("steps", []))
+            dto.title,
+            dto.description,
+            " ".join(step.step for step in dto.steps)
         ]))
 
         for key, meal_type in MEAL_TYPE_SYNONYMS.items():
@@ -72,15 +79,11 @@ class RecipeBuilderService:
 
         return None
     
-    def _parse_ingredient(self, raw: dict) -> dict:
-        text = raw.get("raw").lower()
+    def _parse_ingredient(self, ingredient: IngredientDTO) -> IngredientDTO:
+        text = ingredient.raw.lower()
     
-        if not isinstance(text, str):
-            return {
-                "name": None,
-                "amount": None,
-                "unit": None,
-            }
+        if not text:
+            return ingredient
         
         # Проверка "по вкусу" и подобных единиц без чисел
         for key, unit in UNIT_SYNONYMS.items():
@@ -122,9 +125,10 @@ class RecipeBuilderService:
 
         name = clean_name(text)
 
-        return {
-            "name": name,
-            "amount": amount,
-            "unit": unit,
-        }
+        return IngredientDTO(
+            raw=ingredient.raw,
+            name=name,
+            amount=amount,
+            unit=unit
+        )
  

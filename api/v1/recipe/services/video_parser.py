@@ -1,11 +1,13 @@
 import yt_dlp
 import os
 import tempfile
-import whisper
 from faster_whisper import WhisperModel
 
+from api.v1.recipe.dto.recipe_dto import RecipeDTO
+from api.v1.recipe.interfaces.recipe_parser import IRecipeParserService
 
-class VideoParserService:
+
+class VideoParserService(IRecipeParserService):
     """
     Сервис для парсинга видео
     """
@@ -35,20 +37,30 @@ class VideoParserService:
             )
         return cls._model
 
-    def parse_video(self, url:str) -> str:
+    def parse(self, url:str) -> RecipeDTO:
         """
         Основной метод - парсит видео по URL
         """
 
         audio_path, description, thumbnail = self._extract_audio_and_description(url)
-        transcript =  self._transcribe_audio(audio_path)
+        if not os.path.exists(audio_path):
+            raise FileNotFoundError(f"Audio file not found: {audio_path}")
+        
+        try:
+            transcript =  self._transcribe_audio(audio_path)
+        finally:
+            if os.path.exists(audio_path):
+                os.remove(audio_path)
 
-        full_data = {
-            "description":description,
-            "transcript":transcript,
-            "thumbnail": thumbnail,
-        }
-        return  full_data
+        return RecipeDTO(
+            title="Без названия",
+            description=f"{description} {transcript}",
+            meal_type=None,
+            ingredients=[],
+            steps=[],
+            tips=None,
+            thumbnail=thumbnail
+        )
     
     def _extract_audio_and_description(self, url:str) -> str:
         """
@@ -61,9 +73,12 @@ class VideoParserService:
             description = info.get("description", "") or ""
             thumbnail = info.get("thumbnail", "")
 
-            downloaded_file = ydl.prepare_filename(info)
-            audio_path = os.path.splitext(downloaded_file)[0] + ".mp3" 
-            # read documentation to optimize 
+            if "requested_downloads" in info:
+                audio_path = info["requested_downloads"][0]["filepath"]
+            else:
+                downloaded_file = ydl.prepare_filename(info)
+                audio_path = os.path.splitext(downloaded_file)[0] + ".mp3" 
+           
         return audio_path, description, thumbnail
     
     def _transcribe_audio(self, audio_path:str) -> str:
