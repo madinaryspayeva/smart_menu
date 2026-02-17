@@ -1,7 +1,6 @@
 from django.core.exceptions import ValidationError
-from django.db import transaction
 
-from api.v1.recipe.dto.recipe_dto import IngredientDTO, RecipeDTO, StepDTO
+from api.v1.recipe.dto.recipe_dto import RecipeDTO
 from api.v1.recipe.interfaces.recipe_parser import IRecipeRepository
 from api.v1.recipe.services.image_service import ImageService
 from app.models import StatusChoices
@@ -71,24 +70,6 @@ class RecipeRepository(IRecipeRepository):
             )
 
         return recipe_obj
-    
-    # def _restore_dto_from_dict(self, dto_dict: dict) -> RecipeDTO:
-    #     return RecipeDTO(
-    #         title=dto_dict.get("title"),
-    #         description=dto_dict.get("description"),
-    #         meal_type=dto_dict.get("meal_type"),
-    #         tips=dto_dict.get("tips"),
-    #         thumbnail=dto_dict.get("thumbnail"),
-    #         ingredients=[
-    #             IngredientDTO(**ing)
-    #             for ing in dto_dict.get("ingredients", [])
-    #         ],
-    #         steps=[
-    #             StepDTO(**step)
-    #             for step in dto_dict.get("steps", [])
-    #         ],
-    #     )
-
     
     def update_source_parsed_data(self, source_id: str, parsed_data: dict):
         RecipeSource.objects.filter(id=source_id).update(

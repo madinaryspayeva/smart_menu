@@ -113,6 +113,7 @@ UNIT_SYNONYMS = {
     "handful": Unit.TO_TASTE,
     "пучок": Unit.TO_TASTE,
     "небольшой пучок": Unit.TO_TASTE,
+    "щепотка": Unit.TO_TASTE,
 
     # --- штуки ---
     "шт": Unit.PC,
