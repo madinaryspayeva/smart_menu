@@ -41,3 +41,31 @@ def ingredient(db, recipe, product):
         quantity=Decimal("100"),
         unit=Unit.GR
     )
+
+@pytest.fixture
+def product_1(db):
+    return Product.objects.create(name="Молоко")
+
+
+@pytest.fixture
+def product_2(db):
+    return Product.objects.create(name="Сахар")
+
+
+@pytest.fixture
+def recipe(db):
+    return Recipe.objects.create(
+        name="Тестовый рецепт",
+        servings=2,
+        description="Описание",
+        meal_type="breakfast",
+    )
+
+@pytest.fixture
+def valid_recipe_data():
+    return {
+        "name": "Омлет",
+        "servings": 2,
+        "description": "Описание",
+        "meal_type": MealType.choices[0][0],
+    }

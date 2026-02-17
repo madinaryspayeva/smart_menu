@@ -1,7 +1,7 @@
 import pytest
 from decimal import Decimal
 from django.core.exceptions import ValidationError
-from recipe.models import RecipeSource, Recipe, RecipeIngredient
+from recipe.models import RecipeSource, RecipeIngredient
 from recipe.choices import MealType, Source, Unit
 
 
@@ -27,7 +27,7 @@ class TestRecipeModel:
     def test_meal_type_values(self, recipe):
         for mt in MealType:
             recipe.meal_type = mt.value
-            recipe.full_clean()
+            recipe.full_clean(exclude=["source", "created_by"])
             assert recipe.meal_type == mt.value
 
 
