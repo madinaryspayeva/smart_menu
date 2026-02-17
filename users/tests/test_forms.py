@@ -9,8 +9,6 @@ class CustomSignupFormTests(TestCase):
         self.client = Client()
 
     def test_first_name_field_required(self):
-        """Поле first_name должно быть обязательным"""
-
         form_data = {
             "email": "test@example.com",
             "password1": "securepass",
@@ -21,8 +19,6 @@ class CustomSignupFormTests(TestCase):
         self.assertIn("first_name", form.errors)
     
     def test_form_valid_with_all_fields(self):
-         """Форма валидна при корректных данных"""
-
          form_data = {
             "email": "test@example.com",
             "password1": "securepass",
@@ -33,8 +29,6 @@ class CustomSignupFormTests(TestCase):
          self.assertTrue(form.is_valid())
     
     def test_save_creates_user_with_first_name(self):
-        """Метод save создает пользователя с указанным first_name"""
-
         form_data = {
             "email": "test@example.com",
             "password1": "securepass",
