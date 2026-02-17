@@ -11,8 +11,47 @@
                 Откройте для себя мир вкусных и простых в приготовлении блюд. 
                 Каждый рецепт - это маленькое кулинарное приключение!
             </p>
+        </div> 
+
+    <!-- CTA секция для добавления рецепта через URL -->
+    <div class="bg-gradient-to-r from-pastel-pink to-amber-400 rounded-2xl p-4 sm:p-5 text-center auth-form">
+        <h2 class="text-xl sm:text-2xl lg:text-3xl font-bebas-neue text-white mb-2 sm:mb-3">
+            Добавить рецепт
+        </h2>
+        <p class="text-white/90 text-sm sm:text-base mb-3 sm:mb-4 max-w-2xl mx-auto px-2">
+            Вставьте ссылку на рецепт с сайта или видео, и мы добавим его для вас.
+        </p>
+
+        <!-- Форма для ввода URL -->
+        <form 
+            hx-post="{% url 'recipe_api_v1:parse-url' %}" 
+            hx-target="#parse-url-result"
+            hx-swap="innerHTML"
+            class="flex flex-col sm:flex-row justify-center gap-2 max-w-lg mx-auto"
+        >
+            <input 
+                type="url" 
+                name="url" 
+                required
+                placeholder="Вставьте ссылку..." 
+                class="form-input w-full sm:w-80 px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-base"
+            >
+            <button 
+                type="submit" 
+                class="bg-white text-coral-red px-5 py-1.5 sm:px-6 sm:py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-300 text-sm sm:text-base whitespace-nowrap"
+            >
+                <i class="fas fa-plus mr-2"></i>
+                Добавить
+            </button>
+        </form>
+
+        <!-- Контейнер для вывода результата запроса -->
+        <div id="parse-url-result" class="mt-3 text-white/90 text-xs sm:text-sm">
+            <!-- HTMX вставит сюда результат -->
         </div>
-                <input type="hidden" name="products" id="hidden-products" value="{{ request.GET.products }}"> 
+    </div>
+
+     <input type="hidden" name="products" id="hidden-products" value="{{ request.GET.products }}"> 
 
         <!-- Фильтры и поиск -->
         <div class="bg-white rounded-2xl p-4 sm:p-6 auth-form mb-6 sm:mb-8 border border-pastel-pink/30">
@@ -292,18 +331,6 @@
                 </div>
             </div>
             {% endif %}
-        </div>
-
-        <!-- CTA секция -->
-        <div class="bg-gradient-to-r from-pastel-pink to-amber-400 rounded-2xl p-6 sm:p-8 text-center mt-12 sm:mt-16 auth-form">
-            <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bebas-neue text-white mb-3 sm:mb-4">Создайте свой рецепт!</h2>
-            <p class="text-white/90 text-base sm:text-lg mb-4 sm:mb-6 max-w-2xl mx-auto px-2">
-                Поделитесь своими кулинарными шедеврами с сообществом. Это просто и бесплатно!
-            </p>
-            <a href="{% url 'recipe:add' %}" class="bg-white text-coral-red px-6 sm:px-8 py-2 sm:py-3 rounded-lg font-semibold text-base sm:text-lg hover:bg-gray-100 transition-colors duration-300">
-                <i class="fas fa-plus mr-2"></i>
-                Добавить рецепт
-            </a>
         </div>
     </div>
 </div>
