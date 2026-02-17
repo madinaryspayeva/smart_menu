@@ -1,69 +1,68 @@
-from django.test import TestCase, RequestFactory
-from django.contrib.auth import get_user_model
-from django import forms
+import pytest
+from django.test import RequestFactory
 from product.forms import ProductForm
 from product.models import Product
 from product.choices import Category
 
 
-User = get_user_model()
+@pytest.mark.django_db
+class TestProductForm:
 
+    def test_form_valid_data(self, owner):
+        factory = RequestFactory()
+        request = factory.get("/")
+        request.user = owner
 
-class ProductFormTests(TestCase):
-
-    def setUp(self):
-        self.factory = RequestFactory()
-        self.user = User.objects.create_user(
-            email="testuser@example.com",
-            password="securepass"
-        )
-        self.request = self.factory.get("/")
-        self.request.user = self.user
-    
-    def test_form_valid_data(self):
         form = ProductForm(
             data={
                 "name": "Apple",
-                "category": Category.FRUITS
+                "category": Category.FRUITS,
             },
-            request=self.request
+            request=request,
         )
-        self.assertTrue(form.is_valid())
+
+        assert form.is_valid()
+
         product = form.save(commit=False)
-        product.created_by = self.user
+        product.created_by = owner
         product.save()
 
-        self.assertEqual(product.name, "Apple")
-        self.assertEqual(product.category, Category.FRUITS)
-        self.assertEqual(product.created_by, self.user)
-    
-    def test_form_duplicate_name_for_user(self):
-        Product.objects.create(name="Apple", created_by=self.user)
+        assert product.name == "Apple"
+        assert product.category == Category.FRUITS
+        assert product.created_by == owner
+
+    def test_form_duplicate_name_for_user(self, owner):
+        factory = RequestFactory()
+        request = factory.get("/")
+        request.user = owner
+
+        Product.objects.create(name="Apple", created_by=owner)
 
         form = ProductForm(
             data={
                 "name": "Apple",
-                "category": Category.FRUITS
+                "category": Category.FRUITS,
             },
-            request=self.request
+            request=request,
         )
-        self.assertFalse(form.is_valid())
-        self.assertIn("name", form.errors)
-        self.assertEqual(
-            form.errors["name"][0],
-            "Продукт с таким названием уже существует."
-        )
-    
-    def test_form_allows_same_name_for_different_users(self):
-        other_user = User.objects.create_user(email="otheruser@example.com", password="securepass")
+
+        assert not form.is_valid()
+        assert "name" in form.errors
+        assert form.errors["name"][0] == "Продукт с таким названием уже существует."
+
+    def test_form_allows_same_name_for_different_users(self, owner, other_user):
+        factory = RequestFactory()
+        request = factory.get("/")
+        request.user = owner
+
         Product.objects.create(name="Apple", created_by=other_user)
 
         form = ProductForm(
             data={
                 "name": "Apple",
-                "category": Category.FRUITS
+                "category": Category.FRUITS,
             },
-            request=self.request
+            request=request,
         )
-        self.assertTrue(form.is_valid())
-    
+
+        assert form.is_valid()

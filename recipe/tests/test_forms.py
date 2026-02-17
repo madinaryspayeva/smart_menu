@@ -4,7 +4,7 @@ from recipe.forms import (
     RecipeIngredientForm,
     RecipeIngredientFormSet,
 )
-from recipe.choices import MealType, Unit
+from recipe.choices import Unit
 
 
 @pytest.mark.django_db
@@ -94,5 +94,4 @@ class TestRecipeIngredientFormSet:
 
         assert "product" in formset.forms[0].errors
         assert "product" in formset.forms[1].errors
-
-                                       
+                                    

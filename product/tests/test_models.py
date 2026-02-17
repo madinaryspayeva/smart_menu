@@ -1,54 +1,44 @@
-from django.test import TestCase
+import pytest
 from django.core.exceptions import ValidationError
-from django.contrib.auth import get_user_model
-from product.choices import Category
 from product.models import Product
+from product.choices import Category
 
 
-User = get_user_model()
+@pytest.mark.django_db
+class TestProductModel:
 
-
-class ProductModelTests(TestCase):
-
-    def setUp(self):
-        self.user = User.objects.create_user(
-            email="testuser@example.com",
-            password="securepass"
-        )
-    
-    def test_create_product_success(self):
+    def test_create_product_success(self, owner):
         product = Product.objects.create(
             name="Apple",
             category=Category.FRUITS,
-            created_by=self.user
+            created_by=owner
         )
-        self.assertEqual(product.name, "Apple")
-        self.assertEqual(product.category, Category.FRUITS)
-        self.assertEqual(product.created_by, self.user)
 
-    def test_str_method_returns_name(self):
-        product = Product.objects.create(
-            name="Banana",
-            category=Category.FRUITS,
-            created_by=self.user
-        )
-        self.assertEqual(str(product), "Banana")
-    
-    def test_default_category(self):
+        assert product.name == "Apple"
+        assert product.category == Category.FRUITS
+        assert product.created_by == owner
+
+    def test_str_method_returns_name(self, product):
+        assert str(product) == "Apple"
+
+    def test_default_category(self, owner):
         product = Product.objects.create(
             name="Mystery Product",
-            created_by=self.user
+            created_by=owner
         )
-        self.assertEqual(product.category, Category.OTHER)
-    
-    def test_unique_together_constraint(self):
+
+        assert product.category == Category.OTHER
+
+    def test_unique_together_constraint(self, owner):
         Product.objects.create(
             name="Orange",
-            created_by=self.user
+            created_by=owner
         )
+
         duplicate = Product(
             name="Orange",
-            created_by=self.user
+            created_by=owner
         )
-        with self.assertRaises(ValidationError):
-            duplicate.full_clean() 
+
+        with pytest.raises(ValidationError):
+            duplicate.full_clean()
