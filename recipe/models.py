@@ -29,6 +29,7 @@ class RecipeSource(TimestampedModel, StatusModel):
         verbose_name=_('Статус')
     )
     metadata = models.JSONField(
+        blank=True,
         default=dict,
     )
     parsed_recipe = models.JSONField(
@@ -130,3 +131,6 @@ class RecipeIngredient(TimestampedModel):
     class Meta:
         verbose_name = _("Ингредиент")
         verbose_name_plural = _("Ингредиенты")
+    
+    def __str__(self):
+        return f"{self.quantity} {self.unit} {self.product}"
