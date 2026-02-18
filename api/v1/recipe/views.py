@@ -2,6 +2,7 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.db import transaction
+from django.core.exceptions import ValidationError
 
 from api.v1.recipe.repositories.recipe_repository import RecipeRepository
 from api.v1.recipe.serializers import ParseUrlSerializer, RecipeSourceSerializer
@@ -48,15 +49,24 @@ class ParseUrlAPIView(generics.CreateAPIView):
             
             if recipe_source.status == StatusChoices.DONE:
                 use_case = CreateRecipeFromExistingSourceUseCase(repository=repository) #TODO check ingredients and product saving
-                recipe = use_case.execute(request.user.id, recipe_source.id)
 
-                return Response(
-                    {
-                        "recipe_id": recipe.id,
-                        "message": "Recipe created from existing source",
-                    },
-                    status=status.HTTP_201_CREATED,
-                )
+                try:
+                    recipe = use_case.execute(request.user.id, recipe_source.id)
+                    return Response(
+                        {
+                            "recipe_id": recipe.id,
+                            "message": "Recipe created from existing source",
+                        },
+                        status=status.HTTP_201_CREATED,
+                    )
+                except ValidationError:
+                    return Response(
+                            {
+                                "message": "У вас уже есть этот рецепт",
+                                "recipe_id": existing_recipe.id,
+                            },
+                            status=status.HTTP_200_OK,
+                        )
             
             if recipe_source.status == StatusChoices.PROCESSING: #TODO change logic
                 return Response(
