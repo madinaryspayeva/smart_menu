@@ -75,7 +75,10 @@ class UrlClassifier:
 
     @staticmethod
     def _normalize_domain(domain: str):
-        return domain.lower().replace("www", "")
+        domain = domain.lower()
+        if domain.startswith("www."):
+            domain = domain[4:]  
+        return domain
 
     @staticmethod
     def _unknown(url: str) -> UrlInfo:
