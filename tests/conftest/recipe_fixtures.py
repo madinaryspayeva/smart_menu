@@ -1,5 +1,6 @@
 import pytest
 from decimal import Decimal
+from app.models import StatusChoices
 from recipe.choices import MealType, Source, Unit
 from recipe.models import RecipeSource, Recipe, RecipeIngredient
 
@@ -12,6 +13,16 @@ def recipe_source(db):
         source=Source.WEBSITE,
         title="Test Source"
     )
+
+@pytest.fixture
+def recipe_source_api(db):
+    return RecipeSource.objects.create(
+            url="https://example.com/test",
+            title="Test Source",
+            status=StatusChoices.PENDING,
+            source=Source.WEBSITE,
+            parsed_recipe={},
+        )
 
 @pytest.fixture
 def recipe(db, user, recipe_source):
