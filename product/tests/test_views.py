@@ -7,27 +7,28 @@ from product.choices import Category
 @pytest.mark.django_db
 class TestProductListView:
 
-    def test_list_view(self, client, product):
+    def test_list_view_all(self, client, products):
         url = reverse("product:list")
         response = client.get(url)
-
         assert response.status_code == 200
-        assert "products" in response.context
-        assert product in response.context["products"]
+        
+        assert set(response.context["products"]) == set(products)
 
     @pytest.mark.parametrize(
-        "query, expected_count",
+        "query, expected_names",
         [
-            ("App", 1),
-            ("Banana", 0),
-            ("", 1),
+            ("App", ["Apple"]),
+            ("Ban", ["Banana"]),
+            ("a", ["Apple", "Banana", "Carrot"]), 
+            ("Potato", []),
         ],
     )
-    def test_list_view_search(self, client, product, query, expected_count):
+    def test_list_view_search(self, client, products, query, expected_names):
         url = reverse("product:list")
         response = client.get(url, {"q": query})
-
-        assert len(response.context["products"]) == expected_count
+        assert response.status_code == 200
+        result_names = [p.name for p in response.context["products"]]
+        assert sorted(result_names) == sorted(expected_names)
 
     @pytest.mark.parametrize(
         "sort_param, first_item_name",
@@ -49,7 +50,6 @@ class TestProductCreateView:
 
     def test_create_view(self, client, owner):
         client.force_login(owner)
-
         url = reverse("product:add")
         data = {"name": "Banana", "category": Category.FRUITS}
 
@@ -60,7 +60,6 @@ class TestProductCreateView:
 
     def test_create_view_hx_request(self, client, owner):
         client.force_login(owner)
-
         url = reverse("product:add")
         data = {"name": "Orange", "category": Category.FRUITS}
 
@@ -75,7 +74,6 @@ class TestProductUpdateView:
 
     def test_update_view_owner(self, client, product, owner):
         client.force_login(owner)
-
         url = reverse("product:edit", kwargs={"pk": product.pk})
         data = {"name": "Updated Apple", "category": product.category}
 
@@ -87,7 +85,6 @@ class TestProductUpdateView:
 
     def test_update_view_superuser(self, client, product, superuser):
         client.force_login(superuser)
-
         url = reverse("product:edit", kwargs={"pk": product.pk})
         data = {"name": "Apple Admin", "category": product.category}
 
@@ -99,7 +96,6 @@ class TestProductUpdateView:
 
     def test_update_view_forbidden(self, client, product, other_user):
         client.force_login(other_user)
-
         url = reverse("product:edit", kwargs={"pk": product.pk})
         data = {"name": "Apple other user", "category": product.category}
 
@@ -113,7 +109,6 @@ class TestProductDeleteView:
 
     def test_delete_view(self, client, product, owner):
         client.force_login(owner)
-
         url = reverse("product:delete", kwargs={"pk": product.pk})
         response = client.post(url)
 

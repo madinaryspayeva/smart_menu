@@ -1,9 +1,8 @@
 import pytest
 from decimal import Decimal
-from django.contrib.auth import get_user_model
 from recipe.choices import MealType, Source, Unit
 from recipe.models import RecipeSource, Recipe, RecipeIngredient
-from product.models import Product
+
 
 
 @pytest.fixture
@@ -50,3 +49,27 @@ def valid_recipe_data():
         "description": "Описание",
         "meal_type": MealType.choices[0][0],
     }
+
+@pytest.fixture
+def recipe_factory(db, owner, recipe_source):
+    def create_recipe(name="Recipe", meal_type=MealType.LUNCH, products=None):
+        recipe = Recipe.objects.create(
+            source=recipe_source,
+            name=name,
+            description="Test description",
+            meal_type=meal_type,
+            created_by=owner
+        )
+
+        if products:
+            for product in products:
+                RecipeIngredient.objects.create(
+                    recipe=recipe,
+                    product=product,
+                    quantity=Decimal("100"),
+                    unit=Unit.GR
+                )
+
+        return recipe
+
+    return create_recipe

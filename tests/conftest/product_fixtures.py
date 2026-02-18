@@ -14,3 +14,11 @@ def product_1(db):
 @pytest.fixture
 def product_2(db):
     return Product.objects.create(name="Сахар")
+
+@pytest.fixture
+def products(owner):
+    return [
+            Product.objects.create(name="Apple", category=Category.FRUITS, created_by=owner),
+            Product.objects.create(name="Banana", category=Category.FRUITS, created_by=owner),
+            Product.objects.create(name="Carrot", category=Category.VEGETABLES, created_by=owner),
+        ]
