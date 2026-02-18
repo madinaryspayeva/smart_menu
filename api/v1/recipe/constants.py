@@ -144,10 +144,10 @@ UNIT_SYNONYMS = {
     "kilogram": Unit.KG,
     "kilograms": Unit.KG,
 
-    "lb": Unit.KG,
-    "lbs": Unit.KG,
-    "pound": Unit.KG,
-    "pounds": Unit.KG,
+    "lb": Unit.GR,
+    "lbs": Unit.GR,
+    "pound": Unit.GR,
+    "pounds": Unit.GR,
 
     "oz": Unit.GR,
     "ounce": Unit.GR,
