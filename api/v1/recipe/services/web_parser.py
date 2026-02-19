@@ -1,8 +1,8 @@
-import requests
 import json
 import re
-from bs4 import BeautifulSoup
 
+import requests
+from bs4 import BeautifulSoup
 from django.core.exceptions import ValidationError
 
 import api.v1.recipe.constants as selectors
@@ -19,7 +19,9 @@ class WebParserService(IRecipeParserService):
         self.timeout = timeout
         self.session = requests.Session()
         self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; '
+                          'Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)'
+                          'Chrome/91.0.4472.124 Safari/537.36'
         })
     
     def parse(self, url: str) -> RecipeDTO:
@@ -55,9 +57,9 @@ class WebParserService(IRecipeParserService):
             )
         
         except requests.RequestException as e:
-            raise ValidationError(f"Ошибка загрузки страницы: {e}")
+            raise ValidationError(f"Ошибка загрузки страницы: {e}") from e
         except Exception as e:
-            raise ValidationError(f"Ошибка парсинга: {e}")
+            raise ValidationError(f"Ошибка парсинга: {e}") from e
     
     def _parse_recipe_data(self, soup, url):
         """
@@ -116,7 +118,7 @@ class WebParserService(IRecipeParserService):
                     
                     if data.get("@type") in ["Recipe", "HowTo"]:
                         return self._parse_structured_recipe(data)
-                except:
+                except (json.JSONDecodeError, AttributeError, IndexError):
                     continue
         
         return {}
@@ -129,10 +131,11 @@ class WebParserService(IRecipeParserService):
 
         result["title"] = data.get("name") or data.get("headline")
 
-
         ingredients = data.get("recipeIngredient", [])
         if isinstance(ingredients, list):
-            result["ingredients"] = [{"raw": self._clean_text(ingredient)} for ingredient in ingredients]
+            result["ingredients"] = [
+                {"raw": self._clean_text(ingredient)} for ingredient in ingredients
+            ]
 
 
         instructions = data.get("recipeInstructions", [])

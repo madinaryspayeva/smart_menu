@@ -1,7 +1,9 @@
-import pytest
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import MagicMock, Mock, patch
 
-from api.v1.recipe.usecases.create_recipe_usecase import CreateRecipeFromExistingSourceUseCase, CreateRecipeUseCase
+from api.v1.recipe.usecases.create_recipe_usecase import (
+    CreateRecipeFromExistingSourceUseCase,
+    CreateRecipeUseCase,
+)
 
 
 class TestCreateRecipeUseCase:

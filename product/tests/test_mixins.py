@@ -1,7 +1,8 @@
 import pytest
-from django.test import RequestFactory
 from django.core.exceptions import PermissionDenied
-from product.views import ProductUpdateView, ProductDeleteView
+from django.test import RequestFactory
+
+from product.views import ProductDeleteView, ProductUpdateView
 
 
 @pytest.mark.django_db

@@ -1,9 +1,10 @@
-import pytest
 from decimal import Decimal
+
+import pytest
+
 from app.models import StatusChoices
 from recipe.choices import MealType, Source, Unit
-from recipe.models import RecipeSource, Recipe, RecipeIngredient
-
+from recipe.models import Recipe, RecipeIngredient, RecipeSource
 
 
 @pytest.fixture
@@ -41,15 +42,6 @@ def ingredient(db, recipe, product):
         product=product,
         quantity=Decimal("100"),
         unit=Unit.GR
-    )
-
-@pytest.fixture
-def recipe(db):
-    return Recipe.objects.create(
-        name="Тестовый рецепт",
-        servings=2,
-        description="Описание",
-        meal_type="breakfast",
     )
 
 @pytest.fixture

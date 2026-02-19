@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 
 import requests
 
-from recipe.choices import ContentType, Source, Domain
+from recipe.choices import ContentType, Domain, Source
 
 
 @dataclass(frozen=True)

@@ -1,10 +1,11 @@
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 from django.urls import reverse
 
-from recipe.models import Recipe, RecipeSource
-from recipe.choices import Source
 from app.models import StatusChoices
+from recipe.choices import Source
+from recipe.models import Recipe, RecipeSource
 
 
 @pytest.mark.django_db
@@ -81,7 +82,7 @@ class TestParseUrlAPIView:
         mock_classify.return_value.final_url = "https://test.com"
         mock_classify.return_value.source = Source.WEBSITE
 
-        source = RecipeSource.objects.create(
+        RecipeSource.objects.create(
             url="https://test.com",
             status=StatusChoices.DONE,
             source=Source.WEBSITE,

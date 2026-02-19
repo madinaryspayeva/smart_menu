@@ -1,5 +1,8 @@
-from dataclasses import asdict
-from api.v1.recipe.interfaces.recipe_parser import IRecipeBuilderService, IRecipeParserService, IRecipeRepository
+from api.v1.recipe.interfaces.recipe_parser import (
+    IRecipeBuilderService,
+    IRecipeParserService,
+    IRecipeRepository,
+)
 from api.v1.recipe.interfaces.uow import IUnitOfWork
 from api.v1.recipe.mappers.recipe_mapper import RecipeMapper
 from api.v1.recipe.services.llm import LLMService
@@ -28,7 +31,7 @@ class CreateRecipeUseCase:
 
     def execute(self, source_id: str, user_id: str, url: str):
 
-        if self.repository.exists_for_user(source_id, user_id): #зачем этот блок если проверка идет во вью ужн
+        if self.repository.exists_for_user(source_id, user_id): 
             return self.repository.get_by_user_and_source(source_id, user_id)
         
         raw_data = self.parser.parse(url)

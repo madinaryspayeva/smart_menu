@@ -1,13 +1,12 @@
 from dataclasses import dataclass
-from typing import List, Optional
 
 
 @dataclass
 class IngredientDTO:
-    name: Optional[str] = None
-    amount: Optional[float] = None
-    unit: Optional[str] = None
-    raw: Optional[str] = None
+    name: str | None = None
+    amount: float | None = None
+    unit: str | None = None
+    raw: str | None = None
 
 
 @dataclass
@@ -18,9 +17,9 @@ class StepDTO:
 @dataclass
 class RecipeDTO:
     title: str
-    description: Optional[str]
-    meal_type: Optional[str]
-    ingredients: List[IngredientDTO]
-    steps: List[StepDTO]
-    tips: Optional[str]
-    thumbnail: Optional[str] = None
+    description: str | None
+    meal_type: str | None
+    ingredients: list[IngredientDTO]
+    steps: list[StepDTO]
+    tips: str | None
+    thumbnail: str | None = None

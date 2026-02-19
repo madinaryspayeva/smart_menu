@@ -5,9 +5,6 @@ from django.utils.translation import gettext_lazy as _
 from users.models import User
 
 
-
-
-
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
     ordering = ["id"]
@@ -15,7 +12,10 @@ class UserAdmin(BaseUserAdmin):
     fieldsets = (
         (None, {"fields": ("email", "password")}),
         (_("Personal Info"), {"fields": ("first_name", )}),
-        (_("Permissions"), {"fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions")}),
+        (_("Permissions"), {
+            "fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions")
+            }
+        ),
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     )
     add_fieldsets = (

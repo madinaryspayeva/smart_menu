@@ -1,14 +1,14 @@
 from celery import shared_task
 
 from api.v1.recipe.repositories.recipe_repository import RecipeRepository
+from api.v1.recipe.services.llm import LLMService
 from api.v1.recipe.services.recipe_builder import RecipeBuilderService
+from api.v1.recipe.services.video_parser import VideoParserService
+from api.v1.recipe.services.web_parser import WebParserService
 from api.v1.recipe.uow.django_uow import DjangoUnitOfWork
 from api.v1.recipe.usecases.create_recipe_usecase import CreateRecipeUseCase
-from recipe.models import RecipeSource
 from app.models import StatusChoices
-from api.v1.recipe.services.web_parser import WebParserService
-from api.v1.recipe.services.video_parser import VideoParserService
-from api.v1.recipe.services.llm import LLMService
+from recipe.models import RecipeSource
 
 
 @shared_task(bind=True, max_retries=3)

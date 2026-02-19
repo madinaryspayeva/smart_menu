@@ -1,5 +1,5 @@
 import re
-import sys
+
 from api.v1.recipe.constants import AMOUNT_UNIT_RE, MEAL_TYPE_SYNONYMS, UNIT_SYNONYMS
 from api.v1.recipe.dto.recipe_dto import IngredientDTO, RecipeDTO
 from api.v1.recipe.interfaces.recipe_parser import IRecipeBuilderService
@@ -40,7 +40,7 @@ class RecipeBuilderService(IRecipeBuilderService):
         ]))
 
         for key, meal_type in MEAL_TYPE_SYNONYMS.items():
-            pattern = r"\b{}\b".format(re.escape(key.lower()))
+            pattern = rf"\b{re.escape(key.lower())}\b"
             if re.search(pattern, context.lower()):
                 return meal_type.value
         

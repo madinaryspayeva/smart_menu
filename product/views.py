@@ -1,23 +1,15 @@
 import json
-from django.http import HttpResponse, JsonResponse
-from django.template.loader import render_to_string
-from django.shortcuts import render
-from django.core.exceptions import PermissionDenied
-from django.utils.translation import gettext_lazy as _
-from django.urls import reverse_lazy 
-from django.views import View
-from django.views.generic import (
-    CreateView,
-    UpdateView,
-    DeleteView,
-    ListView,
-    DetailView
-)
 
-from product.mixins import OwnerOrSuperuserMixin
+from django.http import HttpResponse
+from django.shortcuts import render
+from django.urls import reverse_lazy
+from django.views import View
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+
 from product.choices import Category
-from product.models import Product 
 from product.forms import ProductForm
+from product.mixins import OwnerOrSuperuserMixin
+from product.models import Product
 
 
 class ProductListView(ListView):

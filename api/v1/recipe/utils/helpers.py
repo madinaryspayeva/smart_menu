@@ -1,6 +1,6 @@
 import re
 
-from api.v1.recipe.constants import CONVERSION, UNIT_SYNONYMS 
+from api.v1.recipe.constants import CONVERSION, UNIT_SYNONYMS
 
 
 def clean_name(name: str) -> str:

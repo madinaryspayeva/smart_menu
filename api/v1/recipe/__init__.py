@@ -1,4 +1,4 @@
-from . import views, serializers, urls, tasks, services, utils, constants
+from . import constants, serializers, services, tasks, urls, utils, views
 
 __all__ = [
     'views',

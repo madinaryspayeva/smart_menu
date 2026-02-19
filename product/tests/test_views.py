@@ -1,7 +1,8 @@
 import pytest
 from django.urls import reverse
-from product.models import Product
+
 from product.choices import Category
+from product.models import Product
 
 
 @pytest.mark.django_db

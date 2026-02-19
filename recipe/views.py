@@ -1,21 +1,21 @@
 import uuid
-from django.shortcuts import render
+
 from django.db.models import Count, Q
-from django.views.generic import (
-    CreateView, 
-    ListView,
-    DetailView,
-    UpdateView,
-    DeleteView,
-)
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    DetailView,
+    ListView,
+    UpdateView,
+)
 
 from product.mixins import OwnerOrSuperuserMixin
 from product.models import Product
 from recipe.choices import MealType
-from recipe.models import Recipe
 from recipe.forms import RecipeForm, RecipeIngredientFormSet
+from recipe.models import Recipe
 
 
 class RecipeCreateView(CreateView):

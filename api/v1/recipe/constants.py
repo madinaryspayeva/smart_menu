@@ -2,7 +2,6 @@ import re
 
 from recipe.choices import MealType, Unit
 
-
 """
 Константы с CSS селекторами для парсинга рецептов
 """

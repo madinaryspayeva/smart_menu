@@ -1,20 +1,28 @@
-import pytest
 from decimal import Decimal
+
+import pytest
 from django.core.exceptions import ValidationError
-from recipe.models import RecipeSource, RecipeIngredient
+from django.db import IntegrityError
+
 from recipe.choices import MealType, Source, Unit
+from recipe.models import RecipeIngredient, RecipeSource
 
 
 @pytest.mark.django_db
 class TestRecipeSourceModel:
 
     def test_str_method(self, recipe_source):
-        expected = f"Recipe Source: {recipe_source.url}, {recipe_source.title}, {recipe_source.status}, {recipe_source.source}, {recipe_source.parsed_recipe}, {recipe_source.error_message}"
+        expected = (
+            f"Recipe Source: {recipe_source.url}, "
+            f"{recipe_source.title}, {recipe_source.status}, "
+            f"{recipe_source.source}, {recipe_source.parsed_recipe}, "
+            f"{recipe_source.error_message}"
+    )
         assert str(recipe_source) == expected
     
     def test_unique_url(self):
         RecipeSource.objects.create(url="https://unique.com", source=Source.WEBSITE)
-        with pytest.raises(Exception):
+        with pytest.raises(IntegrityError):
             RecipeSource.objects.create(url="https://unique.com", source=Source.WEBSITE)
 
 
@@ -42,7 +50,12 @@ class TestRecipeIngredientModel:
         assert str(ingredient) == f"{ingredient.quantity} {ingredient.unit} {ingredient.product}"
     
     def test_quantity_positive_validation(self, recipe, product):
-        invalid = RecipeIngredient(recipe=recipe, product=product, quantity=Decimal("-100"), unit=Unit.GR)
+        invalid = RecipeIngredient(
+            recipe=recipe, 
+            product=product, 
+            quantity=Decimal("-100"), 
+            unit=Unit.GR
+        )
         with pytest.raises(ValidationError):
             invalid.full_clean()
     

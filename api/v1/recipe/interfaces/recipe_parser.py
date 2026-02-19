@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from api.v1.recipe.dto.recipe_dto import RecipeDTO
-from recipe.models import Recipe, RecipeSource
+from recipe.models import Recipe
 
 
 class IRecipeParserService(ABC):

@@ -3,7 +3,6 @@ from django.db import transaction
 from api.v1.recipe.interfaces.uow import IUnitOfWork
 
 
-
 class DjangoUnitOfWork(IUnitOfWork):
 
     def __enter__(self):

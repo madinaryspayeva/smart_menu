@@ -1,10 +1,11 @@
 import pytest
+
+from recipe.choices import Unit
 from recipe.forms import (
     RecipeForm,
     RecipeIngredientForm,
     RecipeIngredientFormSet,
 )
-from recipe.choices import Unit
 
 
 @pytest.mark.django_db

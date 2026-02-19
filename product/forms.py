@@ -18,7 +18,10 @@ class ProductForm(forms.ModelForm):
         name = cleaned_data.get("name")
 
         if name and self.request:
-            if Product.objects.filter(name=name, created_by=self.request.user).exclude(pk=self.instance.pk).exists():
+            if Product.objects.filter(
+                name=name, 
+                created_by=self.request.user
+            ).exclude(pk=self.instance.pk).exists():
                 self.add_error('name', _("Продукт с таким названием уже существует."))
 
         return cleaned_data

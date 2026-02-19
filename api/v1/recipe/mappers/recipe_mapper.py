@@ -2,6 +2,7 @@ from dataclasses import asdict
 
 from api.v1.recipe.dto.recipe_dto import IngredientDTO, RecipeDTO, StepDTO
 
+
 class RecipeMapper:
 
     @staticmethod

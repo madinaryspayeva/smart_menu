@@ -1,6 +1,7 @@
 import pytest
-from product.models import Product
+
 from product.choices import Category
+from product.models import Product
 
 
 @pytest.fixture

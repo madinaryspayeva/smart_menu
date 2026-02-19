@@ -4,8 +4,8 @@ from api.v1.recipe.dto.recipe_dto import RecipeDTO
 from api.v1.recipe.interfaces.recipe_parser import IRecipeRepository
 from api.v1.recipe.services.image_service import ImageService
 from app.models import StatusChoices
-from recipe.models import Recipe, RecipeIngredient, RecipeSource
 from product.models import Product
+from recipe.models import Recipe, RecipeIngredient, RecipeSource
 
 
 class RecipeRepository(IRecipeRepository):
@@ -24,13 +24,15 @@ class RecipeRepository(IRecipeRepository):
     
     def save(self, source_id: str, user_id: str, dto: RecipeDTO) -> Recipe:
         if self.exists_for_user(source_id, user_id):
-            raise ValidationError("Recipe already exists.") #TODO add other response for existing recipe
+            raise ValidationError("Recipe already exists.") #TODO add other response for 
+                                                                #existing recipe
         
         return self._create_recipe_from_dto(dto, user_id, source_id)
     
     def create_from_dto(self, dto: RecipeDTO, user_id: str, source_id: str) -> Recipe:
         if self.exists_for_user(source_id, user_id):
-            raise ValidationError("Recipe already exists.") #TODO add other response for existing recipe
+            raise ValidationError("Recipe already exists.") #TODO add other response for 
+                                                                #existing recipe
         
         return self._create_recipe_from_dto(dto, user_id, source_id)
 

@@ -1,9 +1,11 @@
+from decimal import Decimal
+
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from django.core.validators import MinValueValidator
-from decimal import Decimal
+
 from app import settings
-from app.models import StatusChoices, TimestampedModel, StatusModel
+from app.models import StatusChoices, StatusModel, TimestampedModel
 from recipe.choices import MealType, Source, Unit
 
 
@@ -46,7 +48,10 @@ class RecipeSource(TimestampedModel, StatusModel):
         verbose_name_plural = _("Источники рецептов")
     
     def __str__(self):
-        return f"Recipe Source: {self.url}, {self.title}, {self.status}, {self.source}, {self.parsed_recipe}, {self.error_message}"
+        return (
+            f"Recipe Source: {self.url}, {self.title}, "
+            f"{self.status}, {self.source}, {self.parsed_recipe}, {self.error_message}"
+        )
 
 
 class Recipe(TimestampedModel, StatusModel):

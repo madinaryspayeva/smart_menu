@@ -1,10 +1,10 @@
 from django.urls import path
 
 from recipe.views import (
-    RecipeCreateView, 
-    RecipeListView, 
-    RecipeDetailView,
+    RecipeCreateView,
     RecipeDeleteView,
+    RecipeDetailView,
+    RecipeListView,
     RecipeUpdateView,
 )
 

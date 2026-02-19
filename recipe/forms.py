@@ -1,6 +1,7 @@
 # forms.py
 from django import forms
-from django.forms import inlineformset_factory, BaseInlineFormSet
+from django.forms import BaseInlineFormSet, inlineformset_factory
+
 from recipe.choices import MealType, Unit
 from recipe.models import Recipe, RecipeIngredient
 

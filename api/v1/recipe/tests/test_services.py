@@ -1,10 +1,12 @@
 import json
-from bs4 import BeautifulSoup
-from django.forms import ValidationError
+from unittest.mock import MagicMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, patch, MagicMock
+from bs4 import BeautifulSoup
 from django.core.files.base import ContentFile
+from django.forms import ValidationError
 from requests import RequestException
+
 from api.v1.recipe.dto.recipe_dto import IngredientDTO, RecipeDTO, StepDTO
 from api.v1.recipe.services.image_service import ImageService
 from api.v1.recipe.services.llm import LLMService
@@ -43,7 +45,7 @@ class TestImageService:
     def test_save_image_to_model_saves_file(self):
         mock_field = MagicMock()
         mock_instance = MagicMock()
-        setattr(mock_instance, "image", mock_field)
+        mock_instance.image = mock_field
 
         image_bytes = b"fake bytes"
         filename = "test.jpg"
@@ -59,9 +61,9 @@ class TestImageService:
     def test_save_image_to_model_no_bytes(self):
         mock_field = MagicMock()
         mock_instance = MagicMock()
-        setattr(mock_instance, "image", mock_field)
+        mock_instance.image = mock_field
 
-        result = ImageService.save_image_to_model(mock_instance, "image", None, "test.jpg")
+        ImageService.save_image_to_model(mock_instance, "image", None, "test.jpg")
 
         mock_field.save.assert_not_called()
 

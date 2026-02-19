@@ -1,13 +1,11 @@
 
-from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from app.models import TimestampedModel
 from users.managers import UserManager
 from users.media_path import user_avatar_upload_path
-
-
 
 
 class User(AbstractUser, TimestampedModel):
@@ -18,7 +16,12 @@ class User(AbstractUser, TimestampedModel):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
     username = None
-    avatar = models.ImageField(upload_to=user_avatar_upload_path, blank=True, null=True, verbose_name=_('Аватарка'))
+    avatar = models.ImageField(
+        upload_to=user_avatar_upload_path, 
+        blank=True, 
+        null=True, 
+        verbose_name=_('Аватарка')
+    )
 
     objects = UserManager()
 

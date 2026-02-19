@@ -1,6 +1,7 @@
-import os
-import ollama
 import json
+import os
+
+import ollama
 from json_repair import repair_json
 
 from api.v1.recipe.constants import LLM_SCHEMA
@@ -24,7 +25,8 @@ class LLMService:
                     Your tasks:
                     1. Fix obvious transcription errors.
                     2. Extract structured recipe data.
-                    3. Detect meal_type from context (breakfast, lunch, dinner, soup, dessert, drink, snack, baby_food, side_dish).
+                    3. Detect meal_type from context (breakfast, lunch, dinner, soup, 
+                    dessert, drink, snack, baby_food, side_dish).
 
                     Rules:
                     - Do NOT invent ingredients.

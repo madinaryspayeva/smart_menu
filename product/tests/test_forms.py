@@ -1,8 +1,9 @@
 import pytest
 from django.test import RequestFactory
+
+from product.choices import Category
 from product.forms import ProductForm
 from product.models import Product
-from product.choices import Category
 
 
 @pytest.mark.django_db

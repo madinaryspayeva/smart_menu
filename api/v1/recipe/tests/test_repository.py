@@ -1,6 +1,6 @@
 from unittest.mock import patch
-import pytest
 
+import pytest
 from django.core.exceptions import ValidationError
 
 from app.models import StatusChoices
@@ -24,9 +24,14 @@ class TestRecipeRepository:
 
         assert repo.exists_for_user(recipe_source_api.id, owner.id)
     
-    def test_create_from_dto_creates_recipe_and_ingredients(self, repo, owner, recipe_source_api, dto):
-        with patch("api.v1.recipe.services.image_service.ImageService.download_image") as mock_download, \
-             patch("api.v1.recipe.services.image_service.ImageService.save_image_to_model") as mock_save:
+    def test_create_from_dto_creates_recipe_and_ingredients(
+            self, repo, owner, recipe_source_api, dto
+            ):
+        with patch(
+            "api.v1.recipe.services.image_service.ImageService.download_image"
+        ) as mock_download, patch(
+            "api.v1.recipe.services.image_service.ImageService.save_image_to_model"
+        ):
             mock_download.return_value = (b"bytes", "file.jpg")
 
             recipe = repo.create_from_dto(dto, user_id=owner.id, source_id=recipe_source_api.id)

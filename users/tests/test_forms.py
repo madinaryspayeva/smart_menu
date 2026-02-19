@@ -1,6 +1,8 @@
 import pytest
-from users.models import User
+
 from users.forms import CustomSignupForm
+from users.models import User
+
 
 @pytest.mark.django_db
 class TestCustomSignupForm:

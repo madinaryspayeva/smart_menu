@@ -1,5 +1,7 @@
 import pytest
+
 from users.models import User
+
 
 @pytest.mark.django_db
 class TestUserModel:
@@ -34,11 +36,19 @@ class TestUserModel:
 
     def test_create_superuser_with_is_staff_false_raises_value_error(self):
         with pytest.raises(ValueError, match="Superuser must have is_staff=True"):
-            User.objects.create_superuser(email="admin@example.com", password="adminpass", is_staff=False)
+            User.objects.create_superuser(
+                email="admin@example.com", 
+                password="adminpass", 
+                is_staff=False
+            )
 
     def test_create_superuser_with_is_superuser_false_raises_value_error(self):
         with pytest.raises(ValueError, match="Superuser must have is_superuser=True"):
-            User.objects.create_superuser(email="admin@example.com", password="adminpass", is_superuser=False)
+            User.objects.create_superuser(
+                email="admin@example.com", 
+                password="adminpass", 
+                is_superuser=False
+            )
 
     def test_user_avatar_field(self, owner):
         assert not owner.avatar

@@ -1,7 +1,8 @@
-import requests
 import os
 import uuid
 from urllib.parse import urlparse
+
+import requests
 from django.core.files.base import ContentFile
 
 

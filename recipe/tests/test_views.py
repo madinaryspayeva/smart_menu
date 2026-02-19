@@ -1,5 +1,6 @@
 import pytest
 from django.urls import reverse
+
 from recipe.choices import MealType, Unit
 from recipe.models import Recipe
 
