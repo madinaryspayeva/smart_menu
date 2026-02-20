@@ -6,7 +6,7 @@ services:
   db:
     image: postgres:17
     env_file:
-      - .env.docker
+      - .env.prod
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -39,7 +39,7 @@ services:
         --worker-class gthread
       "
     env_file:
-      - .env.docker
+      - .env.prod
     volumes:
       - .:/code
       - huggingface_cache:/root/.cache/huggingface
@@ -79,9 +79,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: celery -A app worker --loglevel=info --concurrency=1
+    command: >
+      sh -c "
+      cd /code &&
+      poetry install &&
+      poetry run celery -A app worker --loglevel=info --concurrency=1"
     env_file:
-      - .env.docker
+      - .env.prod
     volumes:
       - .:/code
       - huggingface_cache:/root/.cache/huggingface
@@ -95,9 +99,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: celery -A app beat --loglevel=info
+    command: >
+      sh -c "
+      cd /code &&
+      poetry install &&
+      poetry run celery -A app beat --loglevel=info"
     env_file:
-      - .env.docker
+      - .env.prod
     volumes:
       - .:/code
       - huggingface_cache:/root/.cache/huggingface

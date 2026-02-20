@@ -110,6 +110,8 @@ venv.bak/
 
 .env.docker
 
+.env.prod
+
 # Celery
 celerybeat-schedule
 celerybeat-schedule.*
