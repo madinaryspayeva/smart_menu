@@ -1,5 +1,3 @@
-version: "3.9"
-
 name: smart_menu-prod
 
 services:
@@ -29,15 +27,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: >
-      sh -c "
-      cd /code &&
-      poetry run gunicorn app.wsgi:application
-        --bind 0.0.0.0:8000
-        --workers 2
-        --threads 2
-        --worker-class gthread
-      "
+    command: sh -c "cd /code && poetry run gunicorn app.wsgi:application --bind 0.0.0.0:8000 --workers 2 --threads 2 --worker-class gthread"
     env_file:
       - .env.prod
     volumes:
