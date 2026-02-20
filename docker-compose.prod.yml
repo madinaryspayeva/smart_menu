@@ -47,7 +47,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - .:/code
+      - static_volume:/code/staticfiles
       - ./nginx/conf.d:/etc/nginx/conf.d
     depends_on:
       - web
