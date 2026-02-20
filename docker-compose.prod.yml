@@ -1,0 +1,114 @@
+version: "3.9"
+
+name: smart_menu-prod
+
+services:
+  db:
+    image: postgres:17
+    env_file:
+      - .env.docker
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: >
+      sh -c "
+      cd /code &&
+      poetry run gunicorn app.wsgi:application
+        --bind 0.0.0.0:8000
+        --workers 2
+        --threads 2
+        --worker-class gthread
+      "
+    env_file:
+      - .env.docker
+    volumes:
+      - .:/code
+      - huggingface_cache:/root/.cache/huggingface
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - static_volume:/code/static
+      - media_volume:/code/media
+    depends_on:
+      - web
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama
+    mem_limit: 6g
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama:/root/.ollama
+    restart: unless-stopped
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A app worker --loglevel=info --concurrency=1
+    env_file:
+      - .env.docker
+    volumes:
+      - .:/code
+      - huggingface_cache:/root/.cache/huggingface
+    depends_on:
+      - db
+      - redis
+      - ollama
+    restart: unless-stopped
+
+  celery_beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A app beat --loglevel=info
+    env_file:
+      - .env.docker
+    volumes:
+      - .:/code
+      - huggingface_cache:/root/.cache/huggingface
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  huggingface_cache:
+  ollama:
+  static_volume:
+  media_volume:
