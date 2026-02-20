@@ -13,4 +13,13 @@ RUN poetry config virtualenvs.create false \
 
 COPY . .
 
-CMD sh -c "poetry run python manage.py migrate --noinput && poetry run gunicorn app.wsgi:application --bind 0.0.0.0:8000 --workers 2 --threads 2 --worker-class gthread --access-logfile - --error-logfile - --log-level info"
+CMD sh -c "poetry run python manage.py migrate --noinput && \
+           poetry run python manage.py collectstatic --noinput && \
+           poetry run gunicorn app.wsgi:application \
+           --bind 0.0.0.0:8000 \
+           --workers 2 \
+           --threads 2 \
+           --worker-class gthread \
+           --access-logfile - \
+           --error-logfile - \
+           --log-level info"

@@ -47,9 +47,8 @@ services:
       - "80:80"
       - "443:443"
     volumes:
+      - .:/code
       - ./nginx/conf.d:/etc/nginx/conf.d
-      - static_volume:/code/static
-      - media_volume:/code/media
     depends_on:
       - web
     restart: unless-stopped
