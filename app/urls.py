@@ -19,7 +19,10 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
+from app.views import home
+
 urlpatterns = [
+    path('', home), 
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
     path('product/', include('product.urls', namespace='product')), 
