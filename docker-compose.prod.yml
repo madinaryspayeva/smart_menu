@@ -49,11 +49,10 @@ services:
       - "443:443"
     volumes:
       - static_volume:/code/staticfiles
+      - ./media:/media
       - ./nginx/conf.d:/etc/nginx/conf.d
       - /etc/letsencrypt/live/smartmenu.work:/etc/letsencrypt/live/smartmenu.work:ro
       - /etc/letsencrypt/archive/smartmenu.work:/etc/letsencrypt/archive/smartmenu.work:ro
-      - ./static:/static
-      - ./media:/media
     depends_on:
       - web
     restart: unless-stopped

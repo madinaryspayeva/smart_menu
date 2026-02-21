@@ -30,7 +30,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG
-DEBUG = os.getenv("DEBUG", "False") == "True"
+DEBUG = os.getenv("DEBUG", "True") == "True"
 
 # ALLOWED_HOSTS
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
@@ -39,6 +39,7 @@ ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
 
 # SECURE_PROXY_SSL_HEADER
+USE_X_FORWARDED_HOST = os.getenv("USE_X_FORWARDED_HOST", "False") == "False"
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 
