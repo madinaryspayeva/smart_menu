@@ -29,6 +29,8 @@
             hx-swap="innerHTML"
             class="flex flex-col sm:flex-row justify-center gap-2 max-w-lg mx-auto"
         >
+        {% csrf_token %}
+        
             <input 
                 type="url" 
                 name="url" 
