@@ -52,13 +52,9 @@ jobs:
 
       - name: Load environment variables
         run: |
-          if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
-            echo "Using production env"
-            export $(grep -v '^#' .env.prod | xargs)
-          else
-            echo "Using dev env"
-            export $(grep -v '^#' .env.docker | xargs)
-          fi
+          export CSRF_TRUSTED_ORIGINS="${{ secrets.DEV_CSRF_TRUSTED_ORIGINS }}"
+          export DATABASE_URL="${{ secrets.DEV_DATABASE_URL }}"
+          export REDIS_URL="${{ secrets.DEV_REDIS_URL }}"
 
       - name: Ruff 
         run: poetry run ruff check .
@@ -74,8 +70,6 @@ jobs:
 
       - name: Run tests
         env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_db
-          REDIS_URL: redis://localhost:6379/0
           DJANGO_SETTINGS_MODULE: app.settings
         run: |
           poetry run python manage.py migrate
@@ -87,6 +81,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v4
+
       - name: Deploy to server via SSH
         uses: appleboy/ssh-action@1.0.3
         with:
