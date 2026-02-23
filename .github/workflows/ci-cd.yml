@@ -67,6 +67,7 @@ jobs:
           DATABASE_URL: ${{ secrets.DEV_DATABASE_URL }}
           REDIS_URL: ${{ secrets.DEV_REDIS_URL }}
           CSRF_TRUSTED_ORIGINS: ${{ secrets.DEV_CSRF_TRUSTED_ORIGINS }}
+          SECRET_KEY: ${{ secrets.DEV_SECRET_KEY }}
           DJANGO_SETTINGS_MODULE: app.settings
         run: |
           poetry run python manage.py migrate
