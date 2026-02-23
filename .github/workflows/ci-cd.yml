@@ -50,6 +50,16 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-root --no-interaction
 
+      - name: Load environment variables
+        run: |
+          if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
+            echo "Using production env"
+            export $(grep -v '^#' .env.prod | xargs)
+          else
+            echo "Using dev env"
+            export $(grep -v '^#' .env.docker | xargs)
+          fi
+
       - name: Ruff 
         run: poetry run ruff check .
 
@@ -88,5 +98,3 @@ jobs:
             git pull origin main
             docker compose -f docker-compose.prod.yml down
             docker compose -f docker-compose.prod.yml up -d --build
-
-
