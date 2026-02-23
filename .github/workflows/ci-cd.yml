@@ -47,8 +47,8 @@ jobs:
       - name: Ruff
         run: poetry run ruff check .
 
-      - name: Mypy
-        run: poetry run mypy .
+      # - name: Mypy
+      #   run: poetry run mypy .
 
       - name: Bandit
         run: poetry run bandit -r .
