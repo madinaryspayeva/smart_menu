@@ -50,12 +50,6 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-root --no-interaction
 
-      - name: Load environment variables
-        run: |
-          export CSRF_TRUSTED_ORIGINS="${{ secrets.DEV_CSRF_TRUSTED_ORIGINS }}"
-          export DATABASE_URL="${{ secrets.DEV_DATABASE_URL }}"
-          export REDIS_URL="${{ secrets.DEV_REDIS_URL }}"
-
       - name: Ruff 
         run: poetry run ruff check .
 
@@ -68,8 +62,11 @@ jobs:
       - name: Pip audit
         run: poetry run pip-audit
 
-      - name: Run tests
+      - name: Run migrations and tests
         env:
+          DATABASE_URL: ${{ secrets.DEV_DATABASE_URL }}
+          REDIS_URL: ${{ secrets.DEV_REDIS_URL }}
+          CSRF_TRUSTED_ORIGINS: ${{ secrets.DEV_CSRF_TRUSTED_ORIGINS }}
           DJANGO_SETTINGS_MODULE: app.settings
         run: |
           poetry run python manage.py migrate
