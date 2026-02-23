@@ -15,8 +15,6 @@ services:
 
   redis:
     image: redis:7-alpine
-    ports:
-      - "6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -26,11 +24,10 @@ services:
   web:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
     env_file:
       - .env.prod
     volumes:
-      - .:/code
       - huggingface_cache:/root/.cache/huggingface
       - static_volume:/code/staticfiles
       - media_volume:/code/media  
@@ -50,7 +47,7 @@ services:
       - "443:443"
     volumes:
       - static_volume:/code/staticfiles
-      - ./media:/media
+      - media_volume:/code/media
       - ./nginx/conf.d:/etc/nginx/conf.d
       - /etc/letsencrypt/live/smartmenu.work:/etc/letsencrypt/live/smartmenu.work:ro
       - /etc/letsencrypt/archive/smartmenu.work:/etc/letsencrypt/archive/smartmenu.work:ro
@@ -69,14 +66,11 @@ services:
     restart: unless-stopped
 
   celery_worker:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: poetry run celery -A app worker --loglevel=info --concurrency=1
+    image: smart_menu-prod-web
+    command: celery -A app worker --loglevel=info --concurrency=1
     env_file:
       - .env.prod
     volumes:
-      - .:/code
       - huggingface_cache:/root/.cache/huggingface
     depends_on:
       - db
@@ -85,14 +79,11 @@ services:
     restart: unless-stopped
 
   celery_beat:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: poetry run celery -A app beat --loglevel=info
+    image: smart_menu-prod-web
+    command: celery -A app beat --loglevel=info
     env_file:
       - .env.prod
     volumes:
-      - .:/code
       - huggingface_cache:/root/.cache/huggingface
     depends_on:
       - db
