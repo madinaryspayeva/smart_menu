@@ -56,8 +56,8 @@ jobs:
       # - name: Mypy
       #   run: poetry run mypy .
 
-      - name: Bandit
-        run: poetry run bandit -r . -x tests
+      - name: Bandit (exclude all tests)
+        run: poetry run bandit -r . -x "**/tests/**"
 
       - name: Pip audit
         run: poetry run pip-audit
