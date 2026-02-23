@@ -1,0 +1,97 @@
+name: CI-CD
+
+on:
+  push:
+    branches: [ "dev", "main" ]
+  pull_request:
+
+jobs:
+
+  ci:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+      
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout 
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Poetry
+        run: pip install poetry
+      
+      - name: Clear Poetry cache
+        run: |
+          poetry cache clear --all pypi
+          rm -rf ~/.cache/pypoetry/virtualenvs/*
+
+      - name: Install dependencies
+        run: poetry install --no-root --no-interaction
+
+      - name: Ruff 
+        run: poetry run ruff check .
+
+      # - name: Mypy
+      #   run: poetry run mypy .
+
+      - name: Bandit (exclude all tests)
+        run: poetry run bandit -r . -x "**/tests/**"
+
+      - name: Pip audit
+        run: poetry run pip-audit
+
+      - name: Run migrations and tests
+        env:
+          DATABASE_URL: ${{ secrets.DEV_DATABASE_URL }}
+          REDIS_URL: ${{ secrets.DEV_REDIS_URL }}
+          CSRF_TRUSTED_ORIGINS: ${{ secrets.DEV_CSRF_TRUSTED_ORIGINS }}
+          SECRET_KEY: ${{ secrets.DEV_SECRET_KEY }}
+          DJANGO_SETTINGS_MODULE: app.settings
+        run: |
+          poetry run python manage.py migrate
+          poetry run pytest
+
+  deploy:
+    needs: ci
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to server via SSH
+        uses: appleboy/ssh-action@1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd smart_menu
+            git pull origin main
+            docker compose -f docker-compose.prod.yml run --rm web poetry run python manage.py migrate --noinput
+            docker compose -f docker-compose.prod.yml run --rm web poetry run python manage.py collectstatic --noinput
+            docker compose -f docker-compose.prod.yml down
+            docker compose -f docker-compose.prod.yml up -d --build
+            docker compose -f docker-compose.prod.yml logs -f --tail=100

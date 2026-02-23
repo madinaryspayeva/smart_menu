@@ -1,0 +1,19 @@
+FROM python:3.13-slim-bullseye
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+RUN apt-get update && apt-get install -y ffmpeg curl && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /code
+
+RUN pip install --no-cache-dir poetry
+
+COPY pyproject.toml poetry.lock ./
+RUN poetry install --no-interaction
+
+COPY . .
+
+CMD sh -c "poetry run python manage.py migrate --noinput && \
+           poetry run python manage.py collectstatic --noinput && \
+           poetry run python manage.py runserver 0.0.0.0:8000"
