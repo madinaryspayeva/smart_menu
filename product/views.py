@@ -6,13 +6,14 @@ from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
+from app.views import AuthRequiredView
 from product.choices import Category
 from product.forms import ProductForm
 from product.mixins import OwnerOrSuperuserMixin
 from product.models import Product
 
 
-class ProductListView(ListView):
+class ProductListView(AuthRequiredView, ListView):
     model = Product
     template_name = "product/list.html"
     context_object_name = "products"
@@ -48,7 +49,7 @@ class ProductListView(ListView):
         return context
 
 
-class ProductCreateView(CreateView):
+class ProductCreateView(AuthRequiredView, CreateView):
     model = Product
     template_name = "product/form.html"
     form_class = ProductForm
@@ -86,7 +87,7 @@ class ProductCreateView(CreateView):
         return context
 
 
-class ProductUpdateView(OwnerOrSuperuserMixin, UpdateView):
+class ProductUpdateView(AuthRequiredView, OwnerOrSuperuserMixin, UpdateView):
     model = Product
     template_name = "product/form.html"
     form_class = ProductForm
@@ -120,19 +121,19 @@ class ProductUpdateView(OwnerOrSuperuserMixin, UpdateView):
         return super().form_invalid(form)
 
 
-class ProductDeleteView(OwnerOrSuperuserMixin, DeleteView):
+class ProductDeleteView(AuthRequiredView, OwnerOrSuperuserMixin, DeleteView):
     model = Product
     template_name = "product/delete.html"
     success_url = reverse_lazy("product:list")
 
 
-class ProductDetailView(DetailView):
+class ProductDetailView(AuthRequiredView, DetailView):
     model = Product
     template_name = "product/detail.html"
     context_object_name = "product"
 
 
-class ProductSearchView(View):
+class ProductSearchView(AuthRequiredView, View):
     def get(self, request, *args, **kwargs):
         query = request.GET.get('q', '')
         index = request.GET.get('index', 0) 
@@ -148,7 +149,7 @@ class ProductSearchView(View):
         })
 
 
-class ProductSearchFilterView(View):
+class ProductSearchFilterView(AuthRequiredView, View):
     def get(self, request, *args, **kwargs):
         query = request.GET.get('q', '')
     

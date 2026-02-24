@@ -1,5 +1,7 @@
-from django.http import HttpResponse
+from django.contrib.auth.mixins import LoginRequiredMixin
 
+from app import settings
 
-def home(request):
-    return HttpResponse("SmartMenu работает!")
+class AuthRequiredView(LoginRequiredMixin):
+    login_url = settings.LOGIN_URL
+    redirect_field_name = "next"
