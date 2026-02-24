@@ -5,10 +5,15 @@ on:
     branches: [ "dev", "main" ]
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
 
   ci:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     services:
       postgres:
@@ -38,6 +43,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"
+          cache: 'pip'
 
       - name: Install Poetry
         run: pip install poetry
@@ -53,16 +59,13 @@ jobs:
       - name: Ruff 
         run: poetry run ruff check .
 
-      # - name: Mypy
-      #   run: poetry run mypy .
+      - name: Lint & Security
+        run: |
+          poetry run ruff check .
+          poetry run bandit -r . -x "**/tests/**"
+          poetry run pip-audit
 
-      - name: Bandit (exclude all tests)
-        run: poetry run bandit -r . -x "**/tests/**"
-
-      - name: Pip audit
-        run: poetry run pip-audit
-
-      - name: Run migrations and tests
+      - name: Tests
         env:
           DATABASE_URL: ${{ secrets.DEV_DATABASE_URL }}
           REDIS_URL: ${{ secrets.DEV_REDIS_URL }}
@@ -77,9 +80,13 @@ jobs:
     needs: ci
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Disable COMPOSE_BAKE
+        run: echo "COMPOSE_BAKE=false" >> $GITHUB_ENV
 
       - name: Deploy to server via SSH
         uses: appleboy/ssh-action@v1.2.1
@@ -90,8 +97,11 @@ jobs:
           script: |
             cd smart_menu
             git pull origin main
+
+            docker compose -f docker-compose.prod.yml down
+
             docker compose -f docker-compose.prod.yml run --rm web poetry run python manage.py migrate --noinput
             docker compose -f docker-compose.prod.yml run --rm web poetry run python manage.py collectstatic --noinput
-            docker compose -f docker-compose.prod.yml down
+            
             docker compose -f docker-compose.prod.yml up -d --build
             docker compose -f docker-compose.prod.yml logs -f --tail=100
