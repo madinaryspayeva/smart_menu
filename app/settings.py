@@ -211,6 +211,7 @@ AUTH_USER_MODEL = 'users.User'
 SITE_ID = 1
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
+ACCOUNT_LOGOUT_ON_GET = False
 LOGIN_URL = "/accounts/login/"
 
 # django-allauth settings

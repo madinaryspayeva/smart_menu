@@ -44,20 +44,24 @@
             {% endblock content %}
         </div>
     </main>
-   <footer class="bg-gradient-to-r from-pastel-pink to-amber-300 text-white py-6 mt-auto">
+
+<footer class="bg-gradient-to-r from-pastel-pink to-amber-300 text-white py-6 mt-auto">
     <div class="container mx-auto px-4">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- Логотип -->
-            <div class="flex items-center space-x-2">
-                <span class="text-xl">🍽</span>
-                <span class="text-xl font-bebas-neue text-coral-red">Smart Menu</span>
-            </div>
-            
-            <!-- Ссылки -->
-            <div class="flex flex-col space-y-1.5">
-                <a href="#" class="text-sm hover:text-coral-red transition">О нас</a>
-                <a href="#" class="text-sm hover:text-coral-red transition">Контакты</a>
-                <a href="#" class="text-sm hover:text-coral-red transition">Политика конфиденциальности</a>
+        <div class="flex flex-col space-y-4">
+            <!-- Логотип и ссылки в одной колонке -->
+            <div class="flex flex-col space-y-3">
+                <!-- Логотип -->
+                <div class="flex items-center space-x-2">
+                    <span class="text-xl">🍽</span>
+                    <span class="text-xl font-bebas-neue text-coral-red">Smart Menu</span>
+                </div>
+                
+                <!-- Ссылки под логотипом -->
+                <div class="flex flex-col space-y-1.5 pl-2">
+                    <a href="#" class="text-sm hover:text-coral-red transition">О нас</a>
+                    <a href="#" class="text-sm hover:text-coral-red transition">Контакты</a>
+                    <a href="#" class="text-sm hover:text-coral-red transition">Политика конфиденциальности</a>
+                </div>
             </div>
         </div>
         
