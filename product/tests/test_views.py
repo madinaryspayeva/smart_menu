@@ -8,9 +8,9 @@ from product.models import Product
 @pytest.mark.django_db
 class TestProductListView:
 
-    def test_list_view_all(self, client, products):
+    def test_list_view_all(self, web_client, products):
         url = reverse("product:list")
-        response = client.get(url)
+        response = web_client.get(url)
         assert response.status_code == 200
         
         assert set(response.context["products"]) == set(products)
@@ -24,10 +24,23 @@ class TestProductListView:
             ("Potato", []),
         ],
     )
-    def test_list_view_search(self, client, products, query, expected_names):
+    def test_list_view_search(
+        self, 
+        web_client, 
+        user, 
+        product_factory, 
+        query, 
+        expected_names
+    ):
+        product_factory(name="Apple", created_by=user)
+        product_factory(name="Banana", created_by=user)
+        product_factory(name="Carrot", created_by=user)
+        
         url = reverse("product:list")
-        response = client.get(url, {"q": query})
+        response = web_client.get(url, {"q": query})
+
         assert response.status_code == 200
+        
         result_names = [p.name for p in response.context["products"]]
         assert sorted(result_names) == sorted(expected_names)
 
@@ -38,11 +51,24 @@ class TestProductListView:
             ("date", "Apple"),
         ],
     )
-    def test_list_view_sort(self, client, product, sort_param, first_item_name):
+    def test_list_view_sort(
+        self, 
+        web_client, 
+        user, 
+        product_factory, 
+        sort_param, 
+        first_item_name
+    ):
+        product_factory(name="Banana", created_by=user)
+        product_factory(name="Apple", created_by=user)
+
         url = reverse("product:list")
-        response = client.get(url, {"sort": sort_param})
+        response = web_client.get(url, {"sort": sort_param})
+
+        assert response.status_code == 200
 
         products = list(response.context["products"])
+        assert len(products) > 0
         assert products[0].name == first_item_name
 
 
@@ -120,9 +146,9 @@ class TestProductDeleteView:
 @pytest.mark.django_db
 class TestProductDetailView:
 
-    def test_detail_view(self, client, product):
+    def test_detail_view(self, web_client, product):
         url = reverse("product:detail", kwargs={"pk": product.pk})
-        response = client.get(url)
+        response = web_client.get(url)
 
         assert response.status_code == 200
         assert response.context["product"] == product
@@ -131,16 +157,16 @@ class TestProductDetailView:
 @pytest.mark.django_db
 class TestProductSearchViews:
 
-    def test_search_view(self, client, product):
+    def test_search_view(self, web_client, product):
         url = reverse("product:search")
-        response = client.get(url, {"q": "App"})
+        response = web_client.get(url, {"q": "App"})
 
         assert response.status_code == 200
         assert product.name in response.content.decode()
 
-    def test_search_filter_view(self, client, product):
+    def test_search_filter_view(self, web_client, product):
         url = reverse("product:search_filter")
-        response = client.get(url, {"q": "App"})
+        response = web_client.get(url, {"q": "App"})
 
         assert response.status_code == 200
         assert product.name in response.content.decode()
