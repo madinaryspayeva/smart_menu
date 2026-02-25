@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load widget_tweaks socialaccount %}
+
+{% block content %}
+<div class="w-full flex items-center justify-center">
+    <div class="w-full md:w-96">
+        <div class="auth-form bg-white rounded-xl p-8 border-2 border-pastel-pink">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-oswald text-coral-red mb-2">Вход через Google</h2>
+                <p class="text-gray-600">Подтверждение входа через сторонний аккаунт</p>
+            </div>
+
+            <!-- Сообщения -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="p-4 mb-4 text-sm {% if message.tags == 'success' %}text-green-800 bg-green-50{% else %}text-blue-800 bg-blue-50{% endif %} rounded-lg" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="bg-light-pink/30 border border-pastel-pink rounded-lg p-4 mb-6">
+                <p class="text-gray-700 text-sm">
+                    Вы собираетесь войти, используя сторонний аккаунт от Google.
+                </p>
+            </div>
+
+            <form method="post" action="">
+                {% csrf_token %}
+                
+                {% if redirect_field_value %}
+                <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                {% endif %}
+                
+                <button type="submit" class="primary w-full">
+                    <span class="relative z-10">Продолжить с Google</span>
+                </button>
+            </form>
+
+            <div class="relative flex items-center my-6">
+                <div class="flex-grow border-t border-pastel-pink"></div>
+                <span class="flex-shrink mx-4 text-gray-500">или</span>
+                <div class="flex-grow border-t border-pastel-pink"></div>
+            </div>
+
+            <div class="text-center">
+                <a href="{% url 'account_login' %}" class="text-coral-red hover:text-pastel-pink font-medium transition">
+                    ← Назад ко входу
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

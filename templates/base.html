@@ -15,29 +15,61 @@
 </head>
 <body class="bg-pastel-yellow font-oswald min-h-screen">
 <header class="bg-gradient-to-r from-pastel-pink to-amber-300 text-white py-5 shadow-lg">
-        <div class="container mx-auto px-4 flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-                <span class="text-3xl">🍽</span>
-                <h1 class="text-4xl font-bebas-neue text-coral-red">Smart Menu</h1>
-            </div>
-            <nav class="hidden md:block">
-                <ul class="flex space-x-6">
-                    <li><a href="#" class="hover:bg-pastel-pink/30 px-3 py-2 rounded transition">Главная</a></li>
-                    <li><a href="#" class="hover:bg-pastel-pink/30 px-3 py-2 rounded transition">Меню</a></li>
-                    <li><a href="#" class="hover:bg-pastel-pink/30 px-3 py-2 rounded transition">О нас</a></li>
-                </ul>
-            </nav>
-            <button class="md:hidden text-2xl">☰</button>
-        </div>
-    </header>
-  
+    <div class="container mx-auto px-4 flex justify-between items-center">
+        <a href="{% url 'recipe:list' %}" class="flex items-center space-x-2 group">
+            <span class="text-3xl group-hover:scale-110 transition-transform duration-200">🍽</span>
+            <h1 class="text-4xl font-bebas-neue text-coral-red group-hover:text-coral-red/80 transition-colors">Smart Menu</h1>
+        </a>
+        
+        <nav class="hidden md:block">
+            <ul class="flex space-x-6 items-center">
+                <li><a href="{% url 'recipe:list' %}" class="hover:bg-pastel-pink/30 px-3 py-2 rounded transition">Главная</a></li>
+                <li><a href="#" class="hover:bg-pastel-pink/30 px-3 py-2 rounded transition">Меню</a></li>
+                {% if user.is_authenticated %}
+                <li>
+                    <form method="post" action="{% url 'account_logout' %}" class="inline-flex items-center m-0 p-0">
+                        {% csrf_token %}
+                        <button class="hover:bg-pastel-pink/30 px-3 py-2 rounded transition" type="submit">Выйти</button>
+                    </form>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        <button class="md:hidden text-2xl">☰</button>
+    </div>
+</header>
     <main class="container mx-auto px-4 py-10">
         <div class="flex justify-center items-start ">
             {% block content %}
             {% endblock content %}
         </div>
     </main>
-    <footer>Common footer for all templates</footer>
+
+<footer class="bg-gradient-to-r from-pastel-pink to-amber-300 text-white py-6 mt-auto">
+    <div class="container mx-auto px-4">
+        <div class="flex flex-col space-y-4">
+            <!-- Логотип и ссылки в одной колонке -->
+            <div class="flex flex-col space-y-3">
+                <!-- Логотип -->
+                <div class="flex items-center space-x-2">
+                    <span class="text-xl">🍽</span>
+                    <span class="text-xl font-bebas-neue text-coral-red">Smart Menu</span>
+                </div>
+                
+                <!-- Ссылки под логотипом -->
+                <div class="flex flex-col space-y-1.5 pl-2">
+                    <a href="#" class="text-sm hover:text-coral-red transition">О нас</a>
+                    <a href="#" class="text-sm hover:text-coral-red transition">Контакты</a>
+                    <a href="#" class="text-sm hover:text-coral-red transition">Политика конфиденциальности</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-6 pt-3 border-t border-white/20">
+            <p class="text-xs">© 2026 Smart Menu. Все права защищены.</p>
+        </div>
+    </div>
+</footer>
 
 <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 </body>
