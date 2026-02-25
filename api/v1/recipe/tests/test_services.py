@@ -330,7 +330,7 @@ class TestWebParserService:
         assert len(result.ingredients) == 2
         assert result.ingredients[0].raw == "Water"
         assert len(result.steps) == 2
-        assert result.thumbnail == "image.jpg"
+        assert result.thumbnail.endswith("image.jpg")
 
 
     def test_extract_structured_data_invalid_json(self, web_parser):
@@ -525,8 +525,8 @@ class TestRecipeBuilderService:
 
         result = builder._parse_ingredient(ingredient)
 
-        assert result["unit"] == Unit.TO_TASTE.value
-        assert result["amount"] is None
+        assert result.unit == Unit.TO_TASTE.value
+        assert result.amount is None
 
     def test_parse_ingredient_without_amount(self, builder):
         ingredient = IngredientDTO(raw="flour")

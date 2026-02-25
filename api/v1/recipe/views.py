@@ -51,8 +51,6 @@ class ParseUrlAPIView(generics.CreateAPIView):
                     repository=repository
                     ) #TODO check ingredients and product saving
                                                                                         
-                                                                                        
-
                 try:
                     recipe = use_case.execute(request.user.id, recipe_source.id)
                     return Response(
