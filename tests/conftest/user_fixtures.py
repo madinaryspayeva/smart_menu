@@ -1,5 +1,6 @@
 import pytest
 from django.contrib.auth import get_user_model
+from django.test import Client
 from rest_framework.test import APIClient
 
 User = get_user_model()
@@ -27,4 +28,10 @@ def user(db):
 def auth_client(user):
     client = APIClient()
     client.force_authenticate(user)
+    return client
+
+@pytest.fixture
+def web_client(user):
+    client = Client()
+    client.force_login(user)
     return client

@@ -23,3 +23,15 @@ def products(owner):
             Product.objects.create(name="Banana", category=Category.FRUITS, created_by=owner),
             Product.objects.create(name="Carrot", category=Category.VEGETABLES, created_by=owner),
         ]
+
+@pytest.fixture
+def product_factory(db, user):
+    def create_product(**kwargs):
+        defaults = {
+            "name": "Default Product",
+            "created_by": user,
+        }
+        defaults.update(kwargs)
+        return Product.objects.create(**defaults)
+
+    return create_product

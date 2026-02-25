@@ -104,9 +104,9 @@ class TestRecipeDeleteView:
 @pytest.mark.django_db
 class TestRecipeDetailView:
 
-    def test_detail_view(self, client, recipe):
+    def test_detail_view(self, web_client, recipe):
         url = reverse("recipe:detail", kwargs={"pk": recipe.pk})
-        response = client.get(url)
+        response = web_client.get(url)
 
         assert response.status_code == 200
         assert response.context["recipe"] == recipe
@@ -115,30 +115,30 @@ class TestRecipeDetailView:
 @pytest.mark.django_db
 class TestRecipeListView:
 
-    def test_list_view(self, client, recipe):
+    def test_list_view(self, web_client, recipe):
         url = reverse("recipe:list")
-        response = client.get(url)
+        response = web_client.get(url)
 
         assert response.status_code == 200
         assert recipe in response.context["recipes"]
     
-    def test_search_filter(self, client, recipe):
+    def test_search_filter(self, web_client, recipe):
         recipe.name = "Суп"
         recipe.save()
 
         url = reverse("recipe:list")
-        response = client.get(url, {"q": "Суп"})
+        response = web_client.get(url, {"q": "Суп"})
 
         assert response.status_code == 200
         assert recipe in response.context["recipes"]
 
-    def test_meal_type_filter(self, client, recipe):
+    def test_meal_type_filter(self, web_client, recipe):
         url = reverse("recipe:list")
-        response = client.get(url, {"meal_type": recipe.meal_type})
+        response = web_client.get(url, {"meal_type": recipe.meal_type})
 
         assert recipe in response.context["recipes"]
     
-    def test_product_filter(self, client, recipe_factory, product, product_1):
+    def test_product_filter(self, web_client, recipe_factory, product, product_1):
        
         recipe_with_product = recipe_factory(
         name="С яблоком",
@@ -150,16 +150,16 @@ class TestRecipeListView:
         )
 
         url = reverse("recipe:list")
-        response = client.get(url, {"products": str(product.id)})
+        response = web_client.get(url, {"products": str(product.id)})
 
         recipes = response.context["recipes"]
 
         assert recipe_with_product in recipes
         assert recipe_without_product not in recipes
     
-    def test_has_active_filters_flag(self, client, recipe):
+    def test_has_active_filters_flag(self, web_client):
         url = reverse("recipe:list")
-        response = client.get(url, {"q": "test"})
+        response = web_client.get(url, {"q": "test"})
 
         assert response.context["has_active_filters"] is True
-            
+                 

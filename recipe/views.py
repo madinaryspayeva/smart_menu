@@ -11,6 +11,7 @@ from django.views.generic import (
     UpdateView,
 )
 
+from app.views import AuthRequiredView
 from product.mixins import OwnerOrSuperuserMixin
 from product.models import Product
 from recipe.choices import MealType
@@ -18,7 +19,7 @@ from recipe.forms import RecipeForm, RecipeIngredientFormSet
 from recipe.models import Recipe
 
 
-class RecipeCreateView(CreateView):
+class RecipeCreateView(AuthRequiredView, CreateView):
     model = Recipe
     form_class = RecipeForm
     template_name = "recipe/form.html"
@@ -52,7 +53,7 @@ class RecipeCreateView(CreateView):
         return self.form_invalid(form)
 
 
-class RecipeUpdateView(OwnerOrSuperuserMixin, UpdateView):
+class RecipeUpdateView(AuthRequiredView, OwnerOrSuperuserMixin, UpdateView):
     model = Recipe
     form_class = RecipeForm
     template_name = "recipe/form.html"
@@ -82,7 +83,7 @@ class RecipeUpdateView(OwnerOrSuperuserMixin, UpdateView):
             return self.form_invalid(form)
 
            
-class RecipeListView(ListView):
+class RecipeListView(AuthRequiredView, ListView):
     model = Recipe
     template_name = "recipe/list.html"
     context_object_name = "recipes"
@@ -156,13 +157,13 @@ class RecipeListView(ListView):
         return context
 
 
-class RecipeDetailView(DetailView):
+class RecipeDetailView(AuthRequiredView, DetailView):
     model = Recipe
     template_name = "recipe/detail.html"
     context_object_name = "recipe"
 
 
-class RecipeDeleteView(DeleteView):
+class RecipeDeleteView(AuthRequiredView, OwnerOrSuperuserMixin, DeleteView):
     model = Recipe
     template_name = "recipe/delete.html"
     success_url = reverse_lazy("recipe:list")
