@@ -19,7 +19,6 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-
 urlpatterns = [
     path('', include('recipe.urls', namespace='recipe')), 
     path('admin/', admin.site.urls),
