@@ -90,11 +90,12 @@ class RecipeBuilderService(IRecipeBuilderService):
             if unit == Unit.TO_TASTE and key in text:
                 pattern = re.compile(re.escape(key), re.IGNORECASE)     
                 name = pattern.sub("", text)
-                return{
-                    "name": clean_name(name),
-                    "amount": None,
-                    "unit": Unit.TO_TASTE.value, 
-                }
+                return IngredientDTO(
+                        raw=ingredient.raw,
+                        name=clean_name(name),
+                        amount=None,
+                        unit=Unit.TO_TASTE.value
+                    )
         
         amount = None
         unit = None

@@ -31,11 +31,12 @@ class CreateRecipeUseCase:
 
     def execute(self, source_id: str, user_id: str, url: str):
 
-        if self.repository.exists_for_user(source_id, user_id): 
+        if self.repository.exists_for_user(source_id, user_id): #зачем этот блок если 
+                                                                 #проверка идет во вью ужн
             return self.repository.get_by_user_and_source(source_id, user_id)
         
         raw_data = self.parser.parse(url)
-
+        
         if self.llm:
             dto = self.llm.extract_recipe(raw_data.description)
             dto.thumbnail = raw_data.thumbnail

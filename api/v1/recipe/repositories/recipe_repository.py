@@ -81,6 +81,3 @@ class RecipeRepository(IRecipeRepository):
 
     def get_parsed_data_from_source(self, source_id: str) -> dict:
         return RecipeSource.objects.get(id=source_id).parsed_recipe
-
-
-

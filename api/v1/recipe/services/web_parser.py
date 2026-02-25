@@ -1,5 +1,6 @@
 import json
 import re
+from urllib.parse import urljoin
 
 import requests
 from bs4 import BeautifulSoup
@@ -35,6 +36,9 @@ class WebParserService(IRecipeParserService):
             soup = BeautifulSoup(resp.content, "html.parser")
 
             recipe_data = self._parse_recipe_data(soup, url)
+
+            if recipe_data.get("thumbnail"):
+                recipe_data["thumbnail"] = urljoin(url, recipe_data["thumbnail"])
 
             ingredients = [
                 IngredientDTO(raw=i["raw"], name=None, amount=None, unit=None)
