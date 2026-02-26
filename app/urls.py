@@ -25,6 +25,7 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
     path('product/', include('product.urls', namespace='product')), 
     path('api/v1/', include('api.v1.urls')),
+    path('notifications/', include('notifications.urls')),
 ]
 
 if settings.DEBUG:

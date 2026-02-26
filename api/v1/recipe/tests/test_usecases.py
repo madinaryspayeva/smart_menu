@@ -9,7 +9,7 @@ from api.v1.recipe.usecases.create_recipe_usecase import (
 class TestCreateRecipeUseCase:
 
     @patch("api.v1.recipe.mappers.recipe_mapper.RecipeMapper.dto_to_dict")
-    def test_returns_existing_recipe_if_already_exists(self, mock_mapper):
+    def test_returns_existing_recipe_if_already_exists(self, mock_mapper, user):
         parser = Mock()
         repository = Mock()
         builder = Mock()
@@ -23,14 +23,14 @@ class TestCreateRecipeUseCase:
 
         usecase = CreateRecipeUseCase(parser, repository, builder, uow, llm)
 
-        result = usecase.execute("source1", "user1", "url")
+        result = usecase.execute("source1", user, "url")
 
-        repository.get_by_user_and_source.assert_called_once_with("source1", "user1")
+        repository.get_by_user_and_source.assert_called_once_with("source1", user.id)
         parser.parse.assert_not_called()
         assert result == existing_recipe
 
     @patch("api.v1.recipe.mappers.recipe_mapper.RecipeMapper.dto_to_dict")
-    def test_execute_without_llm(self, mock_mapper):
+    def test_execute_without_llm(self, mock_mapper, user):
         parser = Mock()
         repository = Mock()
         builder = Mock()
@@ -49,17 +49,17 @@ class TestCreateRecipeUseCase:
 
         usecase = CreateRecipeUseCase(parser, repository, builder, uow, llm)
 
-        result = usecase.execute("source1", "user1", "url")
+        result = usecase.execute("source1", user, "url")
 
         parser.parse.assert_called_once_with("url")
         builder.build.assert_called_once_with(raw_data)
         mock_mapper.assert_called_once_with(final_dto)
         repository.update_source_parsed_data.assert_called_once()
-        repository.save.assert_called_once_with("source1", "user1", final_dto)
+        repository.save.assert_called_once_with("source1", user.id, final_dto)
         assert result == recipe
 
     @patch("api.v1.recipe.mappers.recipe_mapper.RecipeMapper.dto_to_dict")
-    def test_execute_with_llm(self, mock_mapper):
+    def test_execute_with_llm(self, mock_mapper, user):
         parser = Mock()
         repository = Mock()
         builder = Mock()
@@ -83,7 +83,7 @@ class TestCreateRecipeUseCase:
 
         usecase = CreateRecipeUseCase(parser, repository, builder, uow, llm)
 
-        result = usecase.execute("source1", "user1", "url")
+        result = usecase.execute("source1", user, "url")
 
         llm.extract_recipe.assert_called_once_with("raw text")
         builder.build.assert_called_once_with(dto_from_llm)
@@ -91,7 +91,7 @@ class TestCreateRecipeUseCase:
         assert result == recipe
 
     @patch("api.v1.recipe.mappers.recipe_mapper.RecipeMapper.dto_to_dict")
-    def test_execute_uses_uow_context_manager(self, mock_mapper):
+    def test_execute_uses_uow_context_manager(self, mock_mapper, user):
         parser = Mock()
         repository = Mock()
         builder = Mock()
@@ -108,7 +108,7 @@ class TestCreateRecipeUseCase:
 
         usecase = CreateRecipeUseCase(parser, repository, builder, uow, llm)
 
-        usecase.execute("source1", "user1", "url")
+        usecase.execute("source1", user, "url")
 
         assert uow.__enter__.called
         assert uow.__exit__.called
@@ -117,7 +117,7 @@ class TestCreateRecipeUseCase:
 class TestCreateRecipeFromExistingSourceUseCase:
 
     @patch("api.v1.recipe.mappers.recipe_mapper.RecipeMapper.dict_to_dto")
-    def test_execute_creates_recipe_from_existing_source(self, mock_mapper):
+    def test_execute_creates_recipe_from_existing_source(self, mock_mapper, user):
         repository = Mock()
 
         parsed_dict = {"title": "Test"}
@@ -130,8 +130,8 @@ class TestCreateRecipeFromExistingSourceUseCase:
 
         usecase = CreateRecipeFromExistingSourceUseCase(repository)
 
-        result = usecase.execute("user1", "source1")
+        result = usecase.execute(user, "source1")
 
         repository.get_parsed_data_from_source.assert_called_once_with("source1")
-        repository.create_from_dto.assert_called_once_with(dto, "user1", "source1")
+        repository.create_from_dto.assert_called_once_with(dto, user.id, "source1")
         assert result == recipe

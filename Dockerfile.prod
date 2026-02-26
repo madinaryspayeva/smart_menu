@@ -13,11 +13,10 @@ RUN poetry config virtualenvs.create false \
 
 COPY . .
 
-CMD ["gunicorn", "app.wsgi:application", \
+CMD ["gunicorn", "app.asgi:application", \
      "--bind", "0.0.0.0:8000", \
      "--workers", "2", \
-     "--threads", "2", \
-     "--worker-class", "gthread", \
+     "--worker-class", "uvicorn.workers.UvicornWorker", \
      "--access-logfile", "-", \
      "--error-logfile", "-", \
      "--log-level", "info"]
