@@ -93,6 +93,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             cd smart_menu
+            git clean -fd staticfiles/
             git pull origin main
             docker compose -f docker-compose.prod.yml down
             docker compose -f docker-compose.prod.yml run --rm web poetry run python manage.py migrate --noinput

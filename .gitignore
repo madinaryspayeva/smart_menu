@@ -118,3 +118,5 @@ celerybeat-schedule.*
 *.pid 
 
 .DS_Store
+
+staticfiles/
