@@ -8,6 +8,7 @@ from api.v1.recipe.usecases.create_recipe_usecase import (
 
 class TestCreateRecipeUseCase:
 
+    @patch("notifications.services.NotificationService.send")
     @patch("api.v1.recipe.mappers.recipe_mapper.RecipeMapper.dto_to_dict")
     def test_returns_existing_recipe_if_already_exists(self, mock_mapper, mock_send, user):
         parser = Mock()
@@ -30,6 +31,7 @@ class TestCreateRecipeUseCase:
         mock_send.assert_not_called()
         assert result == existing_recipe
 
+    @patch("notifications.services.NotificationService.send")
     @patch("api.v1.recipe.mappers.recipe_mapper.RecipeMapper.dto_to_dict")
     def test_execute_without_llm(self, mock_mapper, mock_send, user):
         parser = Mock()
@@ -60,6 +62,7 @@ class TestCreateRecipeUseCase:
         mock_send.assert_called_once()  
         assert result == recipe
 
+    @patch("notifications.services.NotificationService.send")
     @patch("api.v1.recipe.mappers.recipe_mapper.RecipeMapper.dto_to_dict")
     def test_execute_with_llm(self, mock_mapper, mock_send, user):
         parser = Mock()
@@ -93,6 +96,7 @@ class TestCreateRecipeUseCase:
         mock_send.assert_called_once()
         assert result == recipe
 
+    @patch("notifications.services.NotificationService.send")
     @patch("api.v1.recipe.mappers.recipe_mapper.RecipeMapper.dto_to_dict")
     def test_execute_uses_uow_context_manager(self, mock_mapper, mock_send, user):
         parser = Mock()
@@ -120,6 +124,7 @@ class TestCreateRecipeUseCase:
 
 class TestCreateRecipeFromExistingSourceUseCase:
 
+    @patch("notifications.services.NotificationService.send")
     @patch("api.v1.recipe.mappers.recipe_mapper.RecipeMapper.dict_to_dto")
     def test_execute_creates_recipe_from_existing_source(self, mock_mapper, mock_send, user):
         repository = Mock()
