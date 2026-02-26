@@ -21,21 +21,79 @@
             <h1 class="text-4xl font-bebas-neue text-coral-red group-hover:text-coral-red/80 transition-colors">Smart Menu</h1>
         </a>
         
-        <nav class="hidden md:block">
-            <ul class="flex space-x-6 items-center">
-                <li><a href="{% url 'recipe:list' %}" class="hover:bg-pastel-pink/30 px-3 py-2 rounded transition">Главная</a></li>
-                <li><a href="#" class="hover:bg-pastel-pink/30 px-3 py-2 rounded transition">Меню</a></li>
-                {% if user.is_authenticated %}
-                <li>
-                    <form method="post" action="{% url 'account_logout' %}" class="inline-flex items-center m-0 p-0">
-                        {% csrf_token %}
-                        <button class="hover:bg-pastel-pink/30 px-3 py-2 rounded transition" type="submit">Выйти</button>
-                    </form>
-                </li>
+       <nav class="hidden md:flex items-center space-x-6">
+    {% if user.is_authenticated %}
+    <!-- Дропдаун аккаунта -->
+    <div class="relative" id="account-menu">
+        <button onclick="toggleDropdown()" class="flex items-center gap-2 hover:bg-pastel-pink/30 px-3 py-2 rounded transition">
+            <div class="w-8 h-8 rounded-full bg-coral-red/20 flex items-center justify-center">
+                <i class="fas fa-user text-coral-red text-sm"></i>
+            </div>
+        </button>
+
+        <div id="dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-card-border z-50 overflow-hidden">
+            <div class="px-4 py-3 border-b border-card-border">
+                <p class="text-xs text-gray-400">Аккаунт</p>
+                <p class="text-sm font-semibold text-dark-gray truncate">{{ user.email }}</p>
+            </div>
+            <a href="{% url 'recipe:list' %}" class="flex items-center gap-3 px-4 py-3 text-sm text-dark-gray hover:bg-pastel-yellow transition">
+                <i class="fas fa-book-open text-coral-red w-4"></i> Мои рецепты
+            </a>
+            <a href="{% url 'notifications' %}" class="flex items-center gap-3 px-4 py-3 text-sm text-dark-gray hover:bg-pastel-yellow transition">
+                <i class="fas fa-bell text-coral-red w-4"></i> Уведомления
+                {% if unread_notifications_count %}
+                <span class="unread-badge ml-auto bg-coral-red text-white text-xs rounded-full px-2 py-0.5">{{ unread_notifications_count }}</span>
                 {% endif %}
-            </ul>
-        </nav>
-        <button class="md:hidden text-2xl">☰</button>
+            </a>
+            <div class="border-t border-card-border">
+                <form method="post" action="{% url 'account_logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="flex items-center gap-3 w-full px-4 py-3 text-sm text-dark-gray hover:bg-pastel-yellow transition">
+                        <i class="fas fa-sign-out-alt text-coral-red w-4"></i> Выйти
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</nav>
+
+       <!-- Мобильная кнопка -->
+{% if user.is_authenticated %}
+<div class="md:hidden relative" id="mobile-account-menu">
+    <button onclick="toggleMobileDropdown()" class="flex items-center gap-2 hover:bg-pastel-pink/30 px-3 py-2 rounded transition">
+        <div class="w-8 h-8 rounded-full bg-coral-red/20 flex items-center justify-center">
+            <i class="fas fa-user text-coral-red text-sm"></i>
+        </div>
+    </button>
+
+    <div id="mobile-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-card-border z-50 overflow-hidden">
+        <div class="px-4 py-3 border-b border-card-border">
+            <p class="text-xs text-gray-400">Аккаунт</p>
+            <p class="text-sm font-semibold text-dark-gray truncate">{{ user.email }}</p>
+        </div>
+        <a href="{% url 'recipe:list' %}" class="flex items-center gap-3 px-4 py-3 text-sm text-dark-gray hover:bg-pastel-yellow transition">
+            <i class="fas fa-book-open text-coral-red w-4"></i> Мои рецепты
+        </a>
+        <a href="{% url 'notifications' %}" class="flex items-center gap-3 px-4 py-3 text-sm text-dark-gray hover:bg-pastel-yellow transition">
+            <i class="fas fa-bell text-coral-red w-4"></i> Уведомления
+            {% if unread_notifications_count %}
+            <span class="unread-badge hidden ml-auto bg-coral-red text-white text-xs rounded-full px-2 py-0.5">0</span>
+            {% endif %}
+        </a>
+        <div class="border-t border-card-border">
+            <form method="post" action="{% url 'account_logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="flex items-center gap-3 w-full px-4 py-3 text-sm text-dark-gray hover:bg-pastel-yellow transition">
+                    <i class="fas fa-sign-out-alt text-coral-red w-4"></i> Выйти
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% else %}
+<a href="{% url 'account_login' %}" class="md:hidden hover:bg-pastel-pink/30 px-3 py-2 rounded transition text-sm">Войти</a>
+{% endif %}
     </div>
 </header>
     <main class="container mx-auto px-4 py-10">
@@ -70,6 +128,86 @@
         </div>
     </div>
 </footer>
+
+{% if user.is_authenticated %}
+<div id="toast-container" class="fixed top-5 right-5 flex flex-col gap-3 z-50 w-80 max-w-[calc(100vw-2rem)]"></div>
+
+<script>
+const socket = new WebSocket("ws://" + window.location.host + "/ws/notifications/");
+
+socket.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+    showToast(data);
+    if (data.save && data.id) {
+        updateUnreadCount(1);
+    }
+};
+
+function updateUnreadCount(delta) {
+    const badges = document.querySelectorAll('.unread-badge');
+    badges.forEach(badge => {
+        const current = parseInt(badge.textContent) || 0;
+        const newCount = current + delta;
+        if (newCount > 0) {
+            badge.textContent = newCount;
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+    });
+}
+
+function showToast(data) {
+    const icons = { info: '🔔', success: '✅', error: '❌', warning: '⚠️' };
+    const gradients = {
+        info: 'from-pastel-pink to-amber-300',
+        success: 'from-mint to-green-400',
+        error: 'from-coral-red to-pastel-pink',
+        warning: 'from-lemon-dark to-amber-300',
+    };
+
+    const toast = document.createElement("div");
+    toast.className = "bg-white rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 ease-out translate-x-full opacity-0";
+    toast.innerHTML = `
+        <div class="h-1 bg-gradient-to-r ${gradients[data.type] || gradients.info}"></div>
+        <div class="flex items-start gap-3 px-4 py-3">
+            <span class="text-xl mt-0.5">${icons[data.type] || icons.info}</span>
+            <div class="flex-1 min-w-0">
+                <p class="font-oswald font-semibold text-dark-gray text-sm">${data.title}</p>
+                <p class="text-xs text-gray-500 mt-0.5 leading-relaxed">${data.message}</p>
+            </div>
+            <button onclick="this.closest('.toast-item').remove()" class="text-gray-300 hover:text-gray-500 transition text-lg leading-none ml-1">×</button>
+        </div>
+    `;
+    toast.classList.add('toast-item');
+    document.getElementById("toast-container").appendChild(toast);
+    requestAnimationFrame(() => requestAnimationFrame(() => toast.classList.remove('translate-x-full', 'opacity-0')));
+    setTimeout(() => {
+        toast.classList.add('translate-x-full', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+    }, 5000);
+}
+
+function toggleDropdown() {
+    document.getElementById('dropdown').classList.toggle('hidden');
+}
+document.addEventListener('click', function(e) {
+    if (!document.getElementById('account-menu').contains(e.target)) {
+        document.getElementById('dropdown').classList.add('hidden');
+    }
+});
+
+function toggleMobileDropdown() {
+    document.getElementById('mobile-dropdown').classList.toggle('hidden');
+}
+document.addEventListener('click', function(e) {
+    const menu = document.getElementById('mobile-account-menu');
+    if (menu && !menu.contains(e.target)) {
+        document.getElementById('mobile-dropdown').classList.add('hidden');
+    }
+});
+</script>
+{% endif %}
 
 <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 </body>

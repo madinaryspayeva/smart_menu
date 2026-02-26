@@ -6,6 +6,9 @@ from api.v1.recipe.interfaces.recipe_parser import (
 from api.v1.recipe.interfaces.uow import IUnitOfWork
 from api.v1.recipe.mappers.recipe_mapper import RecipeMapper
 from api.v1.recipe.services.llm import LLMService
+from notifications.choices import Notification_Type
+from notifications.services import NotificationService
+from users.models import User
 
 
 class CreateRecipeUseCase:
@@ -29,11 +32,10 @@ class CreateRecipeUseCase:
         self.llm = llm
     
 
-    def execute(self, source_id: str, user_id: str, url: str):
+    def execute(self, source_id: str, user: User, url: str):
 
-        if self.repository.exists_for_user(source_id, user_id): #зачем этот блок если 
-                                                                 #проверка идет во вью ужн
-            return self.repository.get_by_user_and_source(source_id, user_id)
+        if self.repository.exists_for_user(source_id, user.id): 
+            return self.repository.get_by_user_and_source(source_id, user.id)
         
         raw_data = self.parser.parse(url)
         
@@ -48,7 +50,15 @@ class CreateRecipeUseCase:
         with self.uow:
             parsed_dict = RecipeMapper.dto_to_dict(final_dto)
             self.repository.update_source_parsed_data(source_id, parsed_dict)
-            recipe = self.repository.save(source_id, user_id, final_dto)
+            recipe = self.repository.save(source_id, user.id, final_dto)
+        
+  
+        NotificationService.send(
+            user=user,
+            title="Рецепт готов!",
+            message=f"Рецепт «{recipe.name}» успешно добавлен.",
+            type=Notification_Type.SUCCESS,
+        )
         
         return recipe
 
@@ -61,9 +71,17 @@ class CreateRecipeFromExistingSourceUseCase:
     def __init__(self, repository: IRecipeRepository):
         self.repository = repository
     
-    def execute(self, user_id: str, source_id: str):
-        parsed_dict = self.repository.get_parsed_data_from_source(source_id)
-        
+    def execute(self, user: User, source_id: str):
+        parsed_dict = self.repository.get_parsed_data_from_source(source_id)     
         dto = RecipeMapper.dict_to_dto(parsed_dict)
+        recipe =  self.repository.create_from_dto(dto, user.id, source_id)
 
-        return self.repository.create_from_dto(dto, user_id, source_id)
+       
+        NotificationService.send(
+            user=user,
+            title="Рецепт готов!",
+            message=f"Рецепт «{recipe.name}» успешно добавлен.",
+            type=Notification_Type.SUCCESS,
+        )
+        
+        return recipe

@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="w-full max-w-2xl">
+    <div class="flex items-center gap-3 mb-6">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-pastel-pink to-amber-300 flex items-center justify-center">
+            <i class="fas fa-bell text-white"></i>
+        </div>
+        <h1 class="text-3xl font-bebas-neue text-dark-gray">Уведомления</h1>
+    </div>
+
+    <ul id="notification-list" class="flex flex-col gap-3">
+        {% for n in notifications %}
+        <li data-id="{{ n.id }}"
+            {% if not n.is_read %}onclick="markRead('{{ n.id }}')"{% endif %}
+            class="bg-white rounded-xl shadow-sm border transition-all duration-300
+                   {% if not n.is_read %}border-l-4 border-l-coral-red cursor-pointer hover:shadow-md{% else %}border-card-border opacity-60{% endif %}">
+            <div class="flex items-start gap-4 px-5 py-4">
+                <div class="mt-1">
+                    {% if n.type == 'success' %}<span class="text-xl">✅</span>
+                    {% elif n.type == 'error' %}<span class="text-xl">❌</span>
+                    {% elif n.type == 'warning' %}<span class="text-xl">⚠️</span>
+                    {% else %}<span class="text-xl">🔔</span>{% endif %}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-dark-gray">{{ n.title }}</p>
+                    <p class="text-sm text-gray-500 mt-0.5">{{ n.message }}</p>
+                    <p class="text-xs text-gray-400 mt-2">{{ n.created }}</p>
+                </div>
+                {% if not n.is_read %}
+                <span class="shrink-0 w-2 h-2 rounded-full bg-coral-red mt-2"></span>
+                {% endif %}
+            </div>
+        </li>
+        {% empty %}
+        <li class="bg-white rounded-xl border border-card-border px-5 py-10 text-center">
+            <p class="text-4xl mb-3">🔔</p>
+            <p class="text-gray-400 font-oswald">Нет уведомлений</p>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<script>
+function markRead(id) {
+    fetch(`/notifications/${id}/read/`, {
+        method: "POST",
+        headers: { "X-CSRFToken": "{{ csrf_token }}" }
+    }).then(() => {
+        const el = document.querySelector(`[data-id='${id}']`);
+        el.style.transition = 'all 0.3s ease';
+        el.style.opacity = '0';
+        el.style.transform = 'translateX(20px)';
+        setTimeout(() => {
+            el.classList.remove('border-l-coral-red', 'border-l-4', 'cursor-pointer', 'hover:shadow-md');
+            el.classList.add('opacity-60', 'border-card-border');
+            el.removeAttribute('onclick');
+            el.querySelector('span.bg-coral-red')?.remove();
+            el.style.opacity = '';
+            el.style.transform = '';
+        }, 300);
+    });
+}
+
+const socket = new WebSocket("ws://" + window.location.host + "/ws/notifications/");
+socket.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+    if (!data.id) return; 
+
+    const li = document.createElement("li");
+    li.dataset.id = data.id;
+    li.className = "bg-white rounded-xl shadow-sm border border-l-4 border-l-coral-red cursor-pointer hover:shadow-md transition-all duration-300";
+    li.setAttribute('onclick', `markRead('${data.id}')`);
+    li.innerHTML = `
+        <div class="flex items-start gap-4 px-5 py-4">
+            <div class="mt-1"><span class="text-xl">🔔</span></div>
+            <div class="flex-1 min-w-0">
+                <p class="font-semibold text-dark-gray">${data.title}</p>
+                <p class="text-sm text-gray-500 mt-0.5">${data.message}</p>
+                <p class="text-xs text-gray-400 mt-2">${data.created_at}</p>
+            </div>
+            <span class="shrink-0 w-2 h-2 rounded-full bg-coral-red mt-2"></span>
+        </div>
+    `;
+    document.getElementById("notification-list").prepend(li);
+};
+</script>
+{% endblock %}

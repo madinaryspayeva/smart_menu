@@ -52,7 +52,7 @@ class ParseUrlAPIView(generics.CreateAPIView):
                     ) #TODO check ingredients and product saving
                                                                                         
                 try:
-                    recipe = use_case.execute(request.user.id, recipe_source.id)
+                    recipe = use_case.execute(request.user, recipe_source.id)
                     return Response(
                         {
                             "recipe_id": recipe.id,
