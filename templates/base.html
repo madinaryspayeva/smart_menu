@@ -25,7 +25,7 @@
     {% if user.is_authenticated %}
     <!-- Дропдаун аккаунта -->
     <div class="relative" id="account-menu">
-        <button onclick="toggleDropdown()" class="flex items-center gap-2 hover:bg-pastel-pink/30 px-3 py-2 rounded transition">
+        <button onclick="event.stopPropagation(); toggleDropdown()" class="flex items-center gap-2 hover:bg-pastel-pink/30 px-3 py-2 rounded transition">
             <div class="w-8 h-8 rounded-full bg-coral-red/20 flex items-center justify-center">
                 <i class="fas fa-user text-coral-red text-sm"></i>
             </div>
@@ -61,7 +61,7 @@
        <!-- Мобильная кнопка -->
 {% if user.is_authenticated %}
 <div class="md:hidden relative" id="mobile-account-menu">
-    <button onclick="toggleMobileDropdown()" class="flex items-center gap-2 hover:bg-pastel-pink/30 px-3 py-2 rounded transition">
+    <button onclick="event.stopPropagation(); toggleMobileDropdown()" class="flex items-center gap-2 hover:bg-pastel-pink/30 px-3 py-2 rounded transition">
         <div class="w-8 h-8 rounded-full bg-coral-red/20 flex items-center justify-center">
             <i class="fas fa-user text-coral-red text-sm"></i>
         </div>
@@ -190,21 +190,28 @@ function showToast(data) {
 }
 
 function toggleDropdown() {
-    document.getElementById('dropdown').classList.toggle('hidden');
+    const dropdown = document.getElementById('dropdown');
+    if (dropdown) dropdown.classList.toggle('hidden');
 }
+
+function toggleMobileDropdown() {
+    const dropdown = document.getElementById('mobile-dropdown');
+    if (dropdown) dropdown.classList.toggle('hidden');
+}
+
 document.addEventListener('click', function(e) {
-    if (!document.getElementById('account-menu').contains(e.target)) {
-        document.getElementById('dropdown').classList.add('hidden');
+    const menu = document.getElementById('account-menu');
+    const dropdown = document.getElementById('dropdown');
+    if (menu && dropdown && !menu.contains(e.target)) {
+        dropdown.classList.add('hidden');
     }
 });
 
-function toggleMobileDropdown() {
-    document.getElementById('mobile-dropdown').classList.toggle('hidden');
-}
 document.addEventListener('click', function(e) {
     const menu = document.getElementById('mobile-account-menu');
-    if (menu && !menu.contains(e.target)) {
-        document.getElementById('mobile-dropdown').classList.add('hidden');
+    const dropdown = document.getElementById('mobile-dropdown');
+    if (menu && dropdown && !menu.contains(e.target)) {
+        dropdown.classList.add('hidden');
     }
 });
 </script>
