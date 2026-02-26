@@ -6,8 +6,6 @@ from recipe.choices import MealType, Unit
 Константы с CSS селекторами для парсинга рецептов
 """
 
-# Структурированные данные (JSON-LD)
-
 STRUCTURED_DATA_SELECTORS = [
     'script[type="application/ld+json"]'
 ]
@@ -82,7 +80,6 @@ INSTRUCTIONS_SELECTORS = [
     '.step_n',
 ]
 
-
 LLM_SCHEMA = """
     {
     "title": "string",
@@ -102,6 +99,12 @@ LLM_SCHEMA = """
     }
 """
 
+# Строки-заголовки, которые не являются ингредиентами — фильтруются при парсинге
+INGREDIENT_NOISE_WORDS = {
+    "продукты", "ингредиенты", "ingredients", "состав",
+    "для теста", "для начинки", "для соуса", "для маринада",
+    "для глазури", "для подачи", "для украшения",
+}
 
 UNIT_SYNONYMS = {
     # --- без количества ---
@@ -116,18 +119,35 @@ UNIT_SYNONYMS = {
 
     # --- штуки ---
     "шт": Unit.PC,
+    "шт.": Unit.PC,
     "piece": Unit.PC,
     "pieces": Unit.PC,
-    "шт.": Unit.PC,
     "pc": Unit.PC,
     "clove": Unit.PC,
     "cloves": Unit.PC,
     "зубчик": Unit.PC,
     "зубчика": Unit.PC,
+    "зубчиков": Unit.PC,
     "слайса": Unit.PC,
     "слайс": Unit.PC,
     "slice": Unit.PC,
     "slices": Unit.PC,
+    # описательные штучные единицы
+    "веточка": Unit.PC,
+    "веточки": Unit.PC,
+    "веточек": Unit.PC,
+    "листик": Unit.PC,
+    "листика": Unit.PC,
+    "листиков": Unit.PC,
+    "лист": Unit.PC,
+    "листа": Unit.PC,
+    "листьев": Unit.PC,
+    "головка": Unit.PC,
+    "головки": Unit.PC,
+    "головок": Unit.PC,
+    "стебель": Unit.PC,
+    "стебля": Unit.PC,
+    "стеблей": Unit.PC,
 
     # --- масса ---
     "г": Unit.GR,
@@ -137,17 +157,22 @@ UNIT_SYNONYMS = {
     "gr": Unit.GR,
     "gram": Unit.GR,
     "grams": Unit.GR,
-
+    # русские словесные формы граммов
+    "грамм": Unit.GR,
+    "граммов": Unit.GR,
+    "грамма": Unit.GR,
     "кг": Unit.KG,
     "kg": Unit.KG,
     "kilogram": Unit.KG,
     "kilograms": Unit.KG,
-
+    # русские словесные формы килограммов
+    "килограмм": Unit.KG,
+    "килограммов": Unit.KG,
+    "килограмма": Unit.KG,
     "lb": Unit.GR,
     "lbs": Unit.GR,
     "pound": Unit.GR,
     "pounds": Unit.GR,
-
     "oz": Unit.GR,
     "ounce": Unit.GR,
     "ounces": Unit.GR,
@@ -156,12 +181,16 @@ UNIT_SYNONYMS = {
     "мл": Unit.ML,
     "мл.": Unit.ML,
     "ml": Unit.ML,
-
+    "миллилитр": Unit.ML,
+    "миллилитров": Unit.ML,
+    "миллилитра": Unit.ML,
     "л": Unit.L,
     "l": Unit.L,
     "liter": Unit.L,
     "liters": Unit.L,
-
+    "литр": Unit.L,
+    "литра": Unit.L,
+    "литров": Unit.L,
     "cup": Unit.CUP,
     "cups": Unit.CUP,
     "стакан": Unit.CUP,
@@ -170,13 +199,24 @@ UNIT_SYNONYMS = {
     "ст": Unit.CUP,
     "ст.": Unit.CUP,
 
+    # чайная ложка — все варианты
     "tsp": Unit.TSP,
     "teaspoon": Unit.TSP,
     "teaspoons": Unit.TSP,
     "ч.л.": Unit.TSP,
     "ч.л": Unit.TSP,
     "ч л": Unit.TSP,
+    "ч. л.": Unit.TSP,
+    "ч. л": Unit.TSP,
+    "ч. ложка": Unit.TSP,
+    "ч. ложки": Unit.TSP,
+    "ч. ложек": Unit.TSP,
+    "чайная ложка": Unit.TSP,
+    "чайной ложки": Unit.TSP,
+    "чайных ложки": Unit.TSP,
+    "чайных ложек": Unit.TSP,
 
+    # столовая ложка — все варианты
     "tbsp": Unit.TBSP,
     "tablespoon": Unit.TBSP,
     "tablespoons": Unit.TBSP,
@@ -184,13 +224,21 @@ UNIT_SYNONYMS = {
     "ст.л": Unit.TBSP,
     "ст л": Unit.TBSP,
     "ст. л.": Unit.TBSP,
+    "ст. л": Unit.TBSP,
+    "ст. ложка": Unit.TBSP,
+    "ст. ложки": Unit.TBSP,
+    "ст. ложек": Unit.TBSP,
+    "столовая ложка": Unit.TBSP,
+    "столовой ложки": Unit.TBSP,
+    "столовых ложки": Unit.TBSP,
+    "столовых ложек": Unit.TBSP,
 }
 
 UNIT_KEYS = sorted(UNIT_SYNONYMS.keys(), key=len, reverse=True)
 
 AMOUNT_UNIT_RE = re.compile(
     rf"""
-    (?P<amount>\d+(?:[.,]\d+)?|\d+/\d+)
+    (?P<amount>\d+(?:[.,]\d+)?|\d+\s+\d+/\d+|\d+/\d+)
     \s*[-–]?\s*
     (?P<unit>{'|'.join(map(re.escape, UNIT_KEYS))})
     \b
@@ -199,38 +247,49 @@ AMOUNT_UNIT_RE = re.compile(
     re.IGNORECASE | re.VERBOSE
 )
 
-CONVERSION = {
-        # масса → граммы
-        "oz": 28.3495,
-        "ounce": 28.3495,
-        "ounces": 28.3495,
+# "1банан", "2яйца" — число слитно с названием
+AMOUNT_PREFIX_RE = re.compile(
+    r"^(\d+(?:[.,]\d+)?(?:/\d+)?|\d+\s+\d+/\d+)\s*([а-яёa-z][а-яёa-z\s\-]*)",
+    re.IGNORECASE,
+)
 
-        "lb": 453.592,
-        "lbs": 453.592,
-        "pound": 453.592,
-        "pounds": 453.592,
-    }
+# "молоко 200" — число в конце строки без единицы
+AMOUNT_SUFFIX_RE = re.compile(r"(\d+(?:[.,]\d+)?)\s*$")
+
+RANGE_RE = re.compile(r"(\d+(?:[.,]\d+)?)\s*[-–]\s*(\d+(?:[.,]\d+)?)")
+
+# Единица без числа — используется после вырезания диапазона
+UNIT_ONLY_RE = re.compile(
+    rf"(?P<unit>{'|'.join(map(re.escape, UNIT_KEYS))})\b\.?",
+    re.IGNORECASE
+)
+
+CONVERSION = {
+    "oz": 28.3495,
+    "ounce": 28.3495,
+    "ounces": 28.3495,
+    "lb": 453.592,
+    "lbs": 453.592,
+    "pound": 453.592,
+    "pounds": 453.592,
+}
 
 MEAL_TYPE_SYNONYMS = {
-    # BREAKFAST
     "завтрак": MealType.BREAKFAST,
     "утром": MealType.BREAKFAST,
     "на завтрак": MealType.BREAKFAST,
     "breakfast": MealType.BREAKFAST,
     "morning": MealType.BREAKFAST,
 
-    # LUNCH
     "обед": MealType.LUNCH,
     "на обед": MealType.LUNCH,
     "lunch": MealType.LUNCH,
 
-    # DINNER
     "ужин": MealType.DINNER,
     "на ужин": MealType.DINNER,
     "dinner": MealType.DINNER,
     "supper": MealType.DINNER,
 
-    # SOUP 
     "суп": MealType.SOUP,
     "супчик": MealType.SOUP,
     "борщ": MealType.SOUP,
@@ -241,7 +300,6 @@ MEAL_TYPE_SYNONYMS = {
     "chowder": MealType.SOUP,
     "bisque": MealType.SOUP,
 
-    # DESSERT
     "десерт": MealType.DESSERT,
     "сладкое": MealType.DESSERT,
     "сладости": MealType.DESSERT,
@@ -249,23 +307,18 @@ MEAL_TYPE_SYNONYMS = {
     "sweet": MealType.DESSERT,
     "sweets": MealType.DESSERT,
 
-    # DRINK
     "напиток": MealType.DRINK,
     "напитки": MealType.DRINK,
     "drink": MealType.DRINK,
     "drinks": MealType.DRINK,
     "beverage": MealType.DRINK,
-
     "коктейль": MealType.DRINK,
     "cocktail": MealType.DRINK,
-
     "чай": MealType.DRINK,
     "tea": MealType.DRINK,
-
     "кофе": MealType.DRINK,
     "coffee": MealType.DRINK,
 
-    # BABY FOOD
     "детское": MealType.BABY_FOOD,
     "детское питание": MealType.BABY_FOOD,
     "baby": MealType.BABY_FOOD,
@@ -273,12 +326,10 @@ MEAL_TYPE_SYNONYMS = {
     "kids": MealType.BABY_FOOD,
     "kids food": MealType.BABY_FOOD,
 
-    # SNACK
     "перекус": MealType.SNACK,
     "snack": MealType.SNACK,
     "snacks": MealType.SNACK,
 
-    # SIDE DISH 
     "side dish": MealType.SIDE_DISH,
     "side": MealType.SIDE_DISH,
     "side item": MealType.SIDE_DISH,

@@ -38,6 +38,8 @@ class CreateRecipeUseCase:
             return self.repository.get_by_user_and_source(source_id, user.id)
         
         raw_data = self.parser.parse(url)
+
+        print(raw_data, "!!!!!!RAW DATA!!!!!!")
         
         if self.llm:
             dto = self.llm.extract_recipe(raw_data.description)
@@ -47,6 +49,7 @@ class CreateRecipeUseCase:
         
         final_dto = self.builder.build(dto)
 
+        print(final_dto, "!!!!!!FINAL DTO!!!!!!")
         with self.uow:
             parsed_dict = RecipeMapper.dto_to_dict(final_dto)
             self.repository.update_source_parsed_data(source_id, parsed_dict)
