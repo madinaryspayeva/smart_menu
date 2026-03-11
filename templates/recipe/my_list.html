@@ -1,0 +1,24 @@
+{% extends "recipe/list.html" %}
+
+{% block page_header %}
+<div class="text-center mb-8 sm:mb-12">
+    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-oswald text-coral-red mb-3 sm:mb-4">Мои рецепты</h1>
+    <p class="text-lg sm:text-xl text-dark-gray font-light max-w-3xl mx-auto px-2">
+        Здесь собраны все рецепты, которые вы добавили.
+    </p>
+</div>
+{% endblock page_header %}
+
+{% block cta_section %}{% endblock cta_section %}
+
+{% block empty_state %}
+<div class="col-span-full text-center py-12">
+    <p class="text-4xl mb-3">📋</p>
+    <p class="text-gray-400 font-oswald text-lg">У вас пока нет рецептов</p>
+    <a href="{% url 'recipe:add' %}" class="button success mt-4 inline-block">
+        <i class="fas fa-plus mr-2"></i> Добавить рецепт
+    </a>
+</div>
+{% endblock empty_state %}
+
+{% block extra_js %}{% endblock extra_js %}

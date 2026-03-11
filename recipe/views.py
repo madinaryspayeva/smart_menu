@@ -167,3 +167,13 @@ class RecipeDeleteView(AuthRequiredView, OwnerOrSuperuserMixin, DeleteView):
     model = Recipe
     template_name = "recipe/delete.html"
     success_url = reverse_lazy("recipe:list")
+
+
+class MyRecipeListView(RecipeListView):
+    """
+    Отображает только рецепты, созданные текущим пользователем.
+    """
+    template_name = "recipe/my_list.html"
+
+    def get_queryset(self):
+        return super().get_queryset().filter(created_by=self.request.user)

@@ -24,12 +24,22 @@
                 </div>
                 <div class="flex-1 min-w-0">
                     <p class="font-semibold text-dark-gray">{{ n.title }}</p>
-                    <p class="text-sm text-gray-500 mt-0.5">{{ n.message }}</p>
+                    <p class="text-sm text-gray-500 mt-0.5">
+                        {{ n.message }}
+                        {% if n.link %}
+                        <a href="{{ n.link }}" class="text-coral-red hover:underline ml-1" onclick="event.stopPropagation()">Перейти к рецепту</a>
+                        {% endif %}
+                    </p>
                     <p class="text-xs text-gray-400 mt-2">{{ n.created }}</p>
                 </div>
                 {% if not n.is_read %}
                 <span class="shrink-0 w-2 h-2 rounded-full bg-coral-red mt-2"></span>
                 {% endif %}
+                <button onclick="event.stopPropagation(); deleteNotification('{{ n.id }}')"
+                        class="shrink-0 text-gray-300 hover:text-coral-red transition-colors duration-200 mt-1"
+                        title="Удалить">
+                    <i class="fas fa-trash-alt text-sm"></i>
+                </button>
             </div>
         </li>
         {% empty %}
@@ -62,10 +72,23 @@ function markRead(id) {
     });
 }
 
-const socket = new WebSocket("ws://" + window.location.host + "/ws/notifications/");
-socket.onmessage = function(event) {
+function deleteNotification(id) {
+    fetch(`/notifications/${id}/delete/`, {
+        method: "POST",
+        headers: { "X-CSRFToken": "{{ csrf_token }}" }
+    }).then(() => {
+        const el = document.querySelector(`[data-id='${id}']`);
+        el.style.transition = 'all 0.3s ease';
+        el.style.opacity = '0';
+        el.style.transform = 'translateX(-20px)';
+        setTimeout(() => el.remove(), 300);
+    });
+}
+
+const notificationSocket = new WebSocket("ws://" + window.location.host + "/ws/notifications/");
+notificationSocket.onmessage = function(event) {
     const data = JSON.parse(event.data);
-    if (!data.id) return; 
+    if (!data.id) return;
 
     const li = document.createElement("li");
     li.dataset.id = data.id;
@@ -76,10 +99,18 @@ socket.onmessage = function(event) {
             <div class="mt-1"><span class="text-xl">🔔</span></div>
             <div class="flex-1 min-w-0">
                 <p class="font-semibold text-dark-gray">${data.title}</p>
-                <p class="text-sm text-gray-500 mt-0.5">${data.message}</p>
+                <p class="text-sm text-gray-500 mt-0.5">
+                    ${data.message}
+                    ${data.link ? `<a href="${data.link}" class="text-coral-red hover:underline ml-1" onclick="event.stopPropagation()">Перейти к рецепту</a>` : ''}
+                </p>
                 <p class="text-xs text-gray-400 mt-2">${data.created_at}</p>
             </div>
             <span class="shrink-0 w-2 h-2 rounded-full bg-coral-red mt-2"></span>
+            <button onclick="event.stopPropagation(); deleteNotification('${data.id}')"
+                    class="shrink-0 text-gray-300 hover:text-coral-red transition-colors duration-200 mt-1"
+                    title="Удалить">
+                <i class="fas fa-trash-alt text-sm"></i>
+            </button>
         </div>
     `;
     document.getElementById("notification-list").prepend(li);

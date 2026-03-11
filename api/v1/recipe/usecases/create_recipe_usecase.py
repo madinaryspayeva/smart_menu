@@ -1,3 +1,4 @@
+from django.urls import reverse
 from api.v1.recipe.interfaces.recipe_parser import (
     IRecipeBuilderService,
     IRecipeParserService,
@@ -38,8 +39,6 @@ class CreateRecipeUseCase:
             return self.repository.get_by_user_and_source(source_id, user.id)
         
         raw_data = self.parser.parse(url)
-
-        print(raw_data, "!!!!!!RAW DATA!!!!!!")
         
         if self.llm:
             dto = self.llm.extract_recipe(raw_data.description)
@@ -49,18 +48,18 @@ class CreateRecipeUseCase:
         
         final_dto = self.builder.build(dto)
 
-        print(final_dto, "!!!!!!FINAL DTO!!!!!!")
         with self.uow:
             parsed_dict = RecipeMapper.dto_to_dict(final_dto)
             self.repository.update_source_parsed_data(source_id, parsed_dict)
             recipe = self.repository.save(source_id, user.id, final_dto)
         
-  
+        recipe_url = reverse("recipe:detail", kwargs={"pk": recipe.id})
         NotificationService.send(
             user=user,
             title="Рецепт готов!",
             message=f"Рецепт «{recipe.name}» успешно добавлен.",
             type=Notification_Type.SUCCESS,
+            link=recipe_url,
         )
         
         return recipe
@@ -79,12 +78,13 @@ class CreateRecipeFromExistingSourceUseCase:
         dto = RecipeMapper.dict_to_dto(parsed_dict)
         recipe =  self.repository.create_from_dto(dto, user.id, source_id)
 
-       
+        recipe_url = reverse("recipe:detail", kwargs={"pk": recipe.id})
         NotificationService.send(
             user=user,
             title="Рецепт готов!",
             message=f"Рецепт «{recipe.name}» успешно добавлен.",
             type=Notification_Type.SUCCESS,
+            link=recipe_url,
         )
         
         return recipe
