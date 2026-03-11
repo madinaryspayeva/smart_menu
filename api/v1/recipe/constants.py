@@ -10,6 +10,22 @@ STRUCTURED_DATA_SELECTORS = [
     'script[type="application/ld+json"]'
 ]
 
+LISTING_JSONLD_TYPES = {
+    "ItemList", "CollectionPage", "SearchResultsPage",
+    "CategoryPage", "Blog",
+}
+
+RECIPE_CARD_SELECTORS = [
+    '.recipe-card',
+    '.recipe-item',
+    '[class*="recipe-card"]',
+    '[class*="recipe-item"]',
+    '[class*="recipe-list"] > *',
+    '.post-card[class*="recipe"]',
+]
+
+RECIPE_CARD_THRESHOLD = 3
+
 TITLE_SELECTORS = [
     'h1[class*="recipe-title"]',
     'h1[class*="title"]', 
@@ -103,7 +119,7 @@ LLM_SCHEMA = """
 INGREDIENT_NOISE_WORDS = {
     "продукты", "ингредиенты", "ingredients", "состав",
     "для теста", "для начинки", "для соуса", "для маринада",
-    "для глазури", "для подачи", "для украшения",
+    "для глазури", "для подачи", "для украшения", "Тесто", 
 }
 
 UNIT_SYNONYMS = {

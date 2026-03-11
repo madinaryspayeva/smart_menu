@@ -488,19 +488,37 @@ document.body.addEventListener('htmx:afterSwap', function(evt) {
 });
 
 function handleUrlSubmit(event, form) {
+    const resultDiv = document.getElementById('parse-url-result');
+
     if (event.detail.successful) {
-        // Очищаем поле и показываем сообщение
         document.getElementById('url-input').value = '';
-        document.getElementById('parse-url-result').innerHTML = `
+        resultDiv.innerHTML = `
             <div class="flex items-center justify-center gap-2 text-white">
                 <span>⏳</span>
                 <span>Рецепт добавлен в очередь — мы пришлём уведомление когда он будет готов!</span>
             </div>
         `;
-        // Скрываем сообщение через 5 секунд
-        setTimeout(() => {
-            document.getElementById('parse-url-result').innerHTML = '';
-        }, 5000);
+        setTimeout(() => { resultDiv.innerHTML = ''; }, 5000);
+    } else {
+        document.getElementById('url-input').value = '';
+        try {
+            const response = JSON.parse(event.detail.xhr.responseText);
+            const errorMsg = response.url ? response.url[0] : 'Произошла ошибка';
+            resultDiv.innerHTML = `
+                <div class="flex items-center justify-center gap-2 text-red-300">
+                    <span>⚠️</span>
+                    <span>${errorMsg}</span>
+                </div>
+            `;
+        } catch {
+            resultDiv.innerHTML = `
+                <div class="flex items-center justify-center gap-2 text-red-300">
+                    <span>⚠️</span>
+                    <span>Произошла ошибка при проверке ссылки</span>
+                </div>
+            `;
+        }
+        setTimeout(() => { resultDiv.innerHTML = ''; }, 7000);
     }
 };
 </script>

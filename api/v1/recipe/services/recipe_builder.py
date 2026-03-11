@@ -22,10 +22,14 @@ class RecipeBuilderService(IRecipeBuilderService):
     """
 
     def build(self, dto: RecipeDTO) -> RecipeDTO:
-        normalized_ingredients = [
+        parsed = [
             self._parse_ingredient(ing)
             for ing in dto.ingredients
             if not self._is_noise(ing.raw)
+        ]
+        normalized_ingredients = [
+            ing for ing in parsed
+            if ing.name
         ]
 
         return RecipeDTO(

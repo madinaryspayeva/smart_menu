@@ -65,6 +65,96 @@ class WebParserService(IRecipeParserService):
         except Exception as e:
             raise ValidationError(f"Ошибка парсинга: {e}") from e
     
+    def validate_url(self, url: str):
+        """
+        Лёгкая проверка: страница — это один рецепт?
+        """
+        try:
+            resp = self.session.get(url, timeout=self.timeout)
+            resp.raise_for_status()
+        except requests.RequestException as e:
+            raise ValidationError(f"Не удалось загрузить страницу: {e}") from e
+        
+        soup = BeautifulSoup(resp.content, "html.parser")
+        self._validate_recipe_page(soup)
+
+    def _validate_recipe_page(self, soup):
+        """
+        Проверяет, что страница содержит один рецепт,
+        а не список рецептов или нерелевантный контент.
+        """
+
+        # 1. Проверка JSON-LD разметки
+        for selector in selectors.STRUCTURED_DATA_SELECTORS:
+            scripts = soup.select(selector)
+            for script in scripts:
+                try:
+                    data = json.loads(script.string)
+                    if isinstance(data, list):
+                        data = data[0]
+                    
+                    schema_type = data.get("@type", "")
+                    if schema_type in selectors.LISTING_JSONLD_TYPES:
+                        raise ValidationError(
+                            "Ссылка ведёт на страницу со списком рецептов, "
+                            "а не на конкретный рецепт."
+                        )
+
+                    if schema_type in ("Recipe", "HowTo"):
+                        has_name = bool(data.get("name") or data.get("headline"))
+                        has_ingredients = bool(data.get("recipeIngredient"))
+                        has_instructions = bool(data.get("recipeInstructions"))
+                        if has_name and (has_ingredients or has_instructions):
+                            return
+                    
+                    if "@graph" in data:
+                        recipes_in_graph = [
+                            item for item in data["@graph"]
+                            if isinstance(item, dict)
+                            and item.get("@type") in ("Recipe", "HowTo")
+                        ]
+                        if len(recipes_in_graph) > 1:
+                            raise ValidationError(
+                                "Ссылка ведёт на страницу с несколькими рецептами."
+                            )
+                        if len(recipes_in_graph) == 1:
+                            item = recipes_in_graph[0]
+                            has_name = bool(item.get("name") or item.get("headline"))
+                            has_ing = bool(item.get("recipeIngredient"))
+                            has_ins = bool(item.get("recipeInstructions"))
+                            if has_name and (has_ing or has_ins):
+                                return
+                except (json.JSONDecodeError, AttributeError, IndexError):
+                    continue
+        
+        # 2. Собираем сигналы
+        has_ingredients = any(
+            soup.select(s) for s in selectors.INGREDIENTS_SELECTORS
+        )
+        has_steps = any(
+            soup.select(s) for s in selectors.INSTRUCTIONS_SELECTORS
+        )
+
+        total_cards = 0
+        for card_selector in selectors.RECIPE_CARD_SELECTORS:
+            total_cards += len(soup.select(card_selector))
+
+        is_recipe = has_ingredients or has_steps
+        is_listing = total_cards >= selectors.RECIPE_CARD_THRESHOLD
+
+        # 3. Принимаем решение
+        if is_listing and not is_recipe:
+            raise ValidationError(
+                "Ссылка ведёт на страницу со списком рецептов, "
+                "а не на конкретный рецепт."
+            )
+
+        if not is_recipe:
+            raise ValidationError(
+                "Страница не содержит рецепта. "
+                "Убедитесь, что ссылка ведёт на страницу с конкретным рецептом."
+            )
+
     def _parse_recipe_data(self, soup, url):
         """
         Парсит данные рецепта из HTML
@@ -94,6 +184,8 @@ class WebParserService(IRecipeParserService):
         
         if not result['steps']:
             instructions = self._find_steps(soup, selectors.INSTRUCTIONS_SELECTORS)
+            if not instructions:
+                instructions = self._find_numbered_steps(soup)
             result['steps'] = [{"step": self._clean_text(step)} for step in instructions]
         
         if not result['cook_time']:
@@ -138,7 +230,9 @@ class WebParserService(IRecipeParserService):
         ingredients = data.get("recipeIngredient", [])
         if isinstance(ingredients, list):
             result["ingredients"] = [
-                {"raw": self._clean_text(ingredient)} for ingredient in ingredients
+                {"raw": self._clean_text(ingredient)}
+                for ingredient in ingredients
+                if ingredient and self._clean_text(ingredient)
             ]
 
 
@@ -192,7 +286,6 @@ class WebParserService(IRecipeParserService):
         return []
     
     def _find_steps(self, soup, selectors):
-    
         steps = []
         for selector in selectors:
             elements = soup.select(selector)
@@ -202,6 +295,17 @@ class WebParserService(IRecipeParserService):
                     text = self._clean_text(p.get_text())
                     if text:
                         steps.append(text)
+        return steps
+
+    def _find_numbered_steps(self, soup):
+        """
+        Фолбэк: ищет <p> с пронумерованным текстом (1. ... 2. ...)
+        """
+        steps = []
+        for p in soup.find_all("p"):
+            text = self._clean_text(p.get_text())
+            if text and re.match(r"^\d+\.\s", text):
+                steps.append(re.sub(r"^\d+\.\s*", "", text))
         return steps
     
     def _find_image(self, soup):
