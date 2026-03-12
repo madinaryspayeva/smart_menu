@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from api.v1.recipe.repositories.recipe_repository import RecipeRepository
 from api.v1.recipe.serializers import ParseUrlSerializer, RecipeSourceSerializer
 from api.v1.recipe.services.url_classifier import UrlClassifier
+from api.v1.recipe.services.web_parser import WebParserService
 from api.v1.recipe.tasks import parse_video_recipe, parse_web_recipe
 from api.v1.recipe.usecases.create_recipe_usecase import CreateRecipeFromExistingSourceUseCase
 from app.models import StatusChoices
@@ -69,7 +70,10 @@ class ParseUrlAPIView(generics.CreateAPIView):
                             status=status.HTTP_200_OK,
                         )
             
-            if recipe_source.status == StatusChoices.PROCESSING: #TODO change logic
+            if recipe_source.status == StatusChoices.PROCESSING: #TODO ВОТ ЗЛЕСЬ НИЧЕГО НЕ 
+                                                                   #ПРОИСЗОДИТ ЕСЛИ РЕЦЕПТ 
+                                                                    #А СТАТУСЕ ПРОЦЕССИНГ!!!   
+
                 return Response(
                     {
                         "id": recipe_source.id,
@@ -83,6 +87,18 @@ class ParseUrlAPIView(generics.CreateAPIView):
             recipe_source.save(update_fields=["status"])
             
             if url_info.source == Source.WEBSITE:
+                try:
+                    WebParserService().validate_url(url_info.final_url)
+                except ValidationError as e:
+                    if created:
+                        recipe_source.delete()
+                    return Response(
+                        {"url": [str(e.message)]},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                
+                recipe_source.status = StatusChoices.PROCESSING     
+                recipe_source.save(update_fields=["status"])
                 parse_web_recipe.delay(recipe_source.id, request.user.id, url_info.final_url)
             else:  
                 parse_video_recipe.delay(recipe_source.id, request.user.id, url_info.final_url)

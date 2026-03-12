@@ -22,6 +22,11 @@ class Notification(TimestampedModel):
         default=Notification_Type.INFO
     )
     is_read = models.BooleanField(default=False)
+    link = models.CharField(
+        max_length=500, 
+        blank=True, 
+        null=True
+    )
 
     class Meta:
         ordering = ["-created"]

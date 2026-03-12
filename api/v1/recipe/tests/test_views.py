@@ -10,12 +10,14 @@ from recipe.models import Recipe, RecipeSource
 
 @pytest.mark.django_db
 class TestParseUrlAPIView:
+    @patch("api.v1.recipe.views.WebParserService.validate_url")
     @patch("api.v1.recipe.views.parse_web_recipe.delay")
     @patch("api.v1.recipe.views.UrlClassifier.classify")
     def test_create_new_source_triggers_task(
         self,
         mock_classify,
         mock_task,
+        mock_validate,
         auth_client,
         user,
     ):
