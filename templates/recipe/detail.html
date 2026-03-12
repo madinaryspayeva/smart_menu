@@ -2,171 +2,322 @@
 {% load static %}
 
 {% block content %}
-    
-    <div class="max-w-3xl mx-auto px-4 py-8">
+<div class="min-h-screen py-6 sm:py-8">
+    <div class="mx-auto" style="max-width: 720px;">
+
         <!-- Кнопка назад -->
-        <div class="mb-6">
-            <a href="{% url 'recipe:list' %}" class="inline-flex items-center text-coral-red hover:text-red-600 transition-colors">
-                <i class="fas fa-arrow-left mr-2"></i>
-                Назад к рецептам
-            </a>
+        <a href="{% url 'recipe:list' %}" class="back-btn animate-fade-in-up">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            <span>Назад к рецептам</span>
+        </a>
+
+        <!-- Фото рецепта -->
+        <div class="recipe-detail-image animate-fade-in-up">
+            <img
+                src="{% if recipe.image %}{{ recipe.image.url }}{% else %}{% static 'default.avif' %}{% endif %}"
+                alt="{{ recipe.name }}"
+            >
+            <div class="absolute top-4 left-4">
+                <span class="card-badge">{{ recipe.get_meal_type_display }}</span>
+            </div>
         </div>
 
-        <!-- Основная карточка рецепта -->
-        <div class="recipe-card overflow-hidden mb-8">
-            <!-- Изображение -->
-            <div class="relative">
-                <img 
-                    src="{% if recipe.image %}{{ recipe.image.url }}{% else %}{% static 'default.avif' %}{% endif %}"
-                    alt="{{ recipe.name }}" 
-                    class="w-full h-80 object-cover"
-                >
-                <div class="absolute top-4 left-4">
-                    <span class="category-badge px-4 py-2 text-sm font-semibold">
-                        {{ recipe.get_meal_type_display }}
-                    </span>
+        <!-- Блок с информацией -->
+        <div class="recipe-detail-info animate-fade-in-up">
+            <h1 class="recipe-title">{{ recipe.name }}</h1>
+
+            <div class="recipe-meta">
+                <div class="meta-item">
+                    <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    <span>{% if recipe.cooking_time %}{{ recipe.cooking_time }} мин{% else %}30 мин{% endif %}</span>
+                </div>
+                <div class="meta-item">
+                    <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <span>{% if recipe.servings %}{{ recipe.servings }}{% else %}4{% endif %} порции</span>
+                </div>
+                <div class="meta-item">
+                    <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <span>4.8</span>
                 </div>
             </div>
 
-            <!-- Контент -->
-            <div class="p-8">
-                <!-- Заголовок и описание -->
-                <div class="mb-8">
-                    <h1 class="text-4xl font-bebas-neue text-coral-red mb-4">
-                        {{ recipe.name }}
-                    </h1>
+            <!-- Порции -->
+            <div class="servings-control">
+                <span class="servings-label">Порции:</span>
+                <div class="servings-buttons">
+                    <button class="servings-btn" onclick="updateServings(-1)" id="decreaseServings">-</button>
+                    <span class="servings-value" id="servingsValue">{% if recipe.servings %}{{ recipe.servings }}{% else %}4{% endif %}</span>
+                    <button class="servings-btn" onclick="updateServings(1)" id="increaseServings">+</button>
+                </div>
+            </div>
+
+            <!-- Кнопки -->
+            <div class="action-buttons">
+                <button class="action-btn" onclick="saveRecipe(this)" id="saveBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    <span>Сохранить</span>
+                </button>
+                {% if recipe.created_by == request.user or request.user.is_staff %}
+                <a href="{% url 'recipe:edit' recipe.id %}" class="action-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                    </svg>
+                    <span>Редактировать</span>
+                </a>
+                <button class="action-btn delete" onclick="openDeleteModal()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                    <span>Удалить</span>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Блок с ингредиентами -->
+        <div class="recipe-detail-block animate-fade-in-up">
+            <div class="ingredients-section-detail">
+                <div class="section-title">
+                    <span>Ингредиенты</span>
+                    <span id="checkedCount">0/{{ recipe.ingredient.count }}</span>
                 </div>
 
-                <!-- Детали рецепта -->
-                <div class="grid grid-cols-3 gap-4 mb-8">
-                    <div class="text-center p-4 bg-white rounded-xl border border-pastel-pink/30">
-                        <div class="text-2xl font-bold text-coral-red">
-                        {% if recipe.servings is not None %}
-                                {{ recipe.servings }}
-                            {% else %}
-                                –
+                <div class="progress-container">
+                    <div class="progress-header">
+                        <span>Прогресс</span>
+                        <span id="progressPercentage">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <ul class="ingredients-list" id="ingredientsList">
+                    {% for ingredient in recipe.ingredient.all %}
+                    <li class="ingredient-item">
+                        <input type="checkbox" class="ingredient-checkbox" onchange="updateProgress()" data-base="{{ ingredient.quantity }}">
+                        <div class="ingredient-content">
+                            <span class="ingredient-name">{{ ingredient.product.name }}</span>
+                            {% if ingredient.quantity %}
+                            <span class="ingredient-amount" data-base="{{ ingredient.quantity }}" data-unit="{{ ingredient.unit }}">
+                                {{ ingredient.quantity }} {{ ingredient.get_unit_display }}
+                            </span>
                             {% endif %}
                         </div>
-                        <div class="text-sm text-gray-600">порции</div>
-                    </div>
-                    <div class="text-center p-4 bg-white rounded-xl border border-pastel-pink/30">
-                        <div class="text-2xl font-bold text-coral-red">15</div>
-                        <div class="text-sm text-gray-600">минут</div>
-                    </div>
-                    <div class="text-center p-4 bg-white rounded-xl border border-pastel-pink/30">
-                        <div class="flex items-center justify-center space-x-1">
-                            <i class="fas fa-star text-amber-400"></i>
-                            <span class="text-2xl font-bold text-coral-red">4.8</span>
-                        </div>
-                        <div class="text-sm text-gray-600">рейтинг</div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Блок с шагами приготовления -->
+        <div class="recipe-detail-block animate-fade-in-up">
+            <div class="steps-section-detail">
+                <div class="steps-header">
+                    <h2 class="section-title">Шаги приготовления</h2>
+                    <div class="steps-progress">
+                        <span id="stepsCompleted">0</span>/<span id="stepsTotal">{{ steps|length }}</span>
                     </div>
                 </div>
 
-                <!-- Кнопки действий с выпадающим меню -->
-                <div class="flex flex-col sm:flex-row gap-4 mb-8">
-                    <button class="primary-btn py-4 px-8 font-semibold text-lg flex-1 text-center hover:shadow-lg transition-shadow">
-                        <i class="fas fa-utensils mr-2"></i>
-                        Приготовить
-                    </button>
-                    
-                    <div class="flex gap-2">
-                        <!-- Кнопка избранное -->
-                        <button class="py-4 px-6 bg-white border-2 border-amber-300 text-amber-900 rounded-lg font-semibold hover:bg-amber-50 transition-colors">
-                            <i class="fas fa-heart"></i>
-                        </button>
-                        
-                        <!-- Кнопка поделиться -->
-                        <button class="py-4 px-6 bg-white border-2 border-amber-300 text-amber-900 rounded-lg font-semibold hover:bg-amber-50 transition-colors">
-                            <i class="fas fa-share-alt"></i>
-                        </button>
-                        
-                        <!-- Выпадающее меню для действий -->
-                        {% if recipe.created_by == request.user or request.user.is_staff %}
-                        <div class="relative" id="actions-dropdown">
-                            <button 
-                                class="py-4 px-6 bg-white border-2 border-gray-300 text-gray-600 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
-                                onclick="toggleActionsMenu()"
-                            >
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                            
-                            <!-- Выпадающее меню -->
-                            <div 
-                                id="actions-menu"
-                                class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10 hidden">
-                                <a href="{% url 'recipe:edit' recipe.id %}" class="w-full text-left px-4 py-2 text-blue-600 hover:bg-blue-50 transition-colors flex items-center">
-                                    <i class="fas fa-edit mr-3"></i>
-                                    Редактировать
-                                </a>
-                                <button class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition-colors flex items-center"
-                                        onclick="openDeleteModal()">
-                                    <i class="fas fa-trash mr-3"></i>
-                                    Удалить
-                                </button>
-                            </div>
+                <ul class="steps-list" id="stepsList">
+                    {% for step in steps %}
+                    <li class="step-item">
+                        <span class="step-number">{{ forloop.counter }}</span>
+                        <div class="step-content">
+                            <input type="checkbox" class="step-checkbox" onchange="updateStepsProgress()">
+                            <span class="step-text">{{ step }}</span>
                         </div>
-                        {% endif %}
+                    </li>
+                    {% empty %}
+                    <li class="step-item">
+                        <span class="step-number">-</span>
+                        <div class="step-content">
+                            <span class="step-text" style="color: #6B6E81;">Шаги приготовления не указаны</span>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                {% if recipe.tips %}
+                    <div class="tips-block" style="margin-top: 1.5rem; padding: 1rem; background: rgba(255, 136, 17, 0.08); border-radius: 12px; border-left: 3px solid #FF8811;">
+                        <div style="font-weight: 600; margin-bottom: 0.5rem; color: #FF8811;">Советы</div>
+                        <div style="color: #6B6E81;">
+                            {% for tip in recipe.tips.splitlines %}
+                                <p style="margin: 0 0 0.5rem 0; line-height: 1.6;">{{ tip }}</p>
+                            {% endfor %}
+                        </div>
                     </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Блок с отзывами -->
+        <div class="reviews-section">
+            <div class="reviews-header">
+                <h2 class="section-title">Отзывы (4.8)</h2>
+                <button class="btn btn-outline" onclick="showAddReview()">Написать отзыв</button>
+            </div>
+
+            <div class="reviews-grid" id="reviewsGrid">
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="review-avatar">А</div>
+                        <div class="review-info">
+                            <div class="review-name">Анна</div>
+                            <div class="review-rating">★★★★★</div>
+                        </div>
+                    </div>
+                    <p class="review-text">Очень вкусно! Сочно и ароматно. Делала уже дважды, семья в восторге.</p>
+                    <div class="review-date">2 дня назад</div>
                 </div>
 
-                <!-- Ингредиенты -->
-                <div class="mb-8">
-                    <h2 class="text-2xl font-oswald text-coral-red mb-4 flex items-center">
-                        <i class="fas fa-shopping-basket mr-3"></i>
-                        Ингредиенты
-                    </h2>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
-                        <div class="space-y-3">
-                        {% for ingredient in recipe.ingredient.all %}
-                            <div class="flex justify-between items-center p-3 bg-white rounded-lg border border-pastel-pink/30">
-                                <span class="font-medium">{{ ingredient.product.name }}</span>
-                                <span class="font-bold text-coral-red">
-                                    {% if ingredient.quantity is not None %}
-                                        {{ ingredient.quantity }} 
-                                    {% endif %}
-                                    {{ ingredient.get_unit_display }}
-                                </span>
-                            </div>
-                        {% endfor %}
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="review-avatar">М</div>
+                        <div class="review-info">
+                            <div class="review-name">Михаил</div>
+                            <div class="review-rating">★★★★★</div>
                         </div>
                     </div>
+                    <p class="review-text">Отличный рецепт для начинающих. Просто и понятно, все получилось с первого раза.</p>
+                    <div class="review-date">1 неделя назад</div>
                 </div>
 
-                <!-- Способ приготовления -->
-                <div>
-                    <h2 class="text-2xl font-oswald text-coral-red mb-4 flex items-center">
-                        <i class="fas fa-list-ol mr-3"></i>
-                        Способ приготовления
-                    </h2>
-                    
-                    <div class="space-y-6">
-                        <div class="flex items-start">
-                            <div>
-                                <p class="text-gray-600 leading-relaxed whitespace-pre-line">
-                                   {{ recipe.description }}
-                                </p>
-                            </div>
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="review-avatar">Е</div>
+                        <div class="review-info">
+                            <div class="review-name">Елена</div>
+                            <div class="review-rating">★★★★☆</div>
                         </div>
                     </div>
+                    <p class="review-text">Хороший рецепт, но можно добавить больше специй. В остальном все отлично!</p>
+                    <div class="review-date">2 недели назад</div>
+                </div>
+            </div>
+
+            <!-- Форма добавления отзыва -->
+            <div id="addReviewForm" style="display: none;">
+                <h3 class="review-form-title">Ваш отзыв</h3>
+                <div class="add-review">
+                    <div class="rating-select" id="ratingSelect">
+                        <button class="star-btn" onclick="setRating(1)">★</button>
+                        <button class="star-btn" onclick="setRating(2)">★</button>
+                        <button class="star-btn" onclick="setRating(3)">★</button>
+                        <button class="star-btn" onclick="setRating(4)">★</button>
+                        <button class="star-btn" onclick="setRating(5)">★</button>
+                    </div>
+                    <input type="text" class="review-input" id="reviewInput" placeholder="Ваш отзыв...">
+                    <button class="btn btn-primary" onclick="addReview()">Отправить</button>
                 </div>
             </div>
         </div>
     </div>
-      <!-- Модальное окно удаления -->
-    {% include "recipe/delete.html" %}
+</div>
 
-    <script>
-    // Функция для переключения меню
-    function toggleActionsMenu() {
-        const menu = document.getElementById('actions-menu');
-        menu.classList.toggle('hidden');
+<!-- Модальное окно удаления -->
+{% include "recipe/delete.html" %}
+
+<script>
+    let currentServings = {% if recipe.servings %}{{ recipe.servings }}{% else %}4{% endif %};
+    const baseServings = {% if recipe.servings %}{{ recipe.servings }}{% else %}4{% endif %};
+    let currentRating = 5;
+    let isSaved = false;
+
+    function updateServings(delta) {
+        var newValue = currentServings + delta;
+        if (newValue < 1 || newValue > 12) return;
+
+        currentServings = newValue;
+        document.getElementById('servingsValue').textContent = currentServings;
+
+        var amounts = document.querySelectorAll('.ingredient-amount');
+        amounts.forEach(function(amount) {
+            var baseValue = amount.dataset.base;
+            var unit = amount.dataset.unit;
+            if (baseValue && !isNaN(baseValue)) {
+                var newAmount;
+                if (unit === 'g' || unit === 'kg' || unit === 'ml' || unit === 'l') {
+                    newAmount = (baseValue * currentServings / baseServings).toFixed(0);
+                } else {
+                    newAmount = (baseValue * currentServings / baseServings).toFixed(1);
+                }
+                var text = amount.textContent.replace(/[0-9.,]+/, newAmount);
+                amount.textContent = text;
+            }
+        });
+
+        document.getElementById('decreaseServings').disabled = currentServings <= 1;
+        document.getElementById('increaseServings').disabled = currentServings >= 12;
+        showEnhancedToast('Порций: ' + currentServings);
     }
-    // Функции для модального окна удаления
+
+    function updateProgress() {
+        var checkboxes = document.querySelectorAll('.ingredient-checkbox');
+        var checked = document.querySelectorAll('.ingredient-checkbox:checked').length;
+        var total = checkboxes.length;
+        var percentage = total > 0 ? (checked / total) * 100 : 0;
+
+        document.getElementById('checkedCount').textContent = checked + '/' + total;
+        document.getElementById('progressPercentage').textContent = Math.round(percentage) + '%';
+        document.getElementById('progressFill').style.width = percentage + '%';
+
+        if (checked === total && total > 0) {
+            showEnhancedToast('Все ингредиенты готовы!');
+        }
+    }
+
+    function updateStepsProgress() {
+        var stepCheckboxes = document.querySelectorAll('.step-checkbox');
+        var completed = document.querySelectorAll('.step-checkbox:checked').length;
+        var total = stepCheckboxes.length;
+
+        document.getElementById('stepsCompleted').textContent = completed;
+        document.getElementById('stepsTotal').textContent = total;
+
+        stepCheckboxes.forEach(function(checkbox) {
+            var stepItem = checkbox.closest('.step-item');
+            if (checkbox.checked) {
+                stepItem.classList.add('completed');
+            } else {
+                stepItem.classList.remove('completed');
+            }
+        });
+
+        if (completed === total && total > 0) {
+            showEnhancedToast('Рецепт готов!');
+            confetti();
+        }
+    }
+
+    function saveRecipe(btn) {
+        isSaved = !isSaved;
+        if (isSaved) {
+            btn.classList.add('saved');
+            showEnhancedToast('Рецепт сохранен');
+        } else {
+            btn.classList.remove('saved');
+            showEnhancedToast('Рецепт удален из сохраненных');
+        }
+    }
+
     function openDeleteModal() {
         document.getElementById('delete-modal').classList.remove('hidden');
         document.body.style.overflow = 'hidden';
-        closeActionsMenu();
     }
 
     function closeDeleteModal() {
@@ -174,28 +325,98 @@
         document.body.style.overflow = 'auto';
     }
 
-    function closeActionsMenu() {
-        const menu = document.getElementById('actions-menu');
-        if (menu) {
-            menu.classList.add('hidden');
+    function showAddReview() {
+        var form = document.getElementById('addReviewForm');
+        if (form.style.display === 'none' || form.style.display === '') {
+            form.style.display = 'block';
+            form.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            form.style.display = 'none';
         }
     }
-    // Закрытие меню при клике вне его
-    document.addEventListener('click', function(event) {
-        const dropdown = document.getElementById('actions-dropdown');
-        const menu = document.getElementById('actions-menu');
-        
-        if (dropdown && menu && !dropdown.contains(event.target)) {
-            menu.classList.add('hidden');
+
+    function setRating(rating) {
+        currentRating = rating;
+        var stars = document.querySelectorAll('#ratingSelect .star-btn');
+        stars.forEach(function(star, index) {
+            if (index < rating) {
+                star.classList.add('active');
+            } else {
+                star.classList.remove('active');
+            }
+        });
+    }
+
+    function addReview() {
+        var reviewText = document.getElementById('reviewInput').value;
+        if (!reviewText.trim()) return;
+
+        var reviewsGrid = document.getElementById('reviewsGrid');
+        var newReview = document.createElement('div');
+        newReview.className = 'review-card';
+        newReview.style.animation = 'scaleIn 0.5s ease';
+
+        var stars = '';
+        for (var i = 0; i < 5; i++) {
+            stars += i < currentRating ? '★' : '☆';
         }
+
+        newReview.innerHTML =
+            '<div class="review-header">' +
+                '<div class="review-avatar">В</div>' +
+                '<div class="review-info">' +
+                    '<div class="review-name">Вы</div>' +
+                    '<div class="review-rating">' + stars + '</div>' +
+                '</div>' +
+            '</div>' +
+            '<p class="review-text">' + reviewText + '</p>' +
+            '<div class="review-date">Только что</div>';
+
+        reviewsGrid.prepend(newReview);
+        document.getElementById('reviewInput').value = '';
+        document.getElementById('addReviewForm').style.display = 'none';
+        setRating(5);
+        showEnhancedToast('Спасибо за отзыв!');
+    }
+
+    function showEnhancedToast(message) {
+        var toast = document.getElementById('toast');
+        if (toast) {
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(function() { toast.classList.remove('show'); }, 3000);
+        }
+    }
+
+    function confetti() {
+        var colors = ['#FF8811', '#FFBB37', '#00CB75', '#FFDA9D'];
+        for (var i = 0; i < 30; i++) {
+            (function(idx) {
+                setTimeout(function() {
+                    var el = document.createElement('div');
+                    el.style.cssText = 'position:fixed;left:' + (Math.random() * 100) + '%;top:-10px;width:10px;height:10px;background:' + colors[Math.floor(Math.random() * colors.length)] + ';border-radius:50%;pointer-events:none;z-index:9999;animation:confettiFall 1.5s ease forwards;';
+                    document.body.appendChild(el);
+                    setTimeout(function() { el.remove(); }, 1500);
+                }, idx * 50);
+            })(i);
+        }
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeDeleteModal();
     });
 
-    // Закрытие модального окна при нажатии Escape
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape') {
-            closeDeleteModal();
-        }
+    document.addEventListener('DOMContentLoaded', function() {
+        updateProgress();
+        updateStepsProgress();
+        setRating(5);
     });
-    </script>
+</script>
 
+<style>
+@keyframes confettiFall {
+    0% { opacity: 1; transform: translateY(0) rotate(0deg); }
+    100% { opacity: 0; transform: translateY(100vh) rotate(720deg); }
+}
+</style>
 {% endblock content %}

@@ -1,61 +1,75 @@
-<div id="delete-modal" class="fixed inset-0 z-50 hidden">
-        <div class="fixed inset-0 bg-white/30 backdrop-blur-sm transition-opacity" onclick="closeDeleteModal()"></div>
-        
-        <div class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md">
-            <div class="bg-white rounded-2xl shadow-xl auth-form border border-pastel-pink/30">
-                <!-- Заголовок -->
-                <div class="flex items-center justify-between p-6 border-b border-gray-200">
-                    <h3 class="text-xl font-oswald text-dark-gray font-semibold">
-                        Удаление рецепта
-                    </h3>
-                    <button 
-                        type="button" 
-                        onclick="closeDeleteModal()"
-                        class="text-gray-400 hover:text-coral-red transition-colors duration-200"
-                    >
-                        <i class="fas fa-times text-lg"></i>
-                    </button>
+<div id="delete-modal" class="hidden" style="position: fixed; inset: 0; z-index: 50;">
+    <div style="position: fixed; inset: 0; background: rgba(255,255,255,0.3); backdrop-filter: blur(8px);" onclick="closeDeleteModal()"></div>
+
+    <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; max-width: 420px; padding: 0 1rem;">
+        <div style="background-color: var(--color-bg-card); border-radius: var(--radius-block); border: 1px solid var(--color-border); box-shadow: 0 20px 40px rgba(0,0,0,0.15); overflow: hidden; animation: scaleIn 0.3s ease;">
+
+            <!-- Заголовок -->
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 1.5rem 1rem;">
+                <h3 style="font-family: var(--font-display); font-size: 1.5rem; color: var(--color-text); margin: 0;">
+                    Удаление рецепта
+                </h3>
+                <button
+                    type="button"
+                    onclick="closeDeleteModal()"
+                    style="background: var(--color-bg-soft); border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--color-text-muted); transition: all 0.2s ease;"
+                    onmouseover="this.style.background='var(--color-primary)'; this.style.color='white';"
+                    onmouseout="this.style.background='var(--color-bg-soft)'; this.style.color='var(--color-text-muted)';"
+                >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Контент -->
+            <div style="padding: 1rem 1.5rem 1.5rem; text-align: center;">
+                <div style="width: 64px; height: 64px; background: rgba(255, 136, 17, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem;">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        <line x1="10" y1="11" x2="10" y2="17"/>
+                        <line x1="14" y1="11" x2="14" y2="17"/>
+                    </svg>
                 </div>
 
-                <!-- Контент -->
-                <div class="p-6">
-                    <div class="flex items-center justify-center mb-4">
-                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
-                            <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
-                        </div>
-                    </div>
-                    
-                    <p class="text-center text-gray-600 mb-2">
-                        Вы уверены, что хотите удалить рецепт
-                    </p>
-                    <p class="text-center font-semibold text-coral-red text-lg mb-6">
-                        "{{ recipe.name }}"?
-                    </p>
-                    <p class="text-center text-sm text-gray-500">
-                        Это действие нельзя будет отменить.
-                    </p>
-                </div>
+                <p style="color: var(--color-text-muted); margin-bottom: 0.5rem; font-size: 0.95rem;">
+                    Вы уверены, что хотите удалить рецепт
+                </p>
+                <p style="font-weight: 600; color: var(--color-primary); font-size: 1.1rem; margin-bottom: 1rem;">
+                    "{{ recipe.name }}"?
+                </p>
+                <p style="color: var(--color-text-muted); font-size: 0.85rem; opacity: 0.7;">
+                    Это действие нельзя будет отменить.
+                </p>
+            </div>
 
-                <!-- Футер -->
-                <div class="flex justify-between items-center p-6 border-t border-gray-200 gap-3">
-                    <button 
-                        type="button" 
-                        onclick="closeDeleteModal()"
-                        class="button secondary text-sm w-32 justify-center py-2.5"
+            <!-- Футер -->
+            <div style="display: flex; gap: 0.75rem; padding: 1rem 1.5rem 1.5rem; justify-content: center;">
+                <button
+                    type="button"
+                    onclick="closeDeleteModal()"
+                    class="btn btn-outline"
+                    style="flex: 1; max-width: 160px;"
+                >
+                    Отмена
+                </button>
+                <form method="POST" action="{% url 'recipe:delete' recipe.id %}" style="flex: 1; max-width: 160px;">
+                    {% csrf_token %}
+                    <button
+                        type="submit"
+                        class="btn"
+                        style="width: 100%; background: var(--color-coral); color: white; display: flex; align-items: center; justify-content: center; gap: 0.5rem;"
                     >
-                        Отмена
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                        Удалить
                     </button>
-                    <form method="POST" action="{% url 'recipe:delete' recipe.id %}">
-                        {% csrf_token %}
-                        <button 
-                            type="submit"
-                            class="button danger text-sm w-32 justify-center py-2.5"
-                        >
-                            <i class="fas fa-trash mr-2"></i>
-                            Удалить
-                        </button>
-                    </form>
-                </div>
+                </form>
             </div>
         </div>
     </div>
+</div>

@@ -3,461 +3,444 @@
 
 {% block content %}
 <div class="min-h-screen py-6 sm:py-8">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Заголовок страницы -->
-        <div class="text-center mb-8 sm:mb-12">
-            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-oswald text-coral-red mb-3 sm:mb-4">Наши рецепты</h1>
-            <p class="text-lg sm:text-xl text-dark-gray font-light max-w-3xl mx-auto px-2">
-                Откройте для себя мир вкусных и простых в приготовлении блюд. 
+    <div class="mx-auto">
+        <!-- Hero секция -->
+        {% block page_header %}
+        <div class="recipes-hero">
+            <h1 class="page-title">Наши рецепты</h1>
+            <p class="page-subtitle">
+                Откройте для себя мир вкусных и простых в приготовлении блюд.
                 Каждый рецепт - это маленькое кулинарное приключение!
             </p>
-        </div> 
+        </div>
+        {% endblock page_header %}
 
-   <!-- CTA секция для добавления рецепта через URL -->
-<div class="bg-gradient-to-r from-pastel-pink to-amber-400 rounded-2xl p-4 sm:p-5 text-center auth-form">
-    <h2 class="text-xl sm:text-2xl lg:text-3xl font-bebas-neue text-white mb-2 sm:mb-3">
-        Добавить рецепт
-    </h2>
-    <p class="text-white/90 text-sm sm:text-base mb-3 sm:mb-4 max-w-2xl mx-auto px-2">
-        Вставьте ссылку на рецепт с сайта или видео, и мы добавим его для вас.
-    </p>
+        <!-- CTA секция -->
+        {% block cta_section %}
+        <div class="cta-section">
+            <h2 class="cta-title">Добавить рецепт</h2>
+            <p class="text-secondary mb-4">
+                Вставьте ссылку на рецепт с сайта или видео, и мы добавим его для вас.
+            </p>
+            <form
+                hx-post="{% url 'recipe_api_v1:parse-url' %}"
+                hx-target="#parse-url-result"
+                hx-swap="innerHTML"
+                hx-on::after-request="handleUrlSubmit(event, this)"
+                class="cta-form"
+                id="parse-url-form"
+            >
+                {% csrf_token %}
+                <input
+                    type="url"
+                    name="url"
+                    id="url-input"
+                    required
+                    placeholder="Вставьте ссылку..."
+                    class="cta-input"
+                >
+                <button
+                    type="submit"
+                    id="submit-btn"
+                    class="btn btn-primary whitespace-nowrap"
+                >
+                    <i class="fas fa-plus mr-2"></i>
+                    Добавить
+                </button>
+            </form>
+            <div id="parse-url-result" class="mt-3 text-white/90 text-xs sm:text-sm"></div>
+        </div>
+        {% endblock cta_section %}
 
-    <form 
-        hx-post="{% url 'recipe_api_v1:parse-url' %}" 
-        hx-target="#parse-url-result"
-        hx-swap="innerHTML"
-        hx-on::after-request="handleUrlSubmit(event, this)"
-        class="flex flex-col sm:flex-row justify-center gap-2 max-w-lg mx-auto"
-        id="parse-url-form"
-    >
-        {% csrf_token %}
-        <input 
-            type="url" 
-            name="url"
-            id="url-input"
-            required
-            placeholder="Вставьте ссылку..." 
-            class="form-input w-full sm:w-80 px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-base"
-        >
-        <button 
-            type="submit"
-            id="submit-btn"
-            class="bg-white text-coral-red px-5 py-1.5 sm:px-6 sm:py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-300 text-sm sm:text-base whitespace-nowrap"
-        >
-            <i class="fas fa-plus mr-2"></i>
-            Добавить
-        </button>
-    </form>
+        <input type="hidden" name="products" id="hidden-products" value="{{ request.GET.products }}"> 
 
-    <div id="parse-url-result" class="mt-3 text-white/90 text-xs sm:text-sm"></div>
-</div>
+        <!-- Фильтры -->
+        <div class="filters-section">
+            <div class="search-wrapper" style="margin-bottom: 1rem;">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input
+                    hx-get="{{ request.path }}"
+                    hx-trigger="input changed delay:300ms, search"
+                    hx-target="#recipe-results"
+                    hx-select="#recipe-results"
+                    hx-include="[name='meal_type'], #hidden-products"
+                    type="text"
+                    name="q"
+                    value="{{ request.GET.q }}"
+                    placeholder="Поиск рецептов..."
+                    class="search-input"
+                >
+            </div>
 
-     <input type="hidden" name="products" id="hidden-products" value="{{ request.GET.products }}"> 
+            <div class="filters-actions">
+                <select
+                    hx-get="{{ request.path }}"
+                    hx-trigger="change"
+                    hx-target="#recipe-results"
+                    hx-select="#recipe-results"
+                    hx-include="[name='q'], #hidden-products"
+                    name="meal_type"
+                    class="filter-select"
+                >
+                    <option value="">Все типы блюд</option>
+                    {% for value, label in meal_types %}
+                        <option value="{{ value }}" {% if request.GET.meal_type == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
 
-        <!-- Фильтры и поиск -->
-        <div class="bg-white rounded-2xl p-4 sm:p-6 auth-form mb-6 sm:mb-8 border border-pastel-pink/30">
-            <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
-                <!-- Левая часть - поиск и селект -->
-                <div class="flex flex-col md:flex-row gap-4 xl:items-center xl:flex-1">
-                    <!-- Поиск -->
-                    <div class="flex-1 min-w-0">
-                        <div class="relative">
-                            <input 
-                                hx-get="{{ request.path }}"
-                                hx-trigger="input changed delay:300ms, search"
-                                hx-target="#recipe-results"
-                                hx-select="#recipe-results" 
-                                hx-include="[name='meal_type'], #hidden-products"       
-                                type="text"
-                                name="q"
-                                value="{{ request.GET.q }}"
-                                placeholder="Поиск рецептов..." 
-                                class="form-input pl-12 w-full"
-                            >
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <i class="fas fa-search text-coral-red"></i>
-                            </div>
-                        </div>
-                    </div>
+                <button type="button"
+                        onclick="openProductFilter()"
+                        class="btn btn-outline">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mr-2">
+                        <polygon points="22 3 2 3 10 13 10 21 14 18 14 13 22 3"/>
+                    </svg>
+                    Фильтры
+                </button>
 
-                    <!-- Фильтр по типу блюд -->
-                    <div class="md:w-48">
-                        <select 
-                            hx-get="{{ request.path }}"
-                            hx-trigger="change"
-                            hx-target="#recipe-results"
-                            hx-select="#recipe-results" 
-                            hx-include="[name='q'], #hidden-products"
-                            name="meal_type" 
-                        class="form-input w-full text-sm sm:text-base">
-                            <option value="">Все типы блюд</option>
-                            {% for value, label in meal_types  %}
-                                <option value="{{ value }}" {% if request.GET.meal_type == value %}selected{% endif %}>{{ label }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Правая часть - кнопки -->
-                <div class="flex flex-col sm:flex-row gap-3 xl:flex-shrink-0">
-                    <button type="button" 
-                            onclick="openProductFilter()"
-                            class="button secondary whitespace-nowrap text-sm sm:text-base">
-                        <i class="fas fa-filter mr-2"></i>
-                        Фильтры
-                    </button>
-                    
-                    <a href="{% url 'recipe:add' %}" class="button success whitespace-nowrap text-center text-sm sm:text-base">
-                        <i class="fas fa-plus mr-2"></i>
-                        Новый рецепт
-                    </a>
-                </div>
+                <a href="{% url 'recipe:add' %}" class="btn btn-primary">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mr-2">
+                        <line x1="12" y1="5" x2="12" y2="19"/>
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Новый рецепт
+                </a>
             </div>
         </div>
 
-      
-       <!-- Модальное окно фильтрации по продуктам -->
-<div id="product-filter-modal" class="fixed inset-0 z-50 hidden">
-    <div class="fixed inset-0 bg-white/30 backdrop-blur-sm transition-opacity duration-300" onclick="closeProductFilter()"></div>
-    
-    <div class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <div class="bg-white rounded-2xl shadow-xl auth-form border border-pastel-pink/30">
-            <!-- Заголовок -->
-            <div class="flex items-center justify-between p-6 border-b border-gray-200">
-                <h3 class="text-xl font-oswald text-dark-gray font-semibold">
-                    Фильтр по продуктам
-                </h3>
-                <button type="button" 
-                        onclick="closeProductFilter()"
-                        class="text-gray-400 hover:text-coral-red transition-colors duration-200">
-                    <i class="fas fa-times text-lg"></i>
-                </button>
-            </div>
+        <!-- Модальное окно фильтрации по продуктам -->
+        <div id="product-filter-modal" class="fixed inset-0 z-50 hidden">
+            <div class="fixed inset-0 transition-opacity duration-300" style="background: rgba(255,255,255,0.3); backdrop-filter: blur(8px);" onclick="closeProductFilter()"></div>
 
-            <!-- Контент -->
-            <div class="p-6">
-                <!-- Поиск продуктов -->
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-dark-gray mb-3">
-                        Добавьте продукты для поиска рецептов:
-                    </label>
-                    <div class="relative">
-                        <input 
-                            type="text"
-                            id="product-search"
-                            placeholder="Начните вводить название продукта..."
-                            class="form-input pl-12 w-full"
-                            hx-get="{% url 'product:search_filter' %}"
-                            hx-trigger="keyup changed delay:300ms"
-                            hx-target="#product-search-results"
-                            hx-swap="innerHTML"
-                            name="q"
-                        >
-                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <i class="fas fa-search text-coral-red"></i>
-                        </div>
-                    </div>
-                    
-                    <!-- Результаты поиска продуктов -->
-                    <div id="product-search-results" class="mt-2 max-h-40 overflow-y-auto hidden">
-                        <!-- Результаты будут подгружаться через HTMX -->
-                    </div>
-                </div>
+            <div class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md max-h-[90vh] overflow-y-auto animate-scale-in" style="padding: 0 1rem;">
+                <div style="background-color: var(--color-bg-card); border-radius: var(--radius-block); border: 1px solid var(--color-border); box-shadow: 0 20px 40px rgba(0,0,0,0.15); overflow: hidden;">
 
-         
-                <!-- Выбранные продукты -->
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-dark-gray mb-3">
-                        Выбранные продукты:
-                    </label>
-                    <div id="selected-products" class="flex flex-wrap gap-2 min-h-12 p-3 border border-dashed border-pastel-pink rounded-lg bg-light-pink/30">
-                        {% for product in selected_products %}
-                            <div class="selected-product-tag bg-white border border-pastel-pink rounded-full px-3 py-1 text-sm text-coral-red flex items-center gap-2"
-                                 data-product-id="{{ product.id }}">
-                                <span>{{ product.name }}</span>
-                                <button type="button" 
-                                        onclick="removeProductFromFilter('{{ product.id }}')"
-                                        class="text-coral-red hover:text-red-500 transition-colors duration-200">
-                                    <i class="fas fa-times text-xs"></i>
-                                </button>
-                            </div>
-                        {% empty %}
-                            <span class="text-gray-400 text-sm">Продукты не выбраны</span>
-                        {% endfor %}
-                    </div>
-                </div>
-
-                <!-- Инструкция -->
-                <div class="bg-lemon-light border border-lemon-border rounded-lg p-4 mb-6">
-                    <div class="flex items-start">
-                        <i class="fas fa-info-circle text-amber-600 mt-0.5 mr-3"></i>
-                        <div class="text-sm text-amber-800">
-                            <p class="font-medium mb-1">Как это работает?</p>
-                            <p class="text-xs">Добавьте продукты, которые должны быть в рецепте. Будут показаны рецепты, содержащие ВСЕ выбранные продукты.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Футер -->
-            <div class="flex justify-between items-center p-6 border-t border-gray-200 gap-3">
-                <button type="button" 
-                        onclick="clearSelectedProducts()"
-                        class="button danger text-sm w-28 justify-center py-2.5">
-                    <i class="fas fa-trash mr-2"></i>
-                    Очистить
-                </button>
-                
-                <div class="flex gap-3">
-                    <button type="button" 
-                            onclick="closeProductFilter()"
-                            class="button secondary text-sm w-28 justify-center py-2.5">
-                        Отмена
-                    </button>
-                    <button type="button" 
-                            onclick="applyProductFilter()"
-                            class="button success text-sm w-28 justify-center py-2.5">
-                        <i class="fas fa-check mr-2"></i>
-                        Применить
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-        <div id="recipe-results">
-            <!-- Остальной код с рецептами -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-8 sm:mb-12">
-                {% for recipe in recipes %}
-                <!-- Карточка рецепта -->
-                <div class="recipe-card">
-                    <!-- Изображение -->
-                    <div class="relative h-48 sm:h-56 lg:h-64 overflow-hidden">
-                        <img 
-                            src="{% if recipe.image %} {{ recipe.image.url }} {% else %} {% static 'default.avif' %} {% endif %}"
-                            alt="{{ recipe.name }}" 
-                            class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                        >
-                        <div class="absolute top-3 sm:top-4 left-3 sm:left-4">
-                            <span class="category-badge px-2 sm:px-3 text-xs sm:text-sm">
-                                {{ recipe.get_meal_type_display }}
-                            </span>
-                        </div>
-                        <div class="absolute top-3 sm:top-4 right-3 sm:right-4">
-                            <button class="bg-white/90 hover:bg-white text-coral-red w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all duration-300 shadow-md text-sm">
-                                <i class="fas fa-heart"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Контент -->
-                    <div class="p-4 sm:p-6">
-                        <h3 class="text-lg sm:text-xl font-oswald text-dark-gray font-semibold mb-2 sm:mb-3 line-clamp-1">
-                            {{ recipe.name }}
+                    <!-- Заголовок -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 1.5rem;">
+                        <h3 style="font-family: var(--font-display); font-size: 1.5rem; color: var(--color-text); margin: 0;">
+                            Фильтр по продуктам
                         </h3>
-                        
-                        <p class="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2">
-                           {{ recipe.description  }}
-                        </p>
+                        <button type="button"
+                                onclick="closeProductFilter()"
+                                style="background: var(--color-bg-soft); border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--color-text-muted); transition: all 0.2s ease;"
+                                onmouseover="this.style.background='var(--color-primary)'; this.style.color='white';"
+                                onmouseout="this.style.background='var(--color-bg-soft)'; this.style.color='var(--color-text-muted)';">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                        </button>
+                    </div>
 
-                        <!-- Детали -->
-                        <div class="flex items-center justify-between text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">
-                            <div class="flex items-center space-x-2 sm:space-x-4">
-                                <div class="flex items-center">
-                                    <i class="fas fa-utensils mr-1 sm:mr-2 text-coral-red text-xs"></i>
-                                    <span>{{ recipe.servings }}</span>
+                    <div style="padding: 0 1.5rem 1.5rem;">
+                        <!-- Поиск продуктов -->
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; font-size: 0.9rem; font-weight: 500; color: var(--color-text); margin-bottom: 0.75rem;">
+                                Добавьте продукты для поиска рецептов:
+                            </label>
+                            <div class="search-wrapper">
+                                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="11" cy="11" r="8"/>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                                </svg>
+                                <input
+                                    type="text"
+                                    id="product-search"
+                                    placeholder="Начните вводить название продукта..."
+                                    class="search-input"
+                                    hx-get="{% url 'product:search_filter' %}"
+                                    hx-trigger="keyup changed delay:300ms"
+                                    hx-target="#product-search-results"
+                                    hx-swap="innerHTML"
+                                    name="q"
+                                >
+                            </div>
+
+                            <div id="product-search-results" class="mt-2 max-h-40 overflow-y-auto hidden"></div>
+                        </div>
+
+                        <!-- Выбранные продукты -->
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; font-size: 0.9rem; font-weight: 500; color: var(--color-text); margin-bottom: 0.75rem;">
+                                Выбранные продукты:
+                            </label>
+                            <div id="selected-products" class="flex flex-wrap gap-2" style="min-height: 3rem; padding: 0.75rem; border: 1px dashed var(--color-border); border-radius: var(--radius-inner); background: var(--color-bg-soft);">
+                                {% for product in selected_products %}
+                                    <div class="selected-product-tag"
+                                         data-product-id="{{ product.id }}">
+                                        <span>{{ product.name }}</span>
+                                        <button type="button"
+                                                onclick="removeProductFromFilter('{{ product.id }}')"
+                                                style="background: none; border: none; cursor: pointer; color: var(--color-primary); padding: 0; display: flex; transition: all 0.2s ease;"
+                                                onmouseover="this.style.color='var(--color-primary-hover)'; this.style.transform='scale(1.2)';"
+                                                onmouseout="this.style.color='var(--color-primary)'; this.style.transform='scale(1)';">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                                <line x1="6" y1="6" x2="18" y2="18"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                {% empty %}
+                                    <span style="color: var(--color-text-muted); font-size: 0.875rem;">Продукты не выбраны</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Подсказка -->
+                        <div style="background: rgba(255, 136, 17, 0.08); border-radius: 12px; padding: 1rem; border-left: 3px solid var(--color-primary); margin-bottom: 1.5rem;">
+                            <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2" style="flex-shrink: 0; margin-top: 2px;">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="12" y1="16" x2="12" y2="12"/>
+                                    <line x1="12" y1="8" x2="12.01" y2="8"/>
+                                </svg>
+                                <div>
+                                    <p style="font-weight: 600; font-size: 0.875rem; color: var(--color-text); margin-bottom: 0.25rem;">Как это работает?</p>
+                                    <p style="font-size: 0.8rem; color: var(--color-text-muted); line-height: 1.5;">Добавьте продукты, которые должны быть в рецепте. Будут показаны рецепты, содержащие ВСЕ выбранные продукты.</p>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Ингредиенты теги -->
+                    <!-- Футер -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-top: 1px solid var(--color-border); gap: 0.75rem;">
+                        <button type="button"
+                                onclick="clearSelectedProducts()"
+                                class="btn btn-outline" style="font-size: 0.875rem;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            </svg>
+                            Очистить
+                        </button>
+
+                        <div style="display: flex; gap: 0.75rem;">
+                            <button type="button"
+                                    onclick="closeProductFilter()"
+                                    class="btn btn-outline" style="font-size: 0.875rem;">
+                                Отмена
+                            </button>
+                            <button type="button"
+                                    onclick="applyProductFilter()"
+                                    class="btn btn-primary" style="font-size: 0.875rem;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                Применить
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Сетка рецептов -->
+        <div id="recipe-results">
+            <div class="recipes-grid">
+                {% for recipe in recipes %}
+                <div class="recipe-card animate-fade-in-up" style="animation-delay: {{ forloop.counter|add:'0.1' }}s;">
+                    <div class="card-image">
+                        <img 
+                            src="{% if recipe.image %}{{ recipe.image.url }}{% else %}{% static 'default.avif' %}{% endif %}"
+                            alt="{{ recipe.name }}"
+                        >
+                        <span class="card-badge">{{ recipe.get_meal_type_display }}</span>
+                        <button class="card-favorite" onclick="toggleFavorite(this)">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="card-content">
+                        <h3 class="card-title">{{ recipe.name }}</h3>
+                        
+                        <p class="card-description">{{ recipe.description }}</p>
+
+                        <div class="card-meta">
+                            <div class="meta-item">
+                                <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <polyline points="12 6 12 12 16 14"/>
+                                </svg>
+                                <span>{% if recipe.cooking_time %}{{ recipe.cooking_time }} мин{% else %}30 мин{% endif %}</span>
+                            </div>
+                            <div class="meta-item">
+                                <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
+                                <span>{% if recipe.servings %}{{ recipe.servings }}{% else %}4{% endif %} порций</span>
+                            </div>
+                        </div>
+
                         {% with all_ingredients=recipe.ingredient.all %}
                             {% with total=all_ingredients|length %}
-                                <div class="flex flex-wrap gap-1 sm:gap-2 mb-3 sm:mb-4">
-                                    {% for ingredient in all_ingredients|slice:":2" %}
-                                        <span class="ingredient-tag px-2 sm:px-3">
-                                            {{ ingredient.product.name }}
-                                        </span>
+                                <div class="ingredients-tags">
+                                    {% for ingredient in all_ingredients|slice:":3" %}
+                                        <span class="ingredient-tag">{{ ingredient.product.name }}</span>
                                     {% endfor %}
-
-                                    {% if total > 2 %}
-                                        <span class="ingredient-tag px-2 sm:px-3">
-                                            + {{ total|add:"-2" }} 
-                                        </span>
+                                    {% if total > 3 %}
+                                        <span class="ingredient-tag">+{{ total|add:"-3" }}</span>
                                     {% endif %}
                                 </div>
                             {% endwith %}
                         {% endwith %}
 
-                        <!-- Кнопка -->
-                        <a href="{% url 'recipe:detail' recipe.id %}" class="primary btn w-full text-sm sm:text-base">
-                            <span class="relative z-10">Смотреть рецепт</span>
-                        </a>
+                        <div class="card-footer">
+                            <div class="rating">
+                                <span class="rating-stars">★★★★★</span>
+                                <span>4.8</span>
+                            </div>
+                            <a href="{% url 'recipe:detail' recipe.id %}" class="view-btn">
+                                Смотреть
+                            </a>
+                        </div>
                     </div>
                 </div>
+                {% empty %}
+                {% block empty_state %}
+                <div class="empty-state col-span-full">
+                    <div class="empty-icon">🍳</div>
+                    <h3 class="empty-title">Рецепты не найдены</h3>
+                    <p class="empty-text">Попробуйте изменить параметры поиска или добавьте новый рецепт</p>
+                </div>
+                {% endblock empty_state %}
                 {% endfor %}
             </div>
 
             <!-- Пагинация -->
             {% if page_obj.has_other_pages %}
-            <div class="flex justify-center mb-8">
-                <div class="bg-white rounded-xl p-4 border-2 border-pastel-pink">
-                    <div class="flex space-x-2">
-                        {% if page_obj.has_previous %}
-                        <a href="?page={{ page_obj.previous_page_number }}{% if querystring %}&{{ querystring }}{% endif %}"
-                            class="btn bg-lemon-light text-amber-900 border border-lemon-border py-2 px-4 rounded-lg font-medium hover:bg-lemon">
-                            <i class="fas fa-chevron-left"></i>
-                        </a>
-                        {% endif %}
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if querystring %}&{{ querystring }}{% endif %}" class="page-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="15 18 9 12 15 6"/>
+                    </svg>
+                </a>
+                {% endif %}
 
-                        {% for num in page_obj.paginator.page_range %}
-                        {% if num == page_obj.number %}
-                            <button class="btn bg-gradient-to-r from-pastel-pink to-amber-400 text-white py-2 px-4 rounded-lg font-medium">{{ num }}</button>
-                        {% else %}
-                            <a href="?page={{ num }}{% if querystring %}&{{ querystring }}{% endif %}"
-                            class="btn bg-lemon-light text-amber-900 border border-lemon-border py-2 px-4 rounded-lg font-medium hover:bg-lemon">
-                            {{ num }}
-                            </a>
-                        {% endif %}
-                        {% endfor %}
+                {% for num in page_obj.paginator.page_range %}
+                    {% if num == page_obj.number %}
+                        <button class="page-btn active">{{ num }}</button>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <a href="?page={{ num }}{% if querystring %}&{{ querystring }}{% endif %}" class="page-btn">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
 
-                        {% if page_obj.has_next %}
-                        <a href="?page={{ page_obj.next_page_number }}{% if querystring %}&{{ querystring }}{% endif %}"
-                            class="btn bg-lemon-light text-amber-900 border border-lemon-border py-2 px-4 rounded-lg font-medium hover:bg-lemon">
-                            <i class="fas fa-chevron-right"></i>
-                        </a>
-                        {% endif %}
-                    </div>
-                </div>
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if querystring %}&{{ querystring }}{% endif %}" class="page-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                </a>
+                {% endif %}
             </div>
             {% endif %}
         </div>
     </div>
 </div>
 
-
 <script>
-// Глобальная переменная для хранения выбранных продуктов
 let selectedProducts = [];
 
-// Инициализация при загрузке страницы
 document.addEventListener("DOMContentLoaded", function() {
-    // Инициализируем selectedProducts из выбранных продуктов в модалке
     const selectedProductTags = document.querySelectorAll('.selected-product-tag');
     selectedProducts = Array.from(selectedProductTags).map(tag => {
         const productName = tag.querySelector('span').textContent;
-        // Получаем UUID из атрибута data-product-id
         const productId = tag.getAttribute('data-product-id');
-        return {
-            id: productId,
-            name: productName.trim()
-        };
+        return { id: productId, name: productName.trim() };
     });
-
-    // Инициализируем HTMX для поля поиска продуктов
     htmx.process(document.getElementById('product-search'));
 });
 
-// Открытие модального окна
+function toggleFavorite(btn) {
+    btn.classList.toggle('active');
+    showEnhancedToast(btn.classList.contains('active') ? 'Рецепт добавлен в избранное ❤️' : 'Рецепт удален из избранного');
+}
+
+function showEnhancedToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
 function openProductFilter() {
     document.getElementById('product-filter-modal').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
-    
-    // Фокус на поле поиска при открытии
-    setTimeout(() => {
-        document.getElementById('product-search').focus();
-    }, 100);
+    setTimeout(() => document.getElementById('product-search').focus(), 100);
 }
 
-// Закрытие модального окна
 function closeProductFilter() {
     document.getElementById('product-filter-modal').classList.add('hidden');
     document.body.style.overflow = 'auto';
 }
 
-// Функция для выбора продукта из результатов поиска
 function selectProductForFilter(productId, productName) {
-    console.log('Выбор продукта:', productId, productName);
-    
-    // Проверяем, не добавлен ли уже продукт
     if (!selectedProducts.some(product => product.id === productId)) {
-        selectedProducts.push({
-            id: productId,
-            name: productName
-        });
+        selectedProducts.push({ id: productId, name: productName });
         updateSelectedProductsDisplay();
     }
-    
-    // Очищаем поле поиска и скрываем результаты
     document.getElementById('product-search').value = '';
     document.getElementById('product-search-results').classList.add('hidden');
     document.getElementById('product-search-results').innerHTML = '';
 }
 
-// Обновление отображения выбранных продуктов
 function updateSelectedProductsDisplay() {
     const container = document.getElementById('selected-products');
-    
     if (selectedProducts.length === 0) {
         container.innerHTML = '<span class="text-gray-400 text-sm">Продукты не выбраны</span>';
         return;
     }
-    
     container.innerHTML = selectedProducts.map(product => `
-        <div class="selected-product-tag bg-white border border-pastel-pink rounded-full px-3 py-1 text-sm text-coral-red flex items-center gap-2"
+        <div class="selected-product-tag"
              data-product-id="${product.id}">
             <span>${product.name}</span>
-            <button type="button" 
-                    onclick="removeProductFromFilter('${product.id}')"
-                    class="text-coral-red hover:text-red-500 transition-colors duration-200">
-                <i class="fas fa-times text-xs"></i>
+            <button type="button" onclick="removeProductFromFilter('${product.id}')"
+                    style="background: none; border: none; cursor: pointer; color: var(--color-primary); padding: 0; display: flex; transition: all 0.2s ease;"
+                    onmouseover="this.style.color='var(--color-primary-hover)'; this.style.transform='scale(1.2)';"
+                    onmouseout="this.style.color='var(--color-primary)'; this.style.transform='scale(1)';">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
             </button>
         </div>
     `).join('');
 }
 
-// Удаление продукта из фильтра
 function removeProductFromFilter(productId) {
     selectedProducts = selectedProducts.filter(product => product.id !== productId);
     updateSelectedProductsDisplay();
 }
 
-// Очистка всех выбранных продуктов
 function clearSelectedProducts() {
     selectedProducts = [];
     updateSelectedProductsDisplay();
-
     const currentUrl = new URL(window.location.href);
     const params = new URLSearchParams(currentUrl.search);
     params.delete("products");
     params.delete("page");
-
     window.location.href = `${currentUrl.pathname}?${params.toString()}`;
 }
 
-// Применение фильтра
 function applyProductFilter() {
     const productIds = selectedProducts.map(p => p.id).join(',');
     document.getElementById('hidden-products').value = productIds;
-
     const currentUrl = new URL(window.location.href);
     const params = new URLSearchParams(currentUrl.search);
-
-    // сохраняем meal_type и q
     const mealType = document.querySelector('[name="meal_type"]')?.value || '';
     const q = document.querySelector('[name="q"]')?.value || '';
-
-    // формируем новые параметры
     const newParams = new URLSearchParams();
     if (q) newParams.append('q', q);
     if (mealType) newParams.append('meal_type', mealType);
     if (productIds) newParams.append('products', productIds);
-
     window.location.href = `${currentUrl.pathname}?${newParams.toString()}`;
 }
 
-// Обработчик для показа/скрытия результатов поиска
 document.addEventListener('input', function(e) {
     if (e.target.id === 'product-search') {
         const resultsContainer = document.getElementById('product-search-results');
@@ -470,57 +453,110 @@ document.addEventListener('input', function(e) {
     }
 });
 
-// Закрытие результатов при клике вне
 document.addEventListener('click', function(e) {
     if (!e.target.closest('#product-search') && !e.target.closest('#product-search-results')) {
         document.getElementById('product-search-results').classList.add('hidden');
     }
 });
 
-// Обработчик для HTMX после подгрузки результатов
 document.body.addEventListener('htmx:afterSwap', function(evt) {
-    if (evt.detail.target.id === 'product-search-results') {
-        // Показываем контейнер результатов после подгрузки
-        if (evt.detail.target.innerHTML.trim()) {
-            evt.detail.target.classList.remove('hidden');
-        }
+    if (evt.detail.target.id === 'product-search-results' && evt.detail.target.innerHTML.trim()) {
+        evt.detail.target.classList.remove('hidden');
+        const buttons = evt.detail.target.querySelectorAll('button');
+        buttons.forEach((btn, index) => {
+            btn.style.animation = `slideInLeft 0.3s ease ${index * 0.05}s both`;
+        });
     }
 });
 
+{% block extra_js %}
 function handleUrlSubmit(event, form) {
+    const resultDiv = document.getElementById('parse-url-result');
     if (event.detail.successful) {
-        // Очищаем поле и показываем сообщение
         document.getElementById('url-input').value = '';
-        document.getElementById('parse-url-result').innerHTML = `
-            <div class="flex items-center justify-center gap-2 text-white">
+        resultDiv.innerHTML = `
+            <div class="flex items-center justify-center gap-2 text-white animate-pulse">
                 <span>⏳</span>
                 <span>Рецепт добавлен в очередь — мы пришлём уведомление когда он будет готов!</span>
             </div>
         `;
-        // Скрываем сообщение через 5 секунд
-        setTimeout(() => {
-            document.getElementById('parse-url-result').innerHTML = '';
+        setTimeout(() => { 
+            resultDiv.style.animation = 'fadeOut 0.3s ease';
+            setTimeout(() => { resultDiv.innerHTML = ''; }, 300);
         }, 5000);
+    } else {
+        document.getElementById('url-input').value = '';
+        try {
+            const response = JSON.parse(event.detail.xhr.responseText);
+            const errorMsg = response.url ? response.url[0] : 'Произошла ошибка';
+            resultDiv.innerHTML = `
+                <div class="flex items-center justify-center gap-2 text-red-300">
+                    <span>⚠️</span>
+                    <span>${errorMsg}</span>
+                </div>
+            `;
+        } catch {
+            resultDiv.innerHTML = `
+                <div class="flex items-center justify-center gap-2 text-red-300">
+                    <span>⚠️</span>
+                    <span>Произошла ошибка при проверке ссылки</span>
+                </div>
+            `;
+        }
+        setTimeout(() => { 
+            resultDiv.style.animation = 'fadeOut 0.3s ease';
+            setTimeout(() => { resultDiv.innerHTML = ''; }, 300);
+        }, 7000);
     }
 };
+{% endblock extra_js %}
 </script>
 
 <style>
-.selected-product-tag {
-    background: linear-gradient(135deg, #ffffff 0%, #fef9e7 100%);
-    border: 1px solid #ffd1d1;
-    box-shadow: 0 2px 4px rgba(212, 79, 79, 0.1);
+/* Дополнительные стили для совместимости */
+.animate-fade-in-up {
+    animation: fadeInUp 0.8s ease;
 }
 
-#product-search-results {
-    border: 1px solid #ffd1d1;
-    border-radius: 0.5rem;
-    background: white;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+.animate-scale-in {
+    animation: scaleIn 0.3s ease;
 }
 
-#product-search-results button {
-    @apply w-full text-left px-4 py-2 hover:bg-pastel-pink hover:text-white transition-colors duration-200 border-b border-gray-100 last:border-b-0;
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.animate-slide-in-left {
+    animation: slideInLeft 0.3s ease;
 }
 </style>
 {% endblock content %}

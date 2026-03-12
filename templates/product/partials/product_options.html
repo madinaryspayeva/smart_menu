@@ -1,6 +1,8 @@
 {% for product in products %}
 <button type="button"
-        class="w-full text-left px-4 py-3 hover:bg-pastel-pink hover:text-white transition-colors duration-200 border-b border-gray-100 last:border-b-0"
+        class="w-full text-left px-4 py-3 transition-colors duration-200 border-b last:border-b-0" style="color: var(--color-text); border-color: var(--color-border);"
+        onmouseover="this.style.backgroundColor='var(--color-primary)'; this.style.color='white'"
+        onmouseout="this.style.backgroundColor=''; this.style.color='var(--color-text)'"
         onclick="selectProduct('{{ product.id }}', '{{ product.name|escapejs }}', '{{ index }}')">
     <div class="font-medium">{{ product.name }}</div>
     {% if product.category %}

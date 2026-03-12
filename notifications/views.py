@@ -27,3 +27,15 @@ class MarkNotificationReadView(LoginRequiredMixin, View):
         notification.is_read = True
         notification.save()
         return JsonResponse({"status": "ok"})
+
+
+class DeleteNotificationView(LoginRequiredMixin, View):
+
+    def post(self, request, pk):
+        notification = get_object_or_404(
+            Notification,
+            pk=pk,
+            user=request.user
+        )
+        notification.delete()
+        return JsonResponse({"status": "ok"})

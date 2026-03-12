@@ -8,7 +8,7 @@ from notifications.models import Notification
 class NotificationService:
 
     @staticmethod
-    def send(user, title, message, type=Notification_Type.INFO, save=True):
+    def send(user, title, message, type=Notification_Type.INFO, save=True, link=None):
         channel_layer = get_channel_layer()
         
         if save:
@@ -17,6 +17,7 @@ class NotificationService:
                 title=title,
                 message=message,
                 type=type,
+                link=link
             )
             notification_id = str(notification.id)
             is_read = notification.is_read
@@ -38,6 +39,7 @@ class NotificationService:
                     "created": created,
                     "is_read": is_read,
                     "save": save,
+                    "link": link,
                 },
             },
         )
