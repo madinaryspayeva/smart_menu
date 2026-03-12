@@ -67,8 +67,7 @@ class Recipe(TimestampedModel, StatusModel):
     )
     servings = models.PositiveIntegerField(
         verbose_name=_("Количество порций"),
-        null=True,
-        blank=True,
+        default=4,
     )
     description = models.TextField(
         verbose_name=_("Описание"),

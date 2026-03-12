@@ -162,6 +162,15 @@ class RecipeDetailView(AuthRequiredView, DetailView):
     template_name = "recipe/detail.html"
     context_object_name = "recipe"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        recipe = self.object
+        steps = [
+            s.strip() for s in recipe.description.split("\n") if s.strip()
+        ] if recipe.description else []
+        context["steps"] = steps
+        return context
+
 
 class RecipeDeleteView(AuthRequiredView, OwnerOrSuperuserMixin, DeleteView):
     model = Recipe
