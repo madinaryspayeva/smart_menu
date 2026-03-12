@@ -31,9 +31,10 @@ class TestCreateRecipeUseCase:
         mock_send.assert_not_called()
         assert result == existing_recipe
 
+    @patch("api.v1.recipe.usecases.create_recipe_usecase.reverse", return_value="/recipe/1/")
     @patch("notifications.services.NotificationService.send")
     @patch("api.v1.recipe.mappers.recipe_mapper.RecipeMapper.dto_to_dict")
-    def test_execute_without_llm(self, mock_mapper, mock_send, user):
+    def test_execute_without_llm(self, mock_mapper, mock_send, mock_reverse, user):
         parser = Mock()
         repository = Mock()
         builder = Mock()
@@ -59,12 +60,13 @@ class TestCreateRecipeUseCase:
         mock_mapper.assert_called_once_with(final_dto)
         repository.update_source_parsed_data.assert_called_once()
         repository.save.assert_called_once_with("source1", user.id, final_dto)
-        mock_send.assert_called_once()  
+        mock_send.assert_called_once()
         assert result == recipe
 
+    @patch("api.v1.recipe.usecases.create_recipe_usecase.reverse", return_value="/recipe/1/")
     @patch("notifications.services.NotificationService.send")
     @patch("api.v1.recipe.mappers.recipe_mapper.RecipeMapper.dto_to_dict")
-    def test_execute_with_llm(self, mock_mapper, mock_send, user):
+    def test_execute_with_llm(self, mock_mapper, mock_send, mock_reverse, user):
         parser = Mock()
         repository = Mock()
         builder = Mock()
@@ -96,9 +98,10 @@ class TestCreateRecipeUseCase:
         mock_send.assert_called_once()
         assert result == recipe
 
+    @patch("api.v1.recipe.usecases.create_recipe_usecase.reverse", return_value="/recipe/1/")
     @patch("notifications.services.NotificationService.send")
     @patch("api.v1.recipe.mappers.recipe_mapper.RecipeMapper.dto_to_dict")
-    def test_execute_uses_uow_context_manager(self, mock_mapper, mock_send, user):
+    def test_execute_uses_uow_context_manager(self, mock_mapper, mock_send, mock_reverse, user):
         parser = Mock()
         repository = Mock()
         builder = Mock()
@@ -124,9 +127,11 @@ class TestCreateRecipeUseCase:
 
 class TestCreateRecipeFromExistingSourceUseCase:
 
+    @patch("api.v1.recipe.usecases.create_recipe_usecase.reverse", return_value="/recipe/1/")
     @patch("notifications.services.NotificationService.send")
     @patch("api.v1.recipe.mappers.recipe_mapper.RecipeMapper.dict_to_dto")
-    def test_execute_creates_recipe_from_existing_source(self, mock_mapper, mock_send, user):
+    def test_execute_creates_recipe_from_existing_source(self, mock_mapper, mock_send, 
+                                                         mock_reverse, user):
         repository = Mock()
 
         parsed_dict = {"title": "Test"}

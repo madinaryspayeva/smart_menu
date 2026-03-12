@@ -70,7 +70,10 @@ class ParseUrlAPIView(generics.CreateAPIView):
                             status=status.HTTP_200_OK,
                         )
             
-            if recipe_source.status == StatusChoices.PROCESSING: #TODO ВОТ ЗЛЕСЬ НИЧЕГО НЕ ПРОИСЗОДИТ ЕСЛИ РЕЦЕПТ А СТАТУСЕ ПРОЦЕССИНГ!!!   
+            if recipe_source.status == StatusChoices.PROCESSING: #TODO ВОТ ЗЛЕСЬ НИЧЕГО НЕ 
+                                                                   #ПРОИСЗОДИТ ЕСЛИ РЕЦЕПТ 
+                                                                    #А СТАТУСЕ ПРОЦЕССИНГ!!!   
+
                 return Response(
                     {
                         "id": recipe_source.id,
