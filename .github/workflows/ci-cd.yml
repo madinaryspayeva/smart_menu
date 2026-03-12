@@ -100,6 +100,7 @@ jobs:
           script: |
             cd smart_menu
             git pull origin main
+            npx tailwindcss -i static/input.css -o static/output.css --minify
             docker compose -f docker-compose.prod.yml build --parallel
             docker compose -f docker-compose.prod.yml up -d --force-recreate
             docker compose -f docker-compose.prod.yml exec -T web find /code/staticfiles -mindepth 1 -delete 2>/dev/null || true
