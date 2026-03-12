@@ -75,9 +75,9 @@
                     <nav class="hidden md:flex items-center space-x-6">
                         {% if user.is_authenticated %}
                         <div class="relative" id="account-menu">
-                            <button onclick="event.stopPropagation(); toggleDropdown()" class="flex items-center gap-2 hover:bg-pastel-pink/30 px-3 py-2 rounded-full transition">
-                                <div class="w-8 h-8 rounded-full bg-coral-red/20 flex items-center justify-center">
-                                    <i class="fas fa-user text-coral-red text-sm"></i>
+                            <button onclick="event.stopPropagation(); toggleDropdown()" class="flex items-center gap-2 hover:bg-orange-light/30 px-3 py-2 rounded-full transition">
+                                <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background: rgba(255, 136, 17, 0.15);">
+                                    <i class="fas fa-user text-sm" style="color: #FF8811;"></i>
                                 </div>
                             </button>
 
@@ -87,19 +87,19 @@
                                     <p class="text-sm font-semibold text-dark-gray dark:text-white truncate">{{ user.email }}</p>
                                 </div>
                                 <a href="{% url 'recipe:my_list' %}" class="flex items-center gap-3 px-4 py-3 text-sm text-dark-gray dark:text-dark-text hover:bg-pastel-yellow dark:hover:bg-dark-bg transition">
-                                    <i class="fas fa-book-open text-coral-red w-4"></i> Мои рецепты
+                                    <i class="fas fa-book-open w-4" style="color: #FF8811;"></i> Мои рецепты
                                 </a>
                                 <a href="{% url 'notifications' %}" class="flex items-center gap-3 px-4 py-3 text-sm text-dark-gray dark:text-dark-text hover:bg-pastel-yellow dark:hover:bg-dark-bg transition">
-                                    <i class="fas fa-bell text-coral-red w-4"></i> Уведомления
+                                    <i class="fas fa-bell w-4" style="color: #FF8811;"></i> Уведомления
                                     {% if unread_notifications_count %}
-                                    <span class="unread-badge ml-auto bg-coral-red text-white text-xs rounded-full px-2 py-0.5">{{ unread_notifications_count }}</span>
+                                    <span class="unread-badge ml-auto text-white text-xs rounded-full px-2 py-0.5" style="background-color: #FF8811;">{{ unread_notifications_count }}</span>
                                     {% endif %}
                                 </a>
                                 <div class="border-t border-card-border dark:border-dark-border">
                                     <form method="post" action="{% url 'account_logout' %}">
                                         {% csrf_token %}
                                         <button type="submit" class="flex items-center gap-3 w-full px-4 py-3 text-sm text-dark-gray dark:text-dark-text hover:bg-pastel-yellow dark:hover:bg-dark-bg transition">
-                                            <i class="fas fa-sign-out-alt text-coral-red w-4"></i> Выйти
+                                            <i class="fas fa-sign-out-alt w-4" style="color: #FF8811;"></i> Выйти
                                         </button>
                                     </form>
                                 </div>
@@ -113,9 +113,9 @@
 
                     {% if user.is_authenticated %}
                     <div class="md:hidden relative" id="mobile-account-menu">
-                        <button onclick="event.stopPropagation(); toggleMobileDropdown()" class="flex items-center gap-2 hover:bg-pastel-pink/30 px-3 py-2 rounded-full transition">
-                            <div class="w-8 h-8 rounded-full bg-coral-red/20 flex items-center justify-center">
-                                <i class="fas fa-user text-coral-red text-sm"></i>
+                        <button onclick="event.stopPropagation(); toggleMobileDropdown()" class="flex items-center gap-2 hover:bg-orange-light/30 px-3 py-2 rounded-full transition">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background: rgba(255, 136, 17, 0.15);">
+                                <i class="fas fa-user text-sm" style="color: #FF8811;"></i>
                             </div>
                         </button>
 
@@ -125,19 +125,19 @@
                                 <p class="text-sm font-semibold text-dark-gray dark:text-white truncate">{{ user.email }}</p>
                             </div>
                             <a href="{% url 'recipe:my_list' %}" class="flex items-center gap-3 px-4 py-3 text-sm text-dark-gray dark:text-dark-text hover:bg-pastel-yellow dark:hover:bg-dark-bg transition">
-                                <i class="fas fa-book-open text-coral-red w-4"></i> Мои рецепты
+                                <i class="fas fa-book-open w-4" style="color: #FF8811;"></i> Мои рецепты
                             </a>
                             <a href="{% url 'notifications' %}" class="flex items-center gap-3 px-4 py-3 text-sm text-dark-gray dark:text-dark-text hover:bg-pastel-yellow dark:hover:bg-dark-bg transition">
-                                <i class="fas fa-bell text-coral-red w-4"></i> Уведомления
+                                <i class="fas fa-bell w-4" style="color: #FF8811;"></i> Уведомления
                                 {% if unread_notifications_count %}
-                                <span class="unread-badge ml-auto bg-coral-red text-white text-xs rounded-full px-2 py-0.5">{{ unread_notifications_count }}</span>
+                                <span class="unread-badge ml-auto text-white text-xs rounded-full px-2 py-0.5" style="background-color: #FF8811;">{{ unread_notifications_count }}</span>
                                 {% endif %}
                             </a>
                             <div class="border-t border-card-border dark:border-dark-border">
                                 <form method="post" action="{% url 'account_logout' %}">
                                     {% csrf_token %}
                                     <button type="submit" class="flex items-center gap-3 w-full px-4 py-3 text-sm text-dark-gray dark:text-dark-text hover:bg-pastel-yellow dark:hover:bg-dark-bg transition">
-                                        <i class="fas fa-sign-out-alt text-coral-red w-4"></i> Выйти
+                                        <i class="fas fa-sign-out-alt w-4" style="color: #FF8811;"></i> Выйти
                                     </button>
                                 </form>
                             </div>

@@ -4,15 +4,15 @@
 {% block content %}
 <div class="max-w-4xl mx-auto">
     <!-- Заголовок -->
-    <div class="text-center mb-8">
-        <h1 class="text-5xl font-oswald text-coral-red mb-2">
+    <div class="text-center mb-8 animate-fade-in-up">
+        <h1 class="text-4xl font-inter font-bold mb-2" style="color: var(--color-text);">
         {% if is_edit %}
         Редактирование рецепта
         {% else %}
         Добавить новый рецепт
         {% endif %}
         </h1>
-        <p class="text-dark-gray text-lg font-light">
+        <p class="text-lg" style="color: var(--color-text-muted);">
         {% if is_edit %}
         Измените данные рецепта
         {% else %}
@@ -22,11 +22,11 @@
     </div>
 
     <!-- Форма -->
-    <form method="POST" enctype="multipart/form-data" class="auth-form bg-white rounded-2xl p-8 relative z-10">
+    <form method="POST" enctype="multipart/form-data" class="animate-fade-in-up rounded-2xl p-8 relative z-10" style="background-color: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: var(--radius-card); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);">
         {% csrf_token %}
 
         {% if form.errors %}
-        <div class="p-4 mb-4 text-sm text-red-700 rounded-lg bg-red-100 border border-red-300" role="alert">
+        <div class="p-4 mb-4 text-sm rounded-2xl" role="alert" style="background: rgba(255, 136, 17, 0.08); border: 1px solid rgba(255, 136, 17, 0.3); color: var(--color-primary);">
             <i class="fas fa-exclamation-circle mr-2"></i>
             <span>Пожалуйста, исправьте ошибки ниже.</span>
         </div>
@@ -35,65 +35,65 @@
         <div class="space-y-6">
             <!-- Название рецепта -->
             <div>
-                <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-dark-gray mb-2">
+                <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium mb-2" style="color: var(--color-text);">
                     Название рецепта *
                 </label>
                 {% render_field form.name class="form-input" placeholder="Введите название вашего рецепта" %}
                 {% for error in form.name.errors %}
-                    <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+                    <p class="text-xs mt-1" style="color: var(--color-primary);">{{ error }}</p>
                 {% endfor %}
             </div>
 
             <!-- Количество порций и тип блюда -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="{{ form.servings.id_for_label }}" class="block text-sm font-medium text-dark-gray mb-2">
+                    <label for="{{ form.servings.id_for_label }}" class="block text-sm font-medium mb-2" style="color: var(--color-text);">
                         Количество порций *
                     </label>
                     {% render_field form.servings class="form-input" min="1" placeholder="Например: 4" %}
                     {% for error in form.servings.errors %}
-                        <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+                        <p class="text-xs mt-1" style="color: var(--color-primary);">{{ error }}</p>
                     {% endfor %}
                 </div>
 
                 <div>
-                    <label for="{{ form.meal_type.id_for_label }}" class="block text-sm font-medium text-dark-gray mb-2">
+                    <label for="{{ form.meal_type.id_for_label }}" class="block text-sm font-medium mb-2" style="color: var(--color-text);">
                         Тип блюда *
                     </label>
                     {% render_field form.meal_type class="form-input" %}
                     {% for error in form.meal_type.errors %}
-                        <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+                        <p class="text-xs mt-1" style="color: var(--color-primary);">{{ error }}</p>
                     {% endfor %}
                 </div>
             </div>
 
             <!-- Описание -->
             <div>
-                <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-dark-gray mb-2">
+                <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium mb-2" style="color: var(--color-text);">
                     Описание рецепта *
                 </label>
                 {% render_field form.description class="form-input resize-none" rows=4 placeholder="Опишите процесс приготовления..." %}
                 {% for error in form.description.errors %}
-                    <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+                    <p class="text-xs mt-1" style="color: var(--color-primary);">{{ error }}</p>
                 {% endfor %}
             </div>
 
             <!-- Изображение -->
 <div>
-    <label for="{{ form.image.id_for_label }}" class="block text-sm font-medium text-dark-gray mb-4">
+    <label for="{{ form.image.id_for_label }}" class="block text-sm font-medium mb-4" style="color: var(--color-text);">
         Изображение рецепта
     </label>
 
     {% if is_edit and form.instance.image %}
         <!-- Превью загруженного изображения -->
-        <div class="mb-6 flex flex-col sm:flex-row items-center sm:items-start gap-4 p-4 bg-light-pink rounded-xl border border-pastel-pink/30">
+        <div class="mb-6 flex flex-col sm:flex-row items-center sm:items-start gap-4 p-4 bg-gold-lightest rounded-xl border border-orange-light/30">
             <div class="flex-shrink-0">
                 <img src="{{ form.instance.image.url }}"
                     alt="{{ form.instance.name }}"
-                    class="w-32 h-32 sm:w-40 sm:h-40 object-cover rounded-lg border-2 border-pastel-pink shadow-sm">
+                    class="w-32 h-32 sm:w-40 sm:h-40 object-cover rounded-lg border-2 border-orange-light shadow-sm">
             </div>
             <div class="text-center sm:text-left flex-1 min-w-0">
-                <p class="font-medium text-coral-red mb-2">Текущее изображение</p>
+                <p class="font-medium text-orange-main mb-2">Текущее изображение</p>
                 <p class="text-sm text-gray-600 break-words">Оставьте поле ниже пустым, чтобы сохранить текущее изображение</p>
             </div>
         </div>
@@ -101,13 +101,13 @@
 
     <div class="flex items-center justify-center w-full">
         <label for="id_image"
-            class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-pastel-pink rounded-xl cursor-pointer bg-light-pink hover:bg-pastel-pink/10 transition-all duration-300 group">
+            class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-orange-light rounded-xl cursor-pointer bg-gold-lightest hover:bg-orange-light/10 transition-all duration-300 group">
             <div class="flex flex-col items-center justify-center pt-5 pb-6 px-4 text-center w-full">
-                <svg class="w-10 h-10 mb-3 text-coral-red group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-10 h-10 mb-3 text-orange-main group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                 </svg>
-                <p class="mb-2 text-base font-semibold text-coral-red break-words w-full px-2">
+                <p class="mb-2 text-base font-semibold text-orange-main break-words w-full px-2">
                     {% if is_edit and form.instance.image %}
                         Изменить изображение
                     {% else %}
@@ -121,7 +121,7 @@
                     PNG, JPG, JPEG (Макс. 5MB)
                 </p>
                 {% if is_edit and form.instance.image %}
-                <p class="text-xs text-coral-red font-medium mt-2 break-words w-full px-2">
+                <p class="text-xs text-orange-main font-medium mt-2 break-words w-full px-2">
                     ⓘ Оставьте пустым для сохранения текущего
                 </p>
                 {% endif %}
@@ -130,7 +130,7 @@
         </label>
     </div>
     {% for error in form.image.errors %}
-        <p class="text-red-500 text-xs mt-2 flex items-center">
+        <p class="text-xs mt-2 flex items-center" style="color: var(--color-primary);">
             <i class="fas fa-exclamation-circle mr-1"></i>
             {{ error }}
         </p>
@@ -140,22 +140,30 @@
             <!-- Ингредиенты -->
             <div id="ingredients-section" class="relative z-20">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
-                    <label class="block text-lg font-medium text-dark-gray whitespace-nowrap">
+                    <label class="block text-lg font-medium whitespace-nowrap" style="color: var(--color-text);">
                         Ингредиенты *
                     </label>
                     <div class="flex flex-wrap gap-2">
                         <button type="button"
                                 onclick="addIngredient()"
-                                class="button success text-sm">
-                            + Добавить ингредиент
+                                class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-full transition-all duration-200"
+                                style="background: var(--color-primary); color: white; border: none;"
+                                onmouseover="this.style.background='var(--color-primary-hover)'; this.style.transform='translateY(-1px)'"
+                                onmouseout="this.style.background='var(--color-primary)'; this.style.transform='none'">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            Ингредиент
                         </button>
                         <button type="button"
                                 hx-get="{% url 'product:add' %}"
                                 hx-target="#modal-content"
                                 hx-trigger="click"
                                 onclick="openModal()"
-                                class="button secondary text-sm">
-                            + Добавить продукт
+                                class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-full transition-all duration-200"
+                                style="background: var(--color-bg-soft); color: var(--color-text); border: 1px solid var(--color-border);"
+                                onmouseover="this.style.borderColor='var(--color-primary)'; this.style.color='var(--color-primary)'; this.style.transform='translateY(-1px)'"
+                                onmouseout="this.style.borderColor='var(--color-border)'; this.style.color='var(--color-text)'; this.style.transform='none'">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            Продукт
                         </button>
                     </div>
                 </div>
@@ -164,7 +172,7 @@
 
                 <!-- Ошибки всего formset-а (например, дубликаты ингредиентов) -->
                 {% if ingredients.non_form_errors %}
-                <div class="p-4 mb-4 text-sm text-red-700 rounded-lg bg-red-100 border border-red-300" role="alert">
+                <div class="p-4 mb-4 text-sm rounded-2xl" role="alert" style="background: rgba(255, 136, 17, 0.08); border: 1px solid rgba(255, 136, 17, 0.3); color: var(--color-primary);">
                     <i class="fas fa-exclamation-circle mr-2"></i>
                     <strong>Ошибка в ингредиентах:</strong>
                     <ul class="list-disc pl-5 mt-2 space-y-1">
@@ -178,13 +186,13 @@
 
                 <div id="ingredients-container" class="space-y-4">
                     {% for form in ingredients %}
-                    <div class="ingredient-item card bg-light-pink p-4 rounded-lg border border-pastel-pink relative z-30" data-index="{{ forloop.counter0 }}">
+                    <div class="ingredient-item card p-4 relative z-30" style="background-color: var(--color-bg-soft); border: 1px solid var(--color-border); border-radius: var(--radius-inner);" data-index="{{ forloop.counter0 }}">
                     {{ form.id }}
                     {{ form.DELETE.as_hidden }}
                         <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
                             <!-- Продукт -->
                             <div class="md:col-span-5 relative">
-                                <label class="block text-sm font-medium text-dark-gray mb-2">Продукт</label>
+                                <label class="block text-sm font-medium mb-2" style="color: var(--color-text);">Продукт</label>
                                 <div class="relative">
                                         <input
                                             type="text"
@@ -201,7 +209,7 @@
 
                                         <!-- Контейнер для результатов -->
                                         <div id="product-results-{{ forloop.counter0 }}" 
-                                            class="absolute z-[100] w-full mt-1 bg-white border border-pastel-pink rounded-lg shadow-xl max-h-60 overflow-y-auto hidden top-full left-0">
+                                            class="absolute z-[100] w-full mt-1 rounded-lg shadow-xl max-h-60 overflow-y-auto hidden top-full left-0" style="background-color: var(--color-bg-card); border: 1px solid var(--color-border);">
                                         </div>
                                     </div>
                                     {{ form.product.as_hidden }}
@@ -209,20 +217,20 @@
 
                             <!-- Количество -->
                             <div class="md:col-span-3">
-                                <label class="block text-sm font-medium text-dark-gray mb-2">Количество</label>
+                                <label class="block text-sm font-medium mb-2" style="color: var(--color-text);">Количество</label>
                                 {% render_field form.quantity class="form-input w-full" %}
                             </div>
 
                             <!-- Единица -->
                             <div class="md:col-span-3">
-                                <label class="block text-sm font-medium text-dark-gray mb-2">Единица измерения</label>
+                                <label class="block text-sm font-medium mb-2" style="color: var(--color-text);">Единица измерения</label>
                                 {% render_field form.unit class="form-input w-full" %}
                             </div>
 
                             <!-- Удаление -->
                             <div class="md:col-span-1">
                                 <button type="button"
-                                        class="remove-ingredient button danger w-full py-2 px-3 text-sm">
+                                        class="remove-ingredient w-full py-2 px-3 text-sm rounded-full transition-all duration-200" style="background: none; border: 1px solid var(--color-border); color: var(--color-text-muted); cursor: pointer;" onmouseover="this.style.borderColor='#ff4444'; this.style.color='#ff4444'" onmouseout="this.style.borderColor='var(--color-border)'; this.style.color='var(--color-text-muted)'">
                                     ✕
                                 </button>
                             </div>
@@ -232,7 +240,7 @@
                             <div class="mt-2">
                                 {% for field, field_errors in form.errors.items %}
                                     {% for error in field_errors %}
-                                        <p class="text-red-500 text-xs mt-1 flex items-center">
+                                        <p class="text-xs mt-1 flex items-center" style="color: var(--color-primary);">
                                             <i class="fas fa-exclamation-circle mr-1"></i>
                                             {{ error }}
                                         </p>
@@ -249,7 +257,7 @@
 
         <!-- Шаблон для новых форм -->
         <div id="empty-form" class="hidden">
-            <div class="ingredient-item card bg-light-pink p-4 rounded-lg border border-pastel-pink relative z-30" data-index="__prefix__">
+            <div class="ingredient-item card p-4 relative z-30" style="background-color: var(--color-bg-soft); border: 1px solid var(--color-border); border-radius: var(--radius-inner);" data-index="__prefix__">
         
             {{ ingredients.empty_form.id }}
             {{ ingredients.empty_form.DELETE.as_hidden }}
@@ -257,7 +265,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
                     <!-- Продукт -->
                     <div class="md:col-span-5 relative">
-                        <label class="block text-sm font-medium text-dark-gray mb-2">Продукт</label>
+                        <label class="block text-sm font-medium mb-2" style="color: var(--color-text);">Продукт</label>
                         <div class="relative">
                             <input
                                 type="text"
@@ -273,35 +281,35 @@
                             
                             <!-- Контейнер для результатов -->
                             <div id="product-results-__prefix__" 
-                                 class="absolute z-[100] w-full mt-1 bg-white border border-pastel-pink rounded-lg shadow-xl max-h-60 overflow-y-auto hidden top-full left-0">
+                                 class="absolute z-[100] w-full mt-1 rounded-lg shadow-xl max-h-60 overflow-y-auto hidden top-full left-0" style="background-color: var(--color-bg-card); border: 1px solid var(--color-border);">
                             </div>
                         </div>
                         {{ ingredients.empty_form.product.as_hidden }}
                     </div>
 
                     <div class="md:col-span-3">
-                        <label class="block text-sm font-medium text-dark-gray mb-2">Количество</label>
+                        <label class="block text-sm font-medium mb-2" style="color: var(--color-text);">Количество</label>
                         {% render_field ingredients.empty_form.quantity class="form-input w-full" %}
                     </div>
                     <div class="md:col-span-3">
-                        <label class="block text-sm font-medium text-dark-gray mb-2">Единица измерения</label>
+                        <label class="block text-sm font-medium mb-2" style="color: var(--color-text);">Единица измерения</label>
                         {% render_field ingredients.empty_form.unit class="form-input w-full" %}
                     </div>
                     <div class="md:col-span-1">
-                        <button type="button" class="remove-ingredient button danger w-full py-2 px-3 text-sm">✕</button>
+                        <button type="button" class="remove-ingredient w-full py-2 px-3 text-sm rounded-full transition-all duration-200" style="background: none; border: 1px solid var(--color-border); color: var(--color-text-muted); cursor: pointer;" onmouseover="this.style.borderColor='#ff4444'; this.style.color='#ff4444'" onmouseout="this.style.borderColor='var(--color-border)'; this.style.color='var(--color-text-muted)'">✕</button>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Кнопки отправки -->
-        <div class="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t border-gray-200 relative z-10">
-            <button type="submit" class="primary btn">
-                <span class="relative z-10">Создать рецепт</span>
+        <div class="flex flex-col sm:flex-row gap-4 mt-8 pt-6 relative z-10" style="border-top: 1px solid var(--color-border);">
+            <button type="submit" class="btn btn-primary">
+                {% if is_edit %}Сохранить{% else %}Создать рецепт{% endif %}
             </button>
-            <button type="button" class="secondary btn text-center">
+            <a href="{% url 'recipe:list' %}" class="btn btn-outline text-center">
                 Отмена
-            </button>
+            </a>
         </div>
     </form>
 </div>
@@ -507,13 +515,13 @@ if (imageLabel && imageInput) {
 
     ['dragenter', 'dragover'].forEach(eventName => {
         imageLabel.addEventListener(eventName, () => {
-            imageLabel.classList.add('bg-pastel-pink/20', 'border-coral-red');
+            imageLabel.classList.add('bg-orange-light/20', 'border-orange-main');
         });
     });
 
     ['dragleave', 'drop'].forEach(eventName => {
         imageLabel.addEventListener(eventName, () => {
-            imageLabel.classList.remove('bg-pastel-pink/20', 'border-coral-red');
+            imageLabel.classList.remove('bg-orange-light/20', 'border-orange-main');
         });
     });
 
@@ -573,16 +581,9 @@ document.querySelector('form').addEventListener('submit', function (e) {
     align-items: center;
 }
 
-
 [id^="product-results-"] {
     z-index: 100 !important;
     position: absolute !important;
-}
-
-
-.flex.flex-col.sm\\:flex-row.gap-4.mt-8.pt-6.border-t.border-gray-200 {
-    z-index: 10 !important;
-    position: relative !important;
 }
 </style>
 {% endblock %}

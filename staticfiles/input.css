@@ -695,20 +695,17 @@
      Product Search & Tags (Recipe Builder)
      ============================================ */
   .selected-product-tag {
-    background: linear-gradient(135deg, #ffffff, #fef9e7);
-    border: 1px solid var(--color-coral-light);
+    background: linear-gradient(135deg, var(--color-bg-card), var(--color-bg-soft));
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-pill);
     padding: 0.25rem 0.75rem;
     font-size: 0.875rem;
-    color: var(--color-coral);
+    color: var(--color-primary);
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    box-shadow: 0 2px 4px rgba(212, 79, 79, 0.1);
+    box-shadow: 0 2px 4px rgba(255, 136, 17, 0.1);
     transition: all 0.3s ease;
-  }
-  .dark .selected-product-tag {
-    background: var(--color-bg-soft);
   }
   .selected-product-tag:hover {
     transform: translateY(-2px);
@@ -720,7 +717,7 @@
     max-height: 10rem;
     overflow-y: auto;
     border-radius: 0.75rem;
-    border: 1px solid var(--color-coral-light);
+    border: 1px solid var(--color-border);
     background-color: var(--color-bg-card);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   }
@@ -729,13 +726,14 @@
     text-align: left;
     padding: 0.5rem 1rem;
     transition: all 0.2s ease;
-    border-bottom: 1px solid #f3f4f6;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text);
   }
   #product-search-results button:last-child {
     border-bottom: none;
   }
   #product-search-results button:hover {
-    background-color: var(--color-coral-light);
+    background-color: var(--color-primary);
     color: white;
   }
 
@@ -743,15 +741,15 @@
     width: 100%;
     padding: 0.75rem 1rem;
     border-radius: var(--radius-pill);
-    border: 1px solid var(--color-coral-light);
-    background-color: var(--color-coral-bg);
+    border: 1px solid var(--color-border);
+    background-color: var(--color-bg-input);
     color: var(--color-text);
     transition: all 0.3s ease;
   }
   .form-input:focus {
     outline: none;
-    border-color: var(--color-coral);
-    box-shadow: 0 0 0 3px rgba(212, 79, 79, 0.3);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(255, 136, 17, 0.15);
   }
 
   /* ============================================
