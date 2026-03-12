@@ -1,54 +1,73 @@
 {% load widget_tweaks %}
 {% load i18n %}
 
-  <!-- Модальное окно добавления/редактирования продукта -->
-   
-        <div class="modal bg-white rounded-xl p-6 mx-4 max-w-md w-full border-2 border-pastel-pink max-h-screen overflow-y-auto">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-2xl font-oswald text-coral-red">Добавить продукт</h3>
-                <button class="text-gray-500 hover:text-coral-red text-xl" onclick="closeModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <form
-                method="POST"
-                hx-post="{% if product %}{% url 'product:edit' product.pk %}{% else %}{% url 'product:add' %}{% endif %}"
-                hx-target="#modal-content"
-                hx-swap="innerHTML"
-                class="space-y-4">
-             {% csrf_token %}
-                {% if form.errors %}
-                    <div class="p-4 mb-4 text-sm text-red-700 rounded-lg bg-red-100 border border-red-300" role="alert">
-                        <i class="fas fa-exclamation-circle mr-2"></i>
-                        <span>Пожалуйста, исправьте ошибки ниже.</span>
-                    </div>
-                {% endif %}
+<div style="background-color: var(--color-bg-card); border-radius: var(--radius-block); border: 1px solid var(--color-border); padding: 2rem; margin: 0 1rem; max-width: 420px; width: 100%; box-shadow: 0 20px 40px rgba(0,0,0,0.15); animation: scaleIn 0.3s ease; max-height: 90vh; overflow-y: auto;">
 
-                <div>
-                    <label for="{{ form.name.id_for_label }}" class="block text-gray-700 font-medium mb-2">Название продукта</label>
-                    {% render_field form.name class="w-full px-4 py-2 border border-pastel-pink rounded-lg bg-light-pink focus:outline-none focus:ring-2 focus:ring-coral-red" placeholder="Введите название" %}
-                    {% for error in form.name.errors %}
-                        <p class="text-red-500 text-xs mt-1">{{ error }}</p>
-                    {% endfor %}
-                </div>
+    <!-- Заголовок -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h3 style="font-family: var(--font-display); font-size: 1.5rem; color: var(--color-primary); margin: 0;">
+            {% if product %}Редактировать продукт{% else %}Добавить продукт{% endif %}
+        </h3>
+        <button onclick="closeModal()"
+                style="background: var(--color-bg-soft); border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--color-text-muted); transition: all 0.2s ease;"
+                onmouseover="this.style.background='var(--color-primary)'; this.style.color='white';"
+                onmouseout="this.style.background='var(--color-bg-soft)'; this.style.color='var(--color-text-muted)';">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    </div>
 
+    <form
+        method="POST"
+        hx-post="{% if product %}{% url 'product:edit' product.pk %}{% else %}{% url 'product:add' %}{% endif %}"
+        hx-target="#modal-content"
+        hx-swap="innerHTML"
+        style="display: flex; flex-direction: column; gap: 1.25rem;">
+        {% csrf_token %}
 
-                <div>
-                    <label for="{{ form.category.id_for_label }}" class="block text-gray-700 font-medium mb-2">Категория</label>
-                    {% render_field form.category class="w-full px-4 py-2 border border-pastel-pink rounded-lg bg-light-pink focus:outline-none focus:ring-2 focus:ring-coral-red" %}
-                     {% for error in form.category.errors %}
-                        <p class="text-red-500 text-xs mt-1">{{ error }}</p>
-                    {% endfor %}
-                </div>
-
-                <div class="flex justify-end space-x-2 pt-4">
-                    <button type="button" class="btn bg-lemon-light text-amber-900 border border-lemon-border py-2 px-4 rounded-lg font-medium hover:bg-lemon" onclick="closeModal()">
-                        Отмена
-                    </button>
-                    <button type="submit" class="btn bg-gradient-to-r from-pastel-pink to-amber-400 text-white py-2 px-4 rounded-lg font-medium">
-                        Сохранить
-                    </button>
-                </div>
-            </form>
+        {% if form.errors %}
+        <div style="padding: 0.75rem 1rem; background: var(--color-coral-bg); border: 1px solid var(--color-coral-light); border-radius: var(--radius-inner); display: flex; align-items: center; gap: 0.5rem;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-coral)" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="15" y1="9" x2="9" y2="15"/>
+                <line x1="9" y1="9" x2="15" y2="15"/>
+            </svg>
+            <span style="font-size: 0.875rem; color: var(--color-coral);">Пожалуйста, исправьте ошибки ниже.</span>
         </div>
-  
+        {% endif %}
+
+        <div>
+            <label for="{{ form.name.id_for_label }}" style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: var(--color-text); font-size: 0.9rem;">
+                Название продукта
+            </label>
+            {% render_field form.name class="form-input" placeholder="Введите название" %}
+            {% for error in form.name.errors %}
+                <p style="color: var(--color-coral); font-size: 0.75rem; margin-top: 0.25rem;">{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        <div>
+            <label for="{{ form.category.id_for_label }}" style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: var(--color-text); font-size: 0.9rem;">
+                Категория
+            </label>
+            {% render_field form.category class="form-input" %}
+            {% for error in form.category.errors %}
+                <p style="color: var(--color-coral); font-size: 0.75rem; margin-top: 0.25rem;">{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end; padding-top: 0.5rem;">
+            <button type="button" class="btn btn-outline" onclick="closeModal()">
+                Отмена
+            </button>
+            <button type="submit" class="btn btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Сохранить
+            </button>
+        </div>
+    </form>
+</div>

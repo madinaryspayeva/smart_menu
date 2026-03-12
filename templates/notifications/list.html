@@ -1,54 +1,108 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="w-full max-w-2xl">
-    <div class="flex items-center gap-3 mb-6">
-        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-pastel-pink to-amber-300 flex items-center justify-center">
-            <i class="fas fa-bell text-white"></i>
+<div class="min-h-screen py-6 sm:py-8">
+    <div class="mx-auto">
+        <!-- Hero секция -->
+        <div class="recipes-hero">
+            <h1 class="page-title">Уведомления</h1>
+            <p class="page-subtitle">
+                Здесь собраны все ваши уведомления. Нажмите на непрочитанное, чтобы отметить его.
+            </p>
         </div>
-        <h1 class="text-3xl font-bebas-neue text-dark-gray">Уведомления</h1>
-    </div>
 
-    <ul id="notification-list" class="flex flex-col gap-3">
-        {% for n in notifications %}
-        <li data-id="{{ n.id }}"
-            {% if not n.is_read %}onclick="markRead('{{ n.id }}')"{% endif %}
-            class="bg-white rounded-xl shadow-sm border transition-all duration-300
-                   {% if not n.is_read %}border-l-4 border-l-coral-red cursor-pointer hover:shadow-md{% else %}border-card-border opacity-60{% endif %}">
-            <div class="flex items-start gap-4 px-5 py-4">
-                <div class="mt-1">
-                    {% if n.type == 'success' %}<span class="text-xl">✅</span>
-                    {% elif n.type == 'error' %}<span class="text-xl">❌</span>
-                    {% elif n.type == 'warning' %}<span class="text-xl">⚠️</span>
-                    {% else %}<span class="text-xl">🔔</span>{% endif %}
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="font-semibold text-dark-gray">{{ n.title }}</p>
-                    <p class="text-sm text-gray-500 mt-0.5">
-                        {{ n.message }}
-                        {% if n.link %}
-                        <a href="{{ n.link }}" class="text-coral-red hover:underline ml-1" onclick="event.stopPropagation()">Перейти к рецепту</a>
-                        {% endif %}
-                    </p>
-                    <p class="text-xs text-gray-400 mt-2">{{ n.created }}</p>
-                </div>
+        <!-- Список уведомлений -->
+        <div id="notification-list" style="display: flex; flex-direction: column; gap: 1rem;">
+            {% for n in notifications %}
+            <div data-id="{{ n.id }}"
+                {% if not n.is_read %}onclick="markRead('{{ n.id }}')"{% endif %}
+                style="
+                    background-color: var(--color-bg-card);
+                    border-radius: var(--radius-block);
+                    border: 1px solid var(--color-border);
+                    {% if not n.is_read %}border-left: 4px solid var(--color-primary);{% endif %}
+                    transition: all 0.3s ease;
+                    {% if not n.is_read %}cursor: pointer;{% else %}opacity: 0.6;{% endif %}
+                    overflow: hidden;
+                ">
                 {% if not n.is_read %}
-                <span class="shrink-0 w-2 h-2 rounded-full bg-coral-red mt-2"></span>
+                <div style="height: 3px; background: linear-gradient(90deg, var(--color-primary), var(--color-gold));"></div>
                 {% endif %}
-                <button onclick="event.stopPropagation(); deleteNotification('{{ n.id }}')"
-                        class="shrink-0 text-gray-300 hover:text-coral-red transition-colors duration-200 mt-1"
-                        title="Удалить">
-                    <i class="fas fa-trash-alt text-sm"></i>
-                </button>
+                <div style="display: flex; align-items: flex-start; gap: 1rem; padding: 1.25rem 1.5rem;">
+                    <!-- Иконка типа -->
+                    <div style="
+                        width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+                        display: flex; align-items: center; justify-content: center;
+                        {% if n.type == 'success' %}
+                            background: rgba(34, 197, 94, 0.12); color: #22c55e;
+                        {% elif n.type == 'error' %}
+                            background: rgba(239, 68, 68, 0.12); color: #ef4444;
+                        {% elif n.type == 'warning' %}
+                            background: rgba(245, 158, 11, 0.12); color: #f59e0b;
+                        {% else %}
+                            background: rgba(255, 136, 17, 0.12); color: var(--color-primary);
+                        {% endif %}
+                    ">
+                        {% if n.type == 'success' %}
+                            <i class="fas fa-check-circle"></i>
+                        {% elif n.type == 'error' %}
+                            <i class="fas fa-times-circle"></i>
+                        {% elif n.type == 'warning' %}
+                            <i class="fas fa-exclamation-triangle"></i>
+                        {% else %}
+                            <i class="fas fa-bell"></i>
+                        {% endif %}
+                    </div>
+
+                    <!-- Контент -->
+                    <div style="flex: 1; min-width: 0;">
+                        <p style="font-family: var(--font-display); font-size: 1.1rem; color: var(--color-text); margin-bottom: 0.25rem;">
+                            {{ n.title }}
+                        </p>
+                        <p style="font-size: 0.9rem; color: var(--color-text-muted); line-height: 1.5;">
+                            {{ n.message }}
+                            {% if n.link %}
+                            <a href="{{ n.link }}"
+                               onclick="event.stopPropagation()"
+                               style="color: var(--color-primary); font-weight: 500; margin-left: 0.25rem; text-decoration: none; transition: all 0.2s ease;"
+                               onmouseover="this.style.textDecoration='underline'"
+                               onmouseout="this.style.textDecoration='none'">
+                                Перейти к рецепту
+                                <i class="fas fa-arrow-right" style="font-size: 0.75rem; margin-left: 0.25rem;"></i>
+                            </a>
+                            {% endif %}
+                        </p>
+                        <p style="font-size: 0.8rem; color: var(--color-text-muted); opacity: 0.7; margin-top: 0.5rem;">
+                            {{ n.created }}
+                        </p>
+                    </div>
+
+                    <!-- Индикатор + удаление -->
+                    <div style="display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0;">
+                        {% if not n.is_read %}
+                        <span class="unread-dot" style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--color-primary);"></span>
+                        {% endif %}
+                        <button onclick="event.stopPropagation(); deleteNotification('{{ n.id }}')"
+                                style="background: none; border: none; cursor: pointer; color: var(--color-text-muted); opacity: 0.5; transition: all 0.2s ease; padding: 0.25rem;"
+                                onmouseover="this.style.color='var(--color-coral)'; this.style.opacity='1'; this.style.transform='scale(1.1)';"
+                                onmouseout="this.style.color='var(--color-text-muted)'; this.style.opacity='0.5'; this.style.transform='scale(1)';"
+                                title="Удалить">
+                            <i class="fas fa-trash-alt" style="font-size: 0.875rem;"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
-        </li>
-        {% empty %}
-        <li class="bg-white rounded-xl border border-card-border px-5 py-10 text-center">
-            <p class="text-4xl mb-3">🔔</p>
-            <p class="text-gray-400 font-oswald">Нет уведомлений</p>
-        </li>
-        {% endfor %}
-    </ul>
+            {% empty %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-bell-slash" style="font-size: 3rem; color: var(--color-text-muted); opacity: 0.4;"></i>
+                </div>
+                <h3 class="empty-title">Нет уведомлений</h3>
+                <p class="empty-text">Когда появятся новые уведомления, они будут показаны здесь</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
 </div>
 
 <script>
@@ -58,17 +112,20 @@ function markRead(id) {
         headers: { "X-CSRFToken": "{{ csrf_token }}" }
     }).then(() => {
         const el = document.querySelector(`[data-id='${id}']`);
-        el.style.transition = 'all 0.3s ease';
+        el.style.transition = 'all 0.4s ease';
         el.style.opacity = '0';
         el.style.transform = 'translateX(20px)';
         setTimeout(() => {
-            el.classList.remove('border-l-coral-red', 'border-l-4', 'cursor-pointer', 'hover:shadow-md');
-            el.classList.add('opacity-60', 'border-card-border');
+            el.style.borderLeft = '1px solid var(--color-border)';
+            el.style.cursor = 'default';
             el.removeAttribute('onclick');
-            el.querySelector('span.bg-coral-red')?.remove();
-            el.style.opacity = '';
+            const gradient = el.querySelector('div:first-child');
+            if (gradient && gradient.style.height === '3px') gradient.remove();
+            const dot = el.querySelector('.unread-dot');
+            if (dot) dot.remove();
+            el.style.opacity = '0.6';
             el.style.transform = '';
-        }, 300);
+        }, 400);
     });
 }
 
@@ -78,10 +135,10 @@ function deleteNotification(id) {
         headers: { "X-CSRFToken": "{{ csrf_token }}" }
     }).then(() => {
         const el = document.querySelector(`[data-id='${id}']`);
-        el.style.transition = 'all 0.3s ease';
+        el.style.transition = 'all 0.4s ease';
         el.style.opacity = '0';
-        el.style.transform = 'translateX(-20px)';
-        setTimeout(() => el.remove(), 300);
+        el.style.transform = 'scale(0.95) translateX(-20px)';
+        setTimeout(() => el.remove(), 400);
     });
 }
 
@@ -90,30 +147,64 @@ notificationSocket.onmessage = function(event) {
     const data = JSON.parse(event.data);
     if (!data.id) return;
 
-    const li = document.createElement("li");
-    li.dataset.id = data.id;
-    li.className = "bg-white rounded-xl shadow-sm border border-l-4 border-l-coral-red cursor-pointer hover:shadow-md transition-all duration-300";
-    li.setAttribute('onclick', `markRead('${data.id}')`);
-    li.innerHTML = `
-        <div class="flex items-start gap-4 px-5 py-4">
-            <div class="mt-1"><span class="text-xl">🔔</span></div>
-            <div class="flex-1 min-w-0">
-                <p class="font-semibold text-dark-gray">${data.title}</p>
-                <p class="text-sm text-gray-500 mt-0.5">
-                    ${data.message}
-                    ${data.link ? `<a href="${data.link}" class="text-coral-red hover:underline ml-1" onclick="event.stopPropagation()">Перейти к рецепту</a>` : ''}
-                </p>
-                <p class="text-xs text-gray-400 mt-2">${data.created_at}</p>
+    const typeIcons = { success: 'fa-check-circle', error: 'fa-times-circle', warning: 'fa-exclamation-triangle', info: 'fa-bell' };
+    const typeColors = { success: 'rgba(34,197,94,0.12)', error: 'rgba(239,68,68,0.12)', warning: 'rgba(245,158,11,0.12)', info: 'rgba(255,136,17,0.12)' };
+    const typeTextColors = { success: '#22c55e', error: '#ef4444', warning: '#f59e0b', info: 'var(--color-primary)' };
+    const icon = typeIcons[data.type] || typeIcons.info;
+    const bgColor = typeColors[data.type] || typeColors.info;
+    const textColor = typeTextColors[data.type] || typeTextColors.info;
+
+    const div = document.createElement("div");
+    div.dataset.id = data.id;
+    div.setAttribute('onclick', `markRead('${data.id}')`);
+    div.style.cssText = `
+        background-color: var(--color-bg-card);
+        border-radius: var(--radius-block);
+        border: 1px solid var(--color-border);
+        border-left: 4px solid var(--color-primary);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        overflow: hidden;
+        opacity: 0;
+        transform: translateY(-10px);
+    `;
+    div.innerHTML = `
+        <div style="height: 3px; background: linear-gradient(90deg, var(--color-primary), var(--color-gold));"></div>
+        <div style="display: flex; align-items: flex-start; gap: 1rem; padding: 1.25rem 1.5rem;">
+            <div style="width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: ${bgColor}; color: ${textColor};">
+                <i class="fas ${icon}"></i>
             </div>
-            <span class="shrink-0 w-2 h-2 rounded-full bg-coral-red mt-2"></span>
-            <button onclick="event.stopPropagation(); deleteNotification('${data.id}')"
-                    class="shrink-0 text-gray-300 hover:text-coral-red transition-colors duration-200 mt-1"
-                    title="Удалить">
-                <i class="fas fa-trash-alt text-sm"></i>
-            </button>
+            <div style="flex: 1; min-width: 0;">
+                <p style="font-family: var(--font-display); font-size: 1.1rem; color: var(--color-text); margin-bottom: 0.25rem;">${data.title}</p>
+                <p style="font-size: 0.9rem; color: var(--color-text-muted); line-height: 1.5;">
+                    ${data.message}
+                    ${data.link ? `<a href="${data.link}" onclick="event.stopPropagation()" style="color: var(--color-primary); font-weight: 500; margin-left: 0.25rem; text-decoration: none;">Перейти к рецепту <i class="fas fa-arrow-right" style="font-size: 0.75rem;"></i></a>` : ''}
+                </p>
+                <p style="font-size: 0.8rem; color: var(--color-text-muted); opacity: 0.7; margin-top: 0.5rem;">${data.created_at || 'Только что'}</p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0;">
+                <span class="unread-dot" style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--color-primary);"></span>
+                <button onclick="event.stopPropagation(); deleteNotification('${data.id}')"
+                        style="background: none; border: none; cursor: pointer; color: var(--color-text-muted); opacity: 0.5; transition: all 0.2s ease; padding: 0.25rem;"
+                        onmouseover="this.style.color='var(--color-coral)'; this.style.opacity='1';"
+                        onmouseout="this.style.color='var(--color-text-muted)'; this.style.opacity='0.5';"
+                        title="Удалить">
+                    <i class="fas fa-trash-alt" style="font-size: 0.875rem;"></i>
+                </button>
+            </div>
         </div>
     `;
-    document.getElementById("notification-list").prepend(li);
+
+    const list = document.getElementById("notification-list");
+    // Remove empty state if present
+    const emptyState = list.querySelector('.empty-state');
+    if (emptyState) emptyState.remove();
+
+    list.prepend(div);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+        div.style.opacity = '1';
+        div.style.transform = 'translateY(0)';
+    }));
 };
 </script>
 {% endblock %}

@@ -1,41 +1,72 @@
-<div class="modal bg-white rounded-xl p-6 mx-4 max-w-md w-full border-2 border-pastel-pink">
-    <div class="flex justify-between items-center mb-4">
-        <h3 class="text-2xl font-oswald text-coral-red">Просмотр продукта</h3>
-        <button class="text-gray-500 hover:text-coral-red text-xl" onclick="closeModal()">
-            <i class="fas fa-times"></i>
+<div style="background-color: var(--color-bg-card); border-radius: var(--radius-block); border: 1px solid var(--color-border); padding: 2rem; margin: 0 1rem; max-width: 420px; width: 100%; box-shadow: 0 20px 40px rgba(0,0,0,0.15); animation: scaleIn 0.3s ease;">
+
+    <!-- Заголовок -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h3 style="font-family: var(--font-display); font-size: 1.5rem; color: var(--color-primary); margin: 0;">
+            Просмотр продукта
+        </h3>
+        <button onclick="closeModal()"
+                style="background: var(--color-bg-soft); border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--color-text-muted); transition: all 0.2s ease;"
+                onmouseover="this.style.background='var(--color-primary)'; this.style.color='white';"
+                onmouseout="this.style.background='var(--color-bg-soft)'; this.style.color='var(--color-text-muted)';">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
         </button>
     </div>
 
-    <div class="mb-4">
-        <div class="space-y-3">
+    <!-- Информация -->
+    <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+            </svg>
             <div>
-                <span class="font-semibold">Название:</span>
-                <span class="ml-2">{{ product.name }}</span>
+                <span style="color: var(--color-text-muted); font-size: 0.85rem;">Название</span>
+                <p style="font-weight: 600; color: var(--color-text); margin: 0;">{{ product.name }}</p>
             </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
             <div>
-                <span class="font-semibold">Категория:</span>
-                <span class="ml-2 bg-lemon-light text-amber-900 text-sm px-2 py-1 rounded">{{ product.get_category_display }}</span>
+                <span style="color: var(--color-text-muted); font-size: 0.85rem;">Категория</span>
+                <p style="margin: 0;"><span class="card-badge" style="position: static;">{{ product.get_category_display }}</span></p>
             </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
             <div>
-                <span class="font-semibold">Дата добавления:</span>
-                <span class="ml-2">{{ product.created|date:"d.m.Y" }}</span>
+                <span style="color: var(--color-text-muted); font-size: 0.85rem;">Дата добавления</span>
+                <p style="font-weight: 500; color: var(--color-text); margin: 0;">{{ product.created|date:"d.m.Y" }}</p>
             </div>
         </div>
     </div>
 
-    <div class="flex justify-end space-x-2">
-        <button class="btn bg-lemon-light text-amber-900 border border-lemon-border py-2 px-4 rounded-lg font-medium hover:bg-lemon" onclick="closeModal()">
+    <!-- Кнопки -->
+    <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+        <button class="btn btn-outline" onclick="closeModal()">
             Закрыть
         </button>
         {% if request.user == product.created_by or request.user.is_superuser %}
-            <button 
-                hx-get="{% url 'product:edit' product.pk %}" 
-                hx-target="#modal-content"
-                hx-trigger="click"
-                class="btn bg-gradient-to-r from-pastel-pink to-amber-400 text-white py-2 px-4 rounded-lg font-medium"
-                onclick="openModal()">
-                Редактировать
-            </button>
+        <button
+            hx-get="{% url 'product:edit' product.pk %}"
+            hx-target="#modal-content"
+            hx-trigger="click"
+            class="btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
+                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+            </svg>
+            Редактировать
+        </button>
         {% endif %}
     </div>
 </div>

@@ -112,96 +112,122 @@
 
         <!-- Модальное окно фильтрации по продуктам -->
         <div id="product-filter-modal" class="fixed inset-0 z-50 hidden">
-            <div class="fixed inset-0 bg-white/30 dark:bg-black/50 backdrop-blur-sm transition-opacity duration-300" onclick="closeProductFilter()"></div>
-            
-            <div class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md max-h-[90vh] overflow-y-auto animate-scale-in">
-                <div class="bg-white dark:bg-dark-secondary rounded-2xl shadow-xl border border-pastel-pink/30 dark:border-dark-border">
-                    <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-dark-border">
-                        <h3 class="text-xl font-oswald text-dark-gray dark:text-white font-semibold">
+            <div class="fixed inset-0 transition-opacity duration-300" style="background: rgba(255,255,255,0.3); backdrop-filter: blur(8px);" onclick="closeProductFilter()"></div>
+
+            <div class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md max-h-[90vh] overflow-y-auto animate-scale-in" style="padding: 0 1rem;">
+                <div style="background-color: var(--color-bg-card); border-radius: var(--radius-block); border: 1px solid var(--color-border); box-shadow: 0 20px 40px rgba(0,0,0,0.15); overflow: hidden;">
+
+                    <!-- Заголовок -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 1.5rem;">
+                        <h3 style="font-family: var(--font-display); font-size: 1.5rem; color: var(--color-text); margin: 0;">
                             Фильтр по продуктам
                         </h3>
-                        <button type="button" 
+                        <button type="button"
                                 onclick="closeProductFilter()"
-                                class="text-gray-400 hover:text-coral-red dark:hover:text-pastel-pink transition-colors duration-200">
-                            <i class="fas fa-times text-lg"></i>
+                                style="background: var(--color-bg-soft); border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--color-text-muted); transition: all 0.2s ease;"
+                                onmouseover="this.style.background='var(--color-primary)'; this.style.color='white';"
+                                onmouseout="this.style.background='var(--color-bg-soft)'; this.style.color='var(--color-text-muted)';">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
                         </button>
                     </div>
 
-                    <div class="p-6">
-                        <div class="mb-6">
-                            <label class="block text-sm font-medium text-dark-gray dark:text-white mb-3">
+                    <div style="padding: 0 1.5rem 1.5rem;">
+                        <!-- Поиск продуктов -->
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; font-size: 0.9rem; font-weight: 500; color: var(--color-text); margin-bottom: 0.75rem;">
                                 Добавьте продукты для поиска рецептов:
                             </label>
-                            <div class="relative">
-                                <input 
+                            <div class="search-wrapper">
+                                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="11" cy="11" r="8"/>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                                </svg>
+                                <input
                                     type="text"
                                     id="product-search"
                                     placeholder="Начните вводить название продукта..."
-                                    class="form-input pl-12 w-full"
+                                    class="search-input"
                                     hx-get="{% url 'product:search_filter' %}"
                                     hx-trigger="keyup changed delay:300ms"
                                     hx-target="#product-search-results"
                                     hx-swap="innerHTML"
                                     name="q"
                                 >
-                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <i class="fas fa-search text-coral-red"></i>
-                                </div>
                             </div>
-                            
+
                             <div id="product-search-results" class="mt-2 max-h-40 overflow-y-auto hidden"></div>
                         </div>
 
-                        <div class="mb-6">
-                            <label class="block text-sm font-medium text-dark-gray dark:text-white mb-3">
+                        <!-- Выбранные продукты -->
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; font-size: 0.9rem; font-weight: 500; color: var(--color-text); margin-bottom: 0.75rem;">
                                 Выбранные продукты:
                             </label>
-                            <div id="selected-products" class="flex flex-wrap gap-2 min-h-12 p-3 border border-dashed border-pastel-pink dark:border-dark-border rounded-lg bg-light-pink/30 dark:bg-dark-bg/30">
+                            <div id="selected-products" class="flex flex-wrap gap-2" style="min-height: 3rem; padding: 0.75rem; border: 1px dashed var(--color-border); border-radius: var(--radius-inner); background: var(--color-bg-soft);">
                                 {% for product in selected_products %}
                                     <div class="selected-product-tag"
                                          data-product-id="{{ product.id }}">
                                         <span>{{ product.name }}</span>
-                                        <button type="button" 
+                                        <button type="button"
                                                 onclick="removeProductFromFilter('{{ product.id }}')"
-                                                class="text-coral-red hover:text-red-500 dark:text-pastel-pink dark:hover:text-pastel-pink/80 transition-colors duration-200">
-                                            <i class="fas fa-times text-xs"></i>
+                                                style="background: none; border: none; cursor: pointer; color: var(--color-primary); padding: 0; display: flex; transition: all 0.2s ease;"
+                                                onmouseover="this.style.color='var(--color-primary-hover)'; this.style.transform='scale(1.2)';"
+                                                onmouseout="this.style.color='var(--color-primary)'; this.style.transform='scale(1)';">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                                <line x1="6" y1="6" x2="18" y2="18"/>
+                                            </svg>
                                         </button>
                                     </div>
                                 {% empty %}
-                                    <span class="text-gray-400 text-sm">Продукты не выбраны</span>
+                                    <span style="color: var(--color-text-muted); font-size: 0.875rem;">Продукты не выбраны</span>
                                 {% endfor %}
                             </div>
                         </div>
 
-                        <div class="bg-lemon-light dark:bg-dark-bg border border-lemon-border dark:border-dark-border rounded-lg p-4 mb-6">
-                            <div class="flex items-start">
-                                <i class="fas fa-info-circle text-amber-600 dark:text-pastel-pink mt-0.5 mr-3"></i>
-                                <div class="text-sm text-amber-800 dark:text-dark-text">
-                                    <p class="font-medium mb-1">Как это работает?</p>
-                                    <p class="text-xs">Добавьте продукты, которые должны быть в рецепте. Будут показаны рецепты, содержащие ВСЕ выбранные продукты.</p>
+                        <!-- Подсказка -->
+                        <div style="background: rgba(255, 136, 17, 0.08); border-radius: 12px; padding: 1rem; border-left: 3px solid var(--color-primary); margin-bottom: 1.5rem;">
+                            <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2" style="flex-shrink: 0; margin-top: 2px;">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="12" y1="16" x2="12" y2="12"/>
+                                    <line x1="12" y1="8" x2="12.01" y2="8"/>
+                                </svg>
+                                <div>
+                                    <p style="font-weight: 600; font-size: 0.875rem; color: var(--color-text); margin-bottom: 0.25rem;">Как это работает?</p>
+                                    <p style="font-size: 0.8rem; color: var(--color-text-muted); line-height: 1.5;">Добавьте продукты, которые должны быть в рецепте. Будут показаны рецепты, содержащие ВСЕ выбранные продукты.</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="flex justify-between items-center p-6 border-t border-gray-200 dark:border-dark-border gap-3">
-                        <button type="button" 
+                    <!-- Футер -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-top: 1px solid var(--color-border); gap: 0.75rem;">
+                        <button type="button"
                                 onclick="clearSelectedProducts()"
-                                class="btn btn-outline text-sm w-28 justify-center py-2.5">
-                            <i class="fas fa-trash mr-2"></i>
+                                class="btn btn-outline" style="font-size: 0.875rem;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            </svg>
                             Очистить
                         </button>
-                        
-                        <div class="flex gap-3">
-                            <button type="button" 
+
+                        <div style="display: flex; gap: 0.75rem;">
+                            <button type="button"
                                     onclick="closeProductFilter()"
-                                    class="btn btn-outline text-sm w-28 justify-center py-2.5">
+                                    class="btn btn-outline" style="font-size: 0.875rem;">
                                 Отмена
                             </button>
-                            <button type="button" 
+                            <button type="button"
                                     onclick="applyProductFilter()"
-                                    class="btn btn-primary text-sm w-28 justify-center py-2.5">
-                                <i class="fas fa-check mr-2"></i>
+                                    class="btn btn-primary" style="font-size: 0.875rem;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.5rem;">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
                                 Применить
                             </button>
                         </div>
@@ -373,8 +399,14 @@ function updateSelectedProductsDisplay() {
         <div class="selected-product-tag"
              data-product-id="${product.id}">
             <span>${product.name}</span>
-            <button type="button" onclick="removeProductFromFilter('${product.id}')" class="text-coral-red hover:text-red-500 dark:text-pastel-pink dark:hover:text-pastel-pink/80 transition-colors duration-200">
-                <i class="fas fa-times text-xs"></i>
+            <button type="button" onclick="removeProductFromFilter('${product.id}')"
+                    style="background: none; border: none; cursor: pointer; color: var(--color-primary); padding: 0; display: flex; transition: all 0.2s ease;"
+                    onmouseover="this.style.color='var(--color-primary-hover)'; this.style.transform='scale(1.2)';"
+                    onmouseout="this.style.color='var(--color-primary)'; this.style.transform='scale(1)';">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
             </button>
         </div>
     `).join('');

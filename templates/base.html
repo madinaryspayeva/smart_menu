@@ -185,7 +185,6 @@
     </footer>
 
     {% if user.is_authenticated %}
-    <div id="toast-container" class="fixed top-5 right-5 flex flex-col gap-3 z-50 w-80 max-w-[calc(100vw-2rem)]"></div>
     <div class="toast" id="toast">Уведомление</div>
 
     <script>
@@ -193,7 +192,9 @@
 
         socket.onmessage = function(event) {
             const data = JSON.parse(event.data);
-            showToast(data);
+            const icons = { info: '🔔', success: '✅', error: '❌', warning: '⚠️' };
+            const icon = icons[data.type] || icons.info;
+            showEnhancedToast(`${icon} ${data.title}`);
             if (data.save && data.id) {
                 updateUnreadCount(1);
             }
@@ -211,37 +212,6 @@
                     badge.classList.add('hidden');
                 }
             });
-        }
-
-        function showToast(data) {
-            const icons = { info: '🔔', success: '✅', error: '❌', warning: '⚠️' };
-            const gradients = {
-                info: 'from-pastel-pink to-amber-300',
-                success: 'from-mint to-green-400',
-                error: 'from-coral-red to-pastel-pink',
-                warning: 'from-lemon-dark to-amber-300',
-            };
-
-            const toast = document.createElement("div");
-            toast.className = "bg-white dark:bg-dark-secondary rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 ease-out translate-x-full opacity-0";
-            toast.innerHTML = `
-                <div class="h-1 bg-gradient-to-r ${gradients[data.type] || gradients.info}"></div>
-                <div class="flex items-start gap-3 px-4 py-3">
-                    <span class="text-xl mt-0.5">${icons[data.type] || icons.info}</span>
-                    <div class="flex-1 min-w-0">
-                        <p class="font-oswald font-semibold text-dark-gray dark:text-white text-sm">${data.title}</p>
-                        <p class="text-xs text-gray-500 dark:text-dark-text mt-0.5 leading-relaxed">${data.message}</p>
-                    </div>
-                    <button onclick="this.closest('.toast-item').remove()" class="text-gray-300 dark:text-dark-text hover:text-gray-500 transition text-lg leading-none ml-1">×</button>
-                </div>
-            `;
-            toast.classList.add('toast-item');
-            document.getElementById("toast-container").appendChild(toast);
-            requestAnimationFrame(() => requestAnimationFrame(() => toast.classList.remove('translate-x-full', 'opacity-0')));
-            setTimeout(() => {
-                toast.classList.add('translate-x-full', 'opacity-0');
-                setTimeout(() => toast.remove(), 300);
-            }, 5000);
         }
 
         function showEnhancedToast(message) {
