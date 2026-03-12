@@ -44,15 +44,19 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-          cache: 'pip'
 
       - name: Install Poetry
         run: pip install poetry
-      
-      - name: Clear Poetry cache
-        run: |
-          poetry cache clear --all pypi
-          rm -rf ~/.cache/pypoetry/virtualenvs/*
+
+      - name: Cache Poetry virtualenv
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pypoetry
+            ~/.cache/pip
+          key: poetry-${{ runner.os }}-py3.13-${{ hashFiles('poetry.lock') }}
+          restore-keys: |
+            poetry-${{ runner.os }}-py3.13-
 
       - name: Install dependencies
         run: poetry install --no-root --no-interaction
@@ -61,7 +65,7 @@ jobs:
         run: |
           poetry run ruff check .
           poetry run bandit -r . -x "**/tests/**"
-          poetry run pip-audit
+          poetry run pip-audit --desc
 
       - name: Tests
         env:
@@ -78,7 +82,7 @@ jobs:
     needs: ci
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 25
 
     steps:
       - uses: actions/checkout@v4
@@ -92,13 +96,14 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
+          command_timeout: 20m
           script: |
             cd smart_menu
             git clean -fd staticfiles/
             git pull origin main
-            docker compose -f docker-compose.prod.yml down
-            docker compose -f docker-compose.prod.yml run --rm web poetry run python manage.py migrate --noinput
-            docker compose -f docker-compose.prod.yml run --rm web poetry run python manage.py collectstatic --noinput
-            docker compose -f docker-compose.prod.yml up -d --build
+            docker compose -f docker-compose.prod.yml build --parallel
+            docker compose -f docker-compose.prod.yml up -d --force-recreate
+            docker compose -f docker-compose.prod.yml exec -T web poetry run python manage.py migrate --noinput
+            docker compose -f docker-compose.prod.yml exec -T web poetry run python manage.py collectstatic --noinput
+            docker compose -f docker-compose.prod.yml restart nginx
             docker compose -f docker-compose.prod.yml ps
-            docker compose -f docker-compose.prod.yml logs --tail=50
