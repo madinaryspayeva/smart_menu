@@ -177,9 +177,61 @@
                     </div>
                 </div>
             </div>
-            
-            <div class="text-center mt-6 pt-3 border-t border-white/20">
-                <p class="text-xs">© 2026 Smart Menu. Все права защищены.</p>
+        </div>
+        
+        <div class="text-center mt-6 pt-3 border-t border-white/20">
+            <p class="text-xs">© 2026 Smart Menu. Все права защищены.</p>
+        </div>
+    </div>
+</footer>
+
+{% if user.is_authenticated %}
+<div id="toast-container" class="fixed top-5 right-5 flex flex-col gap-3 z-50 w-80 max-w-[calc(100vw-2rem)]"></div>
+
+<script>
+const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+const socket = new WebSocket(wsProtocol + window.location.host + "/ws/notifications/");
+
+socket.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+    showToast(data);
+    if (data.save && data.id) {
+        updateUnreadCount(1);
+    }
+};
+
+function updateUnreadCount(delta) {
+    const badges = document.querySelectorAll('.unread-badge');
+    badges.forEach(badge => {
+        const current = parseInt(badge.textContent) || 0;
+        const newCount = current + delta;
+        if (newCount > 0) {
+            badge.textContent = newCount;
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+    });
+}
+
+function showToast(data) {
+    const icons = { info: '🔔', success: '✅', error: '❌', warning: '⚠️' };
+    const gradients = {
+        info: 'from-pastel-pink to-amber-300',
+        success: 'from-mint to-green-400',
+        error: 'from-coral-red to-pastel-pink',
+        warning: 'from-lemon-dark to-amber-300',
+    };
+
+    const toast = document.createElement("div");
+    toast.className = "bg-white rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 ease-out translate-x-full opacity-0";
+    toast.innerHTML = `
+        <div class="h-1 bg-gradient-to-r ${gradients[data.type] || gradients.info}"></div>
+        <div class="flex items-start gap-3 px-4 py-3">
+            <span class="text-xl mt-0.5">${icons[data.type] || icons.info}</span>
+            <div class="flex-1 min-w-0">
+                <p class="font-oswald font-semibold text-dark-gray text-sm">${data.title}</p>
+                <p class="text-xs text-gray-500 mt-0.5 leading-relaxed">${data.message}</p>
             </div>
         </div>
     </footer>
