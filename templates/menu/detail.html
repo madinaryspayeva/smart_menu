@@ -1,0 +1,788 @@
+{% extends "base.html" %}
+{% load static %}
+{% load menu_extras %}
+
+{% block content %}
+<div class="py-6 animate-fade-in-up">
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+    <div class="flex items-center gap-3">
+      <a href="javascript:history.back()" class="back-btn mb-0">
+        <i class="fa-solid fa-arrow-left"></i>
+      </a>
+      <div>
+        <h1 class="page-title" style="font-size:2rem;margin-bottom:0">{{ plan.name }}</h1>
+        <p class="text-sm" style="color:var(--color-text-muted)">
+          <i class="fa-solid fa-users mr-1" style="color:var(--color-primary)"></i>
+          {{ plan.servings }} порц. · {{ sorted_dates|length }} дн.
+        </p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <!-- Mobile view toggle -->
+      <div class="flex rounded-full border overflow-hidden lg:hidden"
+           style="border-color:var(--color-border)">
+        <button id="view-table" onclick="setView('table')"
+                class="px-4 py-2 text-sm font-medium transition-all view-toggle-btn active-view"
+                style="min-height:44px">
+          <i class="fa-solid fa-table"></i>
+        </button>
+        <button id="view-cards" onclick="setView('cards')"
+                class="px-4 py-2 text-sm font-medium transition-all view-toggle-btn"
+                style="min-height:44px">
+          <i class="fa-solid fa-id-card"></i>
+        </button>
+      </div>
+      <a href="{% url 'menu:cart' plan.id %}" class="btn btn-primary flex items-center gap-2">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span class="hidden sm:inline">Корзина</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- ==================== TABLE VIEW ==================== -->
+  <div id="table-view">
+    <div class="overflow-x-auto rounded-3xl border" style="border-color:var(--color-border)">
+      <table class="w-full" style="border-collapse:separate;border-spacing:0">
+        <thead>
+          <tr style="background:var(--color-bg-soft)">
+            <th class="text-left p-3 text-sm font-semibold sticky left-0 z-10"
+                style="color:var(--color-text-muted);background:var(--color-bg-soft);min-width:110px">
+              Дата
+            </th>
+            {% for meal_type in meal_types %}
+            <th class="p-3 text-sm font-semibold text-center" style="color:var(--color-text)">
+              {{ meal_type }}
+            </th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for date in sorted_dates %}
+          <tr class="border-t" style="border-color:var(--color-border)">
+            <td class="p-3 sticky left-0 z-10" style="background:var(--color-bg-card)">
+              <div class="text-sm font-semibold" style="color:var(--color-text)">
+                {{ date|date:"D" }},
+              </div>
+              <div class="text-xs" style="color:var(--color-text-muted)">{{ date|date:"d M" }}</div>
+            </td>
+            {% for meal_type in meal_types %}
+            <td class="p-2" style="background:var(--color-bg-card)">
+              <div class="cell-wrapper">
+              {% with entries_list=schedule|get_item:date|get_item:meal_type %}
+              {% if entries_list %}
+              {% for entry in entries_list %}
+              {% if entry.recipe %}
+              <!-- Recipe card in cell -->
+              <div class="recipe-entry-card group {% if not forloop.first %}mt-2{% endif %}"
+                   data-entry-id="{{ entry.id }}"
+                   data-date="{{ entry.date|date:'Y-m-d' }}"
+                   data-meal-type="{{ entry.meal_type }}"
+                   draggable="true">
+                {% if entry.recipe.image %}
+                <div class="relative overflow-hidden rounded-xl mb-2" style="aspect-ratio:16/9">
+                  <img src="{{ entry.recipe.image.url }}" alt="{{ entry.recipe.name }}"
+                       class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+                </div>
+                {% endif %}
+                <p class="text-sm font-medium leading-tight mb-1 line-clamp-2"
+                   style="color:var(--color-text)">{{ entry.recipe.name }}</p>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-1">
+                    <i class="fa-solid fa-users text-xs" style="color:var(--color-text-muted)"></i>
+                    <span class="servings-display text-xs cursor-pointer font-medium"
+                          style="color:var(--color-primary)"
+                          onclick="startEditServings(this, '{{ entry.id }}', {{ entry.servings }})">
+                      {{ entry.servings }}
+                    </span>
+                  </div>
+                  <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity quick-actions">
+                    <button type="button" title="Заменить"
+                            onclick="openRecipePicker('{{ entry.id }}')"
+                            class="w-7 h-7 rounded-full flex items-center justify-center text-xs transition-all"
+                            style="background:var(--color-bg-soft);color:var(--color-text)"
+                            onmouseover="this.style.background='var(--color-primary)';this.style.color='white'"
+                            onmouseout="this.style.background='var(--color-bg-soft)';this.style.color='var(--color-text)'">
+                      <i class="fa-solid fa-arrows-rotate"></i>
+                    </button>
+                    <button type="button" title="Удалить"
+                            onclick="deleteEntry('{{ entry.id }}')"
+                            class="w-7 h-7 rounded-full flex items-center justify-center text-xs transition-all"
+                            style="background:var(--color-bg-soft);color:var(--color-text)"
+                            onmouseover="this.style.background='#ff4444';this.style.color='white'"
+                            onmouseout="this.style.background='var(--color-bg-soft)';this.style.color='var(--color-text)'">
+                      <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              {% else %}
+              <!-- Empty slot (entry exists but no recipe) -->
+              <button type="button"
+                      onclick="openRecipePicker('{{ entry.id }}')"
+                      class="empty-cell-btn w-full flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed transition-all {% if not forloop.first %}mt-2{% endif %}"
+                      data-date="{{ date|date:'Y-m-d' }}"
+                      data-meal-type="{{ meal_type }}"
+                      data-entry-id="{{ entry.id }}"
+                      style="border-color:var(--color-border);color:var(--color-text-muted)"
+                      onmouseover="this.style.borderColor='var(--color-primary)';this.style.color='var(--color-primary)';this.style.background='rgba(255,136,17,0.05)'"
+                      onmouseout="this.style.borderColor='var(--color-border)';this.style.color='var(--color-text-muted)';this.style.background='transparent'">
+                <i class="fa-solid fa-plus text-lg"></i>
+                <span class="text-xs">Добавить</span>
+              </button>
+              {% endif %}
+              {% endfor %}
+              {% else %}
+              <!-- No entries at all for this slot -->
+              <button type="button"
+                      onclick="openRecipePickerEmpty('{{ date|date:'Y-m-d' }}', '{{ meal_type }}')"
+                      class="empty-cell-btn w-full flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed transition-all"
+                      data-date="{{ date|date:'Y-m-d' }}"
+                      data-meal-type="{{ meal_type }}"
+                      style="border-color:var(--color-border);color:var(--color-text-muted)"
+                      onmouseover="this.style.borderColor='var(--color-primary)';this.style.color='var(--color-primary)';this.style.background='rgba(255,136,17,0.05)'"
+                      onmouseout="this.style.borderColor='var(--color-border)';this.style.color='var(--color-text-muted)';this.style.background='transparent'">
+                <i class="fa-solid fa-plus text-lg"></i>
+                <span class="text-xs">Добавить</span>
+              </button>
+              {% endif %}
+              {% endwith %}
+              </div>
+            </td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ==================== CARD VIEW (mobile) ==================== -->
+  <div id="card-view" class="hidden">
+    <!-- Swipe navigation -->
+    <div class="flex items-center justify-between mb-4">
+      <button onclick="prevDay()" class="btn btn-outline" style="min-height:44px">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <div class="text-center">
+        <div id="card-date-label" class="font-semibold" style="color:var(--color-text);font-family:var(--font-display);font-size:1.2rem"></div>
+        <div class="text-xs" style="color:var(--color-text-muted)">
+          <span id="card-day-num">1</span> из {{ sorted_dates|length }}
+        </div>
+      </div>
+      <button onclick="nextDay()" class="btn btn-outline" style="min-height:44px">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+    <div id="card-day-content"></div>
+  </div>
+
+</div>
+
+<!-- ==================== RECIPE PICKER PANEL ==================== -->
+<div id="picker-overlay" class="fixed inset-0 z-50 hidden" onclick="closePicker()">
+  <div class="absolute inset-0" style="background:rgba(0,0,0,0.4)"></div>
+</div>
+
+<!-- Desktop: slide-over from right; Mobile: bottom sheet -->
+<div id="picker-panel"
+     class="fixed z-50 transition-transform duration-300"
+     style="background:var(--color-bg-card);box-shadow:0 -10px 40px rgba(0,0,0,0.2)">
+  <div class="p-5 h-full flex flex-col">
+    <div class="flex items-center justify-between mb-4 flex-shrink-0">
+      <h3 class="font-semibold" style="color:var(--color-text);font-family:var(--font-display);font-size:1.3rem">
+        Выбор рецепта
+      </h3>
+      <button onclick="closePicker()"
+              class="w-9 h-9 rounded-full flex items-center justify-center transition-all"
+              style="background:var(--color-bg-soft);color:var(--color-text)">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="search-wrapper mb-4 flex-shrink-0">
+      <i class="fa-solid fa-magnifying-glass search-icon"></i>
+      <input type="text" id="picker-search" placeholder="Поиск рецептов..."
+             class="search-input"
+             hx-get="{% url 'recipe:picker' %}"
+             hx-trigger="keyup changed delay:300ms"
+             hx-target="#picker-results"
+             hx-swap="innerHTML"
+             name="q">
+    </div>
+    <div id="picker-results" class="overflow-y-auto flex-1">
+    </div>
+  </div>
+</div>
+
+<!-- Inline servings edit form (hidden) -->
+<div id="servings-edit-popup"
+     class="fixed z-50 hidden p-3 rounded-2xl shadow-xl"
+     style="background:var(--color-bg-card);border:1px solid var(--color-border)">
+  <div class="flex items-center gap-2">
+    <input type="number" id="servings-edit-input" min="1" max="99"
+           class="w-16 text-center font-bold text-lg border rounded-xl p-1"
+           style="border-color:var(--color-border);background:var(--color-bg-input);color:var(--color-primary)">
+    <button onclick="saveServings()"
+            class="btn btn-primary py-1 px-3 text-sm">
+      <i class="fa-solid fa-check"></i>
+    </button>
+    <button onclick="cancelServings()"
+            class="btn btn-outline py-1 px-3 text-sm">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<style>
+  .recipe-entry-card {
+    background: var(--color-bg-soft);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    padding: 10px;
+    cursor: grab;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+  .recipe-entry-card:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 4px 15px rgba(255,136,17,0.15);
+  }
+  .recipe-entry-card.dragging {
+    opacity: 0.4;
+    transform: scale(0.95);
+    cursor: grabbing;
+  }
+  .recipe-entry-card.drag-over-active {
+    border-color: var(--color-primary) !important;
+    background: rgba(255,136,17,0.1) !important;
+    transform: scale(1.02);
+  }
+  .drop-zone-active {
+    border-color: var(--color-primary) !important;
+    background: rgba(255,136,17,0.08) !important;
+  }
+  .view-toggle-btn { background: var(--color-bg-soft); color: var(--color-text-muted); }
+  .view-toggle-btn.active-view { background: var(--color-primary); color: white; }
+
+  /* Fixed cell sizing — cards adapt to cells, not the other way around */
+  #table-view table {
+    table-layout: fixed;
+  }
+  #table-view thead th:first-child {
+    width: 110px;
+  }
+  #table-view td .cell-wrapper {
+    height: 220px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  #table-view .empty-cell-btn {
+    flex: 1;
+  }
+  #table-view .recipe-entry-card {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  #table-view .recipe-entry-card > .relative {
+    flex: 1;
+    min-height: 0;
+    aspect-ratio: auto !important;
+  }
+  #table-view .recipe-entry-card > .relative img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  #table-view .recipe-entry-card > p {
+    flex-shrink: 0;
+  }
+  #table-view .recipe-entry-card > div:last-child {
+    flex-shrink: 0;
+  }
+
+  /* Fix search-wrapper inside picker */
+  #picker-panel .search-wrapper {
+    flex: none;
+  }
+
+  /* Picker panel responsive */
+  @media (min-width: 1024px) {
+    #picker-panel {
+      top: 0; right: -340px; bottom: 0; width: 340px;
+      border-radius: 24px 0 0 24px;
+    }
+    #picker-panel.open { transform: translateX(-340px) !important; }
+  }
+  @media (max-width: 1023px) {
+    #picker-panel {
+      left: 0; right: 0; bottom: -100%; height: 70vh;
+      border-radius: 24px 24px 0 0;
+    }
+    #picker-panel.open { transform: translateY(-100%) !important; }
+  }
+
+  /* Mobile touch drag feedback */
+  .touch-drag-active {
+    transform: scale(1.05) !important;
+    box-shadow: 0 15px 30px rgba(255,136,17,0.3) !important;
+    z-index: 100;
+    border-color: var(--color-primary) !important;
+  }
+</style>
+
+<script>
+// ---- CSRF ----
+function getCookie(name) {
+  const m = document.cookie.match(`(^|;)\\s*${name}\\s*=\\s*([^;]+)`);
+  return m ? m.pop() : '';
+}
+const csrfToken = getCookie('csrftoken');
+const planId = '{{ plan.id }}';
+
+// ---- Toast ----
+function showToast(msg, error=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = error ? '#d44f4f' : 'var(--color-primary)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ---- API calls ----
+async function updateEntry(entryId, data) {
+  const res = await fetch(`/api/v1/menu/entry/${entryId}/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Ошибка обновления');
+  }
+  return res.json().catch(() => ({}));
+}
+
+async function addEntry(data) {
+  const res = await fetch('/api/v1/menu/entry/add/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error('Ошибка добавления');
+  return res.json();
+}
+
+// ---- View toggle ----
+let currentView = 'table';
+function setView(v) {
+  currentView = v;
+  document.getElementById('table-view').classList.toggle('hidden', v !== 'table');
+  document.getElementById('card-view').classList.toggle('hidden', v !== 'cards');
+  document.getElementById('view-table').classList.toggle('active-view', v === 'table');
+  document.getElementById('view-cards').classList.toggle('active-view', v === 'cards');
+  if (v === 'cards') renderCardDay(currentCardDay);
+}
+
+// ---- Card view ----
+const datesData = [
+  {% for date in sorted_dates %}
+  { iso: "{{ date|date:'Y-m-d' }}", label: "{{ date|date:'D, d M' }}", meals: [
+    {% for meal_type in meal_types %}
+    {% with entries_list=schedule|get_item:date|get_item:meal_type %}
+    { mealType: "{{ meal_type }}", entries: [
+      {% if entries_list %}{% for entry in entries_list %}
+      {% if entry.recipe %}{ id:"{{ entry.id }}", name:"{{ entry.recipe.name|escapejs }}", servings:{{ entry.servings }}{% if entry.recipe.image %}, image:"{{ entry.recipe.image.url }}"{% endif %} }{% else %}{ id:"{{ entry.id }}", name:null, servings:{{ entry.servings }} }{% endif %},
+      {% endfor %}{% endif %}
+    ]},
+    {% endwith %}
+    {% endfor %}
+  ]},
+  {% endfor %}
+];
+let currentCardDay = 0;
+
+function renderCardDay(idx) {
+  if (idx < 0 || idx >= datesData.length) return;
+  const d = datesData[idx];
+  document.getElementById('card-date-label').textContent = d.label;
+  document.getElementById('card-day-num').textContent = idx + 1;
+  const content = document.getElementById('card-day-content');
+  content.innerHTML = d.meals.map(m => {
+    const hasRecipes = m.entries && m.entries.some(e => e.name);
+    const emptyEntry = m.entries && m.entries.find(e => !e.name);
+    return `
+    <div class="rounded-2xl border p-4 mb-3" style="background:var(--color-bg-card);border-color:var(--color-border)">
+      <div class="text-xs font-semibold mb-2 uppercase tracking-wide" style="color:var(--color-text-muted)">${m.mealType}</div>
+      ${m.entries.filter(e => e.name).map(e => `
+        <div class="flex items-center gap-3 mb-2">
+          ${e.image ? `<img src="${e.image}" class="w-14 h-14 rounded-xl object-cover flex-shrink-0">` : ''}
+          <div class="flex-1 min-w-0">
+            <p class="font-medium text-sm truncate" style="color:var(--color-text)">${e.name}</p>
+            <p class="text-xs mt-0.5" style="color:var(--color-primary)">${e.servings} порц.</p>
+          </div>
+          <button onclick="openRecipePicker('${e.id}')"
+                  class="w-10 h-10 flex items-center justify-center rounded-full transition-all flex-shrink-0"
+                  style="background:var(--color-bg-soft);color:var(--color-text)">
+            <i class="fa-solid fa-arrows-rotate text-sm"></i>
+          </button>
+        </div>
+      `).join('')}
+      ${!hasRecipes ? `
+        <button onclick="${emptyEntry ? `openRecipePicker('${emptyEntry.id}')` : `openRecipePickerEmpty('${d.iso}','${m.mealType}')`}"
+                class="w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed py-3 transition-all"
+                style="border-color:var(--color-border);color:var(--color-text-muted);min-height:56px">
+          <i class="fa-solid fa-plus"></i> Добавить рецепт
+        </button>
+      ` : ''}
+    </div>`;
+  }).join('');
+}
+
+function prevDay() {
+  if (currentCardDay > 0) { currentCardDay--; renderCardDay(currentCardDay); }
+}
+function nextDay() {
+  if (currentCardDay < datesData.length - 1) { currentCardDay++; renderCardDay(currentCardDay); }
+}
+
+// Touch swipe for card view
+let touchStartX = 0;
+document.getElementById('card-view').addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
+document.getElementById('card-view').addEventListener('touchend', e => {
+  const diff = touchStartX - e.changedTouches[0].clientX;
+  if (Math.abs(diff) > 50) diff > 0 ? nextDay() : prevDay();
+});
+
+// ---- Drag & Drop ----
+let dragSrcEntry = null;
+
+document.addEventListener('dragstart', e => {
+  const card = e.target.closest('.recipe-entry-card');
+  if (!card) return;
+  dragSrcEntry = card;
+  card.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', card.dataset.entryId);
+});
+
+document.addEventListener('dragend', e => {
+  const card = e.target.closest('.recipe-entry-card');
+  if (card) card.classList.remove('dragging');
+  document.querySelectorAll('.drag-over-active,.drop-zone-active').forEach(el => {
+    el.classList.remove('drag-over-active','drop-zone-active');
+  });
+  dragSrcEntry = null;
+});
+
+document.addEventListener('dragover', e => {
+  e.preventDefault();
+  const card = e.target.closest('.recipe-entry-card');
+  const emptyBtn = e.target.closest('.empty-cell-btn');
+  document.querySelectorAll('.drag-over-active,.drop-zone-active').forEach(el => {
+    el.classList.remove('drag-over-active','drop-zone-active');
+  });
+  if (card && card !== dragSrcEntry) card.classList.add('drag-over-active');
+  if (emptyBtn) emptyBtn.classList.add('drop-zone-active');
+});
+
+document.addEventListener('drop', async e => {
+  e.preventDefault();
+  const targetCard = e.target.closest('.recipe-entry-card');
+  const emptyBtn = e.target.closest('.empty-cell-btn');
+
+  if (!dragSrcEntry) return;
+
+  const srcId = dragSrcEntry.dataset.entryId;
+  const srcDate = dragSrcEntry.dataset.date;
+  const srcMeal = dragSrcEntry.dataset.mealType;
+
+  if (targetCard && targetCard !== dragSrcEntry) {
+    // Swap two entries atomically
+    const tgtId = targetCard.dataset.entryId;
+    try {
+      const res = await fetch('/api/v1/menu/swap/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+        body: JSON.stringify({ entry_id_1: srcId, entry_id_2: tgtId })
+      });
+      if (res.ok) {
+        showToast('Рецепты переставлены!');
+        setTimeout(() => location.reload(), 600);
+      } else {
+        throw new Error();
+      }
+    } catch {
+      showToast('Ошибка при перестановке', true);
+    }
+  } else if (emptyBtn) {
+    // Move recipe to empty cell
+    const tgtEntryId = emptyBtn.dataset.entryId;
+    if (tgtEntryId) {
+      // Empty slot has an entry (recipe=null) — swap via API
+      try {
+        const res = await fetch('/api/v1/menu/swap/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+          body: JSON.stringify({ entry_id_1: srcId, entry_id_2: tgtEntryId })
+        });
+        if (res.ok) {
+          showToast('Рецепт перемещён!');
+          setTimeout(() => location.reload(), 600);
+        } else { throw new Error(); }
+      } catch { showToast('Ошибка при перемещении', true); }
+    } else {
+      // No entry at all — update source entry's date/meal_type
+      const date = emptyBtn.dataset.date;
+      const mealType = emptyBtn.dataset.mealType;
+      if (date && mealType) {
+        try {
+          const res = await fetch(`/api/v1/menu/entry/${srcId}/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+            body: JSON.stringify({ date, meal_type: mealType })
+          });
+          if (res.ok) {
+            showToast('Рецепт перемещён!');
+            setTimeout(() => location.reload(), 600);
+          } else { throw new Error(); }
+        } catch { showToast('Ошибка при перемещении', true); }
+      }
+    }
+  }
+});
+
+// Touch drag (mobile long press)
+let touchDragCard = null, touchDragTimer = null;
+document.addEventListener('touchstart', e => {
+  const card = e.target.closest('.recipe-entry-card');
+  if (!card) return;
+  touchDragTimer = setTimeout(() => {
+    touchDragCard = card;
+    card.classList.add('touch-drag-active');
+    if (navigator.vibrate) navigator.vibrate(50);
+  }, 400);
+}, { passive: true });
+document.addEventListener('touchend', () => {
+  clearTimeout(touchDragTimer);
+  if (touchDragCard) {
+    touchDragCard.classList.remove('touch-drag-active');
+    touchDragCard = null;
+  }
+}, { passive: true });
+
+// ---- Recipe Picker ----
+let currentPickerEntryId = null;
+
+function loadPickerResults(query = '') {
+  htmx.ajax('GET', '{% url "recipe:picker" %}' + (query ? '?q=' + encodeURIComponent(query) : ''), {target: '#picker-results', swap: 'innerHTML'});
+}
+
+function openRecipePicker(entryId) {
+  currentPickerEntryId = entryId;
+  document.getElementById('picker-overlay').classList.remove('hidden');
+  document.getElementById('picker-panel').classList.add('open');
+  document.getElementById('picker-search').value = '';
+  loadPickerResults();
+  document.getElementById('picker-search').focus();
+}
+
+function openRecipePickerEmpty(date, mealType) {
+  currentPickerEntryId = null;
+  window._pickerDate = date;
+  window._pickerMealType = mealType;
+  document.getElementById('picker-overlay').classList.remove('hidden');
+  document.getElementById('picker-panel').classList.add('open');
+  document.getElementById('picker-search').value = '';
+  loadPickerResults();
+  document.getElementById('picker-search').focus();
+}
+
+function closePicker() {
+  document.getElementById('picker-overlay').classList.add('hidden');
+  document.getElementById('picker-panel').classList.remove('open');
+}
+
+// Render a recipe card into a table cell (replacing empty button)
+function renderRecipeCard(entryId, recipeName, recipeServings, targetCell, recipeImage) {
+  if (!targetCell) return;
+  // Get date/meal_type from the existing button or cell context
+  const existingBtn = targetCell.querySelector('.empty-cell-btn');
+  const date = existingBtn ? existingBtn.dataset.date : '';
+  const mealType = existingBtn ? existingBtn.dataset.mealType : '';
+  const imageHtml = recipeImage
+    ? `<div class="relative overflow-hidden rounded-xl mb-2" style="aspect-ratio:16/9">
+         <img src="${recipeImage}" alt="${recipeName}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+       </div>`
+    : '';
+  targetCell.innerHTML = `
+    <div class="cell-wrapper">
+    <div class="recipe-entry-card group" data-entry-id="${entryId}" data-date="${date}" data-meal-type="${mealType}" draggable="true">
+      ${imageHtml}
+      <p class="text-sm font-medium leading-tight mb-1 line-clamp-2"
+         style="color:var(--color-text)">${recipeName}</p>
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-1">
+          <i class="fa-solid fa-users text-xs" style="color:var(--color-text-muted)"></i>
+          <span class="servings-display text-xs cursor-pointer font-medium"
+                style="color:var(--color-primary)"
+                onclick="startEditServings(this, '${entryId}', ${recipeServings})">
+            ${recipeServings}
+          </span>
+        </div>
+        <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity quick-actions">
+          <button type="button" title="Заменить"
+                  onclick="openRecipePicker('${entryId}')"
+                  class="w-7 h-7 rounded-full flex items-center justify-center text-xs transition-all"
+                  style="background:var(--color-bg-soft);color:var(--color-text)"
+                  onmouseover="this.style.background='var(--color-primary)';this.style.color='white'"
+                  onmouseout="this.style.background='var(--color-bg-soft)';this.style.color='var(--color-text)'">
+            <i class="fa-solid fa-arrows-rotate"></i>
+          </button>
+          <button type="button" title="Удалить"
+                  onclick="deleteEntry('${entryId}')"
+                  class="w-7 h-7 rounded-full flex items-center justify-center text-xs transition-all"
+                  style="background:var(--color-bg-soft);color:var(--color-text)"
+                  onmouseover="this.style.background='#ff4444';this.style.color='white'"
+                  onmouseout="this.style.background='var(--color-bg-soft)';this.style.color='var(--color-text)'">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    </div>`;
+}
+
+// Find the table cell for a given date + mealType
+function findTableCell(date, mealType) {
+  const btn = document.querySelector(`.empty-cell-btn[data-date="${date}"][data-meal-type="${mealType}"]`);
+  return btn ? btn.closest('td') : null;
+}
+
+// Called from recipe picker HTML (HTMX response)
+function selectRecipeForMenu(recipeId, recipeName, recipeServings, recipeImage) {
+  if (currentPickerEntryId) {
+    // Existing entry — update it
+    updateEntry(currentPickerEntryId, { recipe_id: recipeId, servings: recipeServings })
+      .then(() => {
+        showToast(`Рецепт "${recipeName}" выбран`);
+        closePicker();
+        // Update DOM: find the card with this entry id and update its name
+        const card = document.querySelector(`.recipe-entry-card[data-entry-id="${currentPickerEntryId}"]`);
+        if (card) {
+          // Update image
+          const existingImg = card.querySelector('.relative.overflow-hidden');
+          if (recipeImage) {
+            if (existingImg) {
+              existingImg.querySelector('img').src = recipeImage;
+            } else {
+              card.insertAdjacentHTML('afterbegin',
+                `<div class="relative overflow-hidden rounded-xl mb-2" style="aspect-ratio:16/9">
+                   <img src="${recipeImage}" alt="${recipeName}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+                 </div>`);
+            }
+          }
+          const nameEl = card.querySelector('.text-sm.font-medium');
+          if (nameEl) nameEl.textContent = recipeName;
+          const servingsEl = card.querySelector('.servings-display');
+          if (servingsEl) servingsEl.textContent = recipeServings;
+        } else {
+          // Entry existed but had no recipe — find empty button by entry-id
+          const btn = document.querySelector(`.empty-cell-btn[data-entry-id="${currentPickerEntryId}"]`);
+          const cell = btn ? btn.closest('td') : null;
+          if (cell) {
+            renderRecipeCard(currentPickerEntryId, recipeName, recipeServings, cell, recipeImage);
+          } else {
+            // Fallback: reload page
+            setTimeout(() => location.reload(), 400);
+          }
+        }
+      })
+      .catch(() => showToast('Ошибка сохранения', true));
+  } else if (window._pickerDate && window._pickerMealType) {
+    // No entry yet — create a new one
+    addEntry({
+      plan_id: planId,
+      date: window._pickerDate,
+      meal_type: window._pickerMealType,
+      recipe_id: recipeId,
+      servings: recipeServings,
+    })
+      .then((data) => {
+        showToast(`Рецепт "${recipeName}" добавлен`);
+        closePicker();
+        const cell = findTableCell(window._pickerDate, window._pickerMealType);
+        if (cell) {
+          renderRecipeCard(data.entry_id, recipeName, recipeServings, cell, recipeImage);
+        } else {
+          // Fallback: reload page
+          setTimeout(() => location.reload(), 400);
+        }
+      })
+      .catch(() => showToast('Ошибка сохранения', true));
+  }
+}
+
+// ---- Inline servings edit ----
+let editingServingsEntryId = null;
+let editingServingsEl = null;
+
+function startEditServings(el, entryId, currentServings) {
+  editingServingsEntryId = entryId;
+  editingServingsEl = el;
+  const popup = document.getElementById('servings-edit-popup');
+  const input = document.getElementById('servings-edit-input');
+  input.value = currentServings;
+  const rect = el.getBoundingClientRect();
+  popup.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+  popup.style.left = (rect.left + window.scrollX) + 'px';
+  popup.classList.remove('hidden');
+  input.focus();
+  input.select();
+}
+
+function saveServings() {
+  const val = parseInt(document.getElementById('servings-edit-input').value);
+  if (!val || val < 1) return;
+  updateEntry(editingServingsEntryId, { servings: val })
+    .then(() => {
+      if (editingServingsEl) editingServingsEl.textContent = val;
+      showToast('Порции обновлены');
+      cancelServings();
+    })
+    .catch(() => showToast('Ошибка', true));
+}
+
+function cancelServings() {
+  document.getElementById('servings-edit-popup').classList.add('hidden');
+  editingServingsEntryId = null;
+  editingServingsEl = null;
+}
+
+document.getElementById('servings-edit-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') saveServings();
+  if (e.key === 'Escape') cancelServings();
+});
+
+// ---- Delete ----
+function deleteEntry(entryId) {
+  if (!confirm('Удалить рецепт из меню?')) return;
+  updateEntry(entryId, { recipe_id: null })
+    .then(() => { showToast('Рецепт удалён'); setTimeout(() => location.reload(), 600); })
+    .catch(() => showToast('Ошибка удаления', true));
+}
+
+// ---- Copy to next day ----
+function copyToNextDay(entryId) {
+  showToast('Скопировано на следующий день');
+  // actual implementation depends on backend endpoint
+}
+</script>
+{% endblock %}

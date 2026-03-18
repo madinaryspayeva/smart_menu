@@ -179,10 +179,26 @@ class RecipeDeleteView(AuthRequiredView, OwnerOrSuperuserMixin, DeleteView):
 
 
 class MyRecipeListView(RecipeListView):
-    """
-    Отображает только рецепты, созданные текущим пользователем.
-    """
     template_name = "recipe/my_list.html"
 
     def get_queryset(self):
         return super().get_queryset().filter(created_by=self.request.user)
+
+
+class RecipePickerView(AuthRequiredView, ListView):
+    model = Recipe
+    template_name = "menu/partials/recipe_picker_results.html"
+    context_object_name = "recipes"
+
+    def get_queryset(self):
+        qs = Recipe.objects.filter(created_by=self.request.user)
+        
+        search = self.request.GET.get("q")
+        if search:
+            qs = qs.filter(name__icontains=search)
+
+        meal_type = self.request.GET.get("meal_type")
+        if meal_type:
+            qs = qs.filter(meal_type=meal_type)
+
+        return qs.order_by("-created")

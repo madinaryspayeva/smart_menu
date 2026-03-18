@@ -81,6 +81,7 @@ PROJECT_APPS = [
      'recipe.apps.RecipeConfig',
      'api.apps.ApiConfig',
      'notifications.apps.NotificationsConfig',
+     'menu.apps.MenuConfig',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + PROJECT_APPS

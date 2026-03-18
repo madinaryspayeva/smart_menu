@@ -26,6 +26,8 @@ urlpatterns = [
     path('product/', include('product.urls', namespace='product')), 
     path('api/v1/', include('api.v1.urls')),
     path('notifications/', include('notifications.urls')),
+    path("api/v1/menu/", include("api.v1.menu.urls", namespace="menu-api")),
+    path("menu/", include("menu.urls", namespace="menu")),
 ]
 
 if settings.DEBUG:

@@ -1,11 +1,12 @@
 from django.urls import reverse
 
+from api.v1.common.interfaces.uow import IUnitOfWork
 from api.v1.recipe.interfaces.recipe_parser import (
     IRecipeBuilderService,
     IRecipeParserService,
     IRecipeRepository,
 )
-from api.v1.recipe.interfaces.uow import IUnitOfWork
+
 from api.v1.recipe.mappers.recipe_mapper import RecipeMapper
 from api.v1.recipe.services.llm import LLMService
 from notifications.choices import Notification_Type
