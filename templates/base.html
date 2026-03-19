@@ -149,7 +149,7 @@
         </div>
     </header>
 
-    <main class="main-container mx-auto px-4 py-10 flex-grow">
+    <main class="{% block main_class %}main-container{% endblock %} mx-auto px-4 py-10 flex-grow">
         {% block content %}
         {% endblock content %}
     </main>

@@ -81,21 +81,24 @@
                    data-meal-type="{{ entry.meal_type }}"
                    draggable="true">
                 {% if entry.recipe.image %}
-                <div class="relative overflow-hidden rounded-xl mb-2" style="aspect-ratio:16/9">
+                <a href="{% url 'recipe:detail' entry.recipe.id %}" class="block relative overflow-hidden rounded-xl mb-2" style="aspect-ratio:16/9" onclick="event.stopPropagation()">
                   <img src="{{ entry.recipe.image.url }}" alt="{{ entry.recipe.name }}"
                        class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
-                </div>
+                </a>
                 {% endif %}
-                <p class="text-sm font-medium leading-tight mb-1 line-clamp-2"
-                   style="color:var(--color-text)">{{ entry.recipe.name }}</p>
+                <a href="{% url 'recipe:detail' entry.recipe.id %}" class="text-sm font-medium leading-tight mb-1 line-clamp-2 block hover:underline"
+                   style="color:var(--color-text)" onclick="event.stopPropagation()">{{ entry.recipe.name }}</a>
                 <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-1">
+                  <div class="flex items-center gap-1 cursor-pointer rounded-lg px-1.5 py-0.5 transition-all servings-btn-area"
+                       style="background:rgba(255,136,17,0.08)"
+                       onclick="startEditServings(this.querySelector('.servings-display'), '{{ entry.id }}', {{ entry.servings }})"
+                       title="Изменить порции">
                     <i class="fa-solid fa-users text-xs" style="color:var(--color-text-muted)"></i>
-                    <span class="servings-display text-xs cursor-pointer font-medium"
-                          style="color:var(--color-primary)"
-                          onclick="startEditServings(this, '{{ entry.id }}', {{ entry.servings }})">
+                    <span class="servings-display text-xs font-medium"
+                          style="color:var(--color-primary)">
                       {{ entry.servings }}
                     </span>
+                    <i class="fa-solid fa-pen text-xs" style="color:var(--color-text-muted);font-size:0.55rem"></i>
                   </div>
                   <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity quick-actions">
                     <button type="button" title="Заменить"
@@ -200,7 +203,7 @@
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
-    <div class="search-wrapper mb-4 flex-shrink-0">
+    <div class="search-wrapper mb-3 flex-shrink-0">
       <i class="fa-solid fa-magnifying-glass search-icon"></i>
       <input type="text" id="picker-search" placeholder="Поиск рецептов..."
              class="search-input"
@@ -208,7 +211,48 @@
              hx-trigger="keyup changed delay:300ms"
              hx-target="#picker-results"
              hx-swap="innerHTML"
+             hx-include="#picker-meal-filter"
              name="q">
+    </div>
+    <!-- Meal type category filters -->
+    <div class="flex flex-wrap gap-1.5 mb-3 flex-shrink-0">
+      <input type="hidden" id="picker-meal-filter" name="meal_type" value="">
+      <button type="button" onclick="filterPickerMeal('')" class="picker-meal-btn active-meal-filter text-xs px-2.5 py-1.5 rounded-full border transition-all"
+              style="border-color:var(--color-border)">
+        Все
+      </button>
+      <button type="button" onclick="filterPickerMeal('breakfast')" class="picker-meal-btn text-xs px-2.5 py-1.5 rounded-full border transition-all"
+              style="border-color:var(--color-border)">
+        <i class="fa-solid fa-sun mr-0.5"></i>Завтрак
+      </button>
+      <button type="button" onclick="filterPickerMeal('lunch')" class="picker-meal-btn text-xs px-2.5 py-1.5 rounded-full border transition-all"
+              style="border-color:var(--color-border)">
+        <i class="fa-solid fa-bowl-food mr-0.5"></i>Обед
+      </button>
+      <button type="button" onclick="filterPickerMeal('dinner')" class="picker-meal-btn text-xs px-2.5 py-1.5 rounded-full border transition-all"
+              style="border-color:var(--color-border)">
+        <i class="fa-solid fa-moon mr-0.5"></i>Ужин
+      </button>
+      <button type="button" onclick="filterPickerMeal('snack')" class="picker-meal-btn text-xs px-2.5 py-1.5 rounded-full border transition-all"
+              style="border-color:var(--color-border)">
+        <i class="fa-solid fa-apple-whole mr-0.5"></i>Перекус
+      </button>
+      <button type="button" onclick="filterPickerMeal('soup')" class="picker-meal-btn text-xs px-2.5 py-1.5 rounded-full border transition-all"
+              style="border-color:var(--color-border)">
+        <i class="fa-solid fa-fire-burner mr-0.5"></i>Суп
+      </button>
+      <button type="button" onclick="filterPickerMeal('dessert')" class="picker-meal-btn text-xs px-2.5 py-1.5 rounded-full border transition-all"
+              style="border-color:var(--color-border)">
+        <i class="fa-solid fa-cake-candles mr-0.5"></i>Десерт
+      </button>
+      <button type="button" onclick="filterPickerMeal('drink')" class="picker-meal-btn text-xs px-2.5 py-1.5 rounded-full border transition-all"
+              style="border-color:var(--color-border)">
+        <i class="fa-solid fa-mug-hot mr-0.5"></i>Напиток
+      </button>
+      <button type="button" onclick="filterPickerMeal('uncategorized')" class="picker-meal-btn text-xs px-2.5 py-1.5 rounded-full border transition-all"
+              style="border-color:var(--color-border)">
+        <i class="fa-solid fa-folder-open mr-0.5"></i>Без категории
+      </button>
     </div>
     <div id="picker-results" class="overflow-y-auto flex-1">
     </div>
@@ -264,6 +308,13 @@
   .drop-zone-active {
     border-color: var(--color-primary) !important;
     background: rgba(255,136,17,0.08) !important;
+  }
+  .servings-btn-area:hover {
+    background: rgba(255,136,17,0.18) !important;
+  }
+  /* Show quick actions on touch devices */
+  @media (hover: none) {
+    .quick-actions { opacity: 1 !important; }
   }
   .view-toggle-btn { background: var(--color-bg-soft); color: var(--color-text-muted); }
   .view-toggle-btn.active-view { background: var(--color-primary); color: white; }
@@ -329,6 +380,22 @@
     #picker-panel.open { transform: translateY(-100%) !important; }
   }
 
+  /* Picker meal filter buttons */
+  .picker-meal-btn {
+    background: var(--color-bg-soft);
+    color: var(--color-text-muted);
+    cursor: pointer;
+  }
+  .picker-meal-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+  .picker-meal-btn.active-meal-filter {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+  }
+
   /* Mobile touch drag feedback */
   .touch-drag-active {
     transform: scale(1.05) !important;
@@ -346,6 +413,7 @@ function getCookie(name) {
 }
 const csrfToken = getCookie('csrftoken');
 const planId = '{{ plan.id }}';
+const planServings = {{ plan.servings }};
 
 // ---- Toast ----
 function showToast(msg, error=false) {
@@ -399,7 +467,7 @@ const datesData = [
     {% with entries_list=schedule|get_item:date|get_item:meal_type %}
     { mealType: "{{ meal_type }}", entries: [
       {% if entries_list %}{% for entry in entries_list %}
-      {% if entry.recipe %}{ id:"{{ entry.id }}", name:"{{ entry.recipe.name|escapejs }}", servings:{{ entry.servings }}{% if entry.recipe.image %}, image:"{{ entry.recipe.image.url }}"{% endif %} }{% else %}{ id:"{{ entry.id }}", name:null, servings:{{ entry.servings }} }{% endif %},
+      {% if entry.recipe %}{ id:"{{ entry.id }}", recipeId:"{{ entry.recipe.id }}", name:"{{ entry.recipe.name|escapejs }}", servings:{{ entry.servings }}{% if entry.recipe.image %}, image:"{{ entry.recipe.image.url }}"{% endif %} }{% else %}{ id:"{{ entry.id }}", name:null, servings:{{ entry.servings }} }{% endif %},
       {% endfor %}{% endif %}
     ]},
     {% endwith %}
@@ -423,11 +491,11 @@ function renderCardDay(idx) {
       <div class="text-xs font-semibold mb-2 uppercase tracking-wide" style="color:var(--color-text-muted)">${m.mealType}</div>
       ${m.entries.filter(e => e.name).map(e => `
         <div class="flex items-center gap-3 mb-2">
-          ${e.image ? `<img src="${e.image}" class="w-14 h-14 rounded-xl object-cover flex-shrink-0">` : ''}
-          <div class="flex-1 min-w-0">
+          ${e.image ? `<a href="/recipe/${e.recipeId}/"><img src="${e.image}" class="w-14 h-14 rounded-xl object-cover flex-shrink-0"></a>` : ''}
+          <a href="/recipe/${e.recipeId}/" class="flex-1 min-w-0" style="text-decoration:none">
             <p class="font-medium text-sm truncate" style="color:var(--color-text)">${e.name}</p>
             <p class="text-xs mt-0.5" style="color:var(--color-primary)">${e.servings} порц.</p>
-          </div>
+          </a>
           <button onclick="openRecipePicker('${e.id}')"
                   class="w-10 h-10 flex items-center justify-center rounded-full transition-all flex-shrink-0"
                   style="background:var(--color-bg-soft);color:var(--color-text)">
@@ -582,7 +650,27 @@ document.addEventListener('touchend', () => {
 let currentPickerEntryId = null;
 
 function loadPickerResults(query = '') {
-  htmx.ajax('GET', '{% url "recipe:picker" %}' + (query ? '?q=' + encodeURIComponent(query) : ''), {target: '#picker-results', swap: 'innerHTML'});
+  const mealType = document.getElementById('picker-meal-filter').value;
+  let url = '{% url "recipe:picker" %}';
+  const params = [];
+  if (query) params.push('q=' + encodeURIComponent(query));
+  if (mealType) params.push('meal_type=' + encodeURIComponent(mealType));
+  if (params.length) url += '?' + params.join('&');
+  htmx.ajax('GET', url, {target: '#picker-results', swap: 'innerHTML'});
+}
+
+function filterPickerMeal(mealType) {
+  document.getElementById('picker-meal-filter').value = mealType;
+  document.querySelectorAll('.picker-meal-btn').forEach(btn => btn.classList.remove('active-meal-filter'));
+  event.currentTarget.classList.add('active-meal-filter');
+  const query = document.getElementById('picker-search').value;
+  loadPickerResults(query);
+}
+
+function resetPickerFilters() {
+  document.getElementById('picker-meal-filter').value = '';
+  document.querySelectorAll('.picker-meal-btn').forEach(btn => btn.classList.remove('active-meal-filter'));
+  document.querySelector('.picker-meal-btn').classList.add('active-meal-filter');
 }
 
 function openRecipePicker(entryId) {
@@ -590,6 +678,7 @@ function openRecipePicker(entryId) {
   document.getElementById('picker-overlay').classList.remove('hidden');
   document.getElementById('picker-panel').classList.add('open');
   document.getElementById('picker-search').value = '';
+  resetPickerFilters();
   loadPickerResults();
   document.getElementById('picker-search').focus();
 }
@@ -601,6 +690,7 @@ function openRecipePickerEmpty(date, mealType) {
   document.getElementById('picker-overlay').classList.remove('hidden');
   document.getElementById('picker-panel').classList.add('open');
   document.getElementById('picker-search').value = '';
+  resetPickerFilters();
   loadPickerResults();
   document.getElementById('picker-search').focus();
 }
@@ -629,13 +719,16 @@ function renderRecipeCard(entryId, recipeName, recipeServings, targetCell, recip
       <p class="text-sm font-medium leading-tight mb-1 line-clamp-2"
          style="color:var(--color-text)">${recipeName}</p>
       <div class="flex items-center justify-between">
-        <div class="flex items-center gap-1">
+        <div class="flex items-center gap-1 cursor-pointer rounded-lg px-1.5 py-0.5 transition-all servings-btn-area"
+             style="background:rgba(255,136,17,0.08)"
+             onclick="startEditServings(this.querySelector('.servings-display'), '${entryId}', ${recipeServings})"
+             title="Изменить порции">
           <i class="fa-solid fa-users text-xs" style="color:var(--color-text-muted)"></i>
-          <span class="servings-display text-xs cursor-pointer font-medium"
-                style="color:var(--color-primary)"
-                onclick="startEditServings(this, '${entryId}', ${recipeServings})">
+          <span class="servings-display text-xs font-medium"
+                style="color:var(--color-primary)">
             ${recipeServings}
           </span>
+          <i class="fa-solid fa-pen text-xs" style="color:var(--color-text-muted);font-size:0.55rem"></i>
         </div>
         <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity quick-actions">
           <button type="button" title="Заменить"
@@ -668,9 +761,11 @@ function findTableCell(date, mealType) {
 
 // Called from recipe picker HTML (HTMX response)
 function selectRecipeForMenu(recipeId, recipeName, recipeServings, recipeImage) {
+  // Use plan servings instead of recipe's default servings
+  const servingsToUse = planServings;
   if (currentPickerEntryId) {
-    // Existing entry — update it
-    updateEntry(currentPickerEntryId, { recipe_id: recipeId, servings: recipeServings })
+    // Existing entry — update recipe, keep plan servings
+    updateEntry(currentPickerEntryId, { recipe_id: recipeId, servings: servingsToUse })
       .then(() => {
         showToast(`Рецепт "${recipeName}" выбран`);
         closePicker();
@@ -692,13 +787,13 @@ function selectRecipeForMenu(recipeId, recipeName, recipeServings, recipeImage) 
           const nameEl = card.querySelector('.text-sm.font-medium');
           if (nameEl) nameEl.textContent = recipeName;
           const servingsEl = card.querySelector('.servings-display');
-          if (servingsEl) servingsEl.textContent = recipeServings;
+          if (servingsEl) servingsEl.textContent = servingsToUse;
         } else {
           // Entry existed but had no recipe — find empty button by entry-id
           const btn = document.querySelector(`.empty-cell-btn[data-entry-id="${currentPickerEntryId}"]`);
           const cell = btn ? btn.closest('td') : null;
           if (cell) {
-            renderRecipeCard(currentPickerEntryId, recipeName, recipeServings, cell, recipeImage);
+            renderRecipeCard(currentPickerEntryId, recipeName, servingsToUse, cell, recipeImage);
           } else {
             // Fallback: reload page
             setTimeout(() => location.reload(), 400);
@@ -707,20 +802,20 @@ function selectRecipeForMenu(recipeId, recipeName, recipeServings, recipeImage) 
       })
       .catch(() => showToast('Ошибка сохранения', true));
   } else if (window._pickerDate && window._pickerMealType) {
-    // No entry yet — create a new one
+    // No entry yet — create a new one with plan servings
     addEntry({
       plan_id: planId,
       date: window._pickerDate,
       meal_type: window._pickerMealType,
       recipe_id: recipeId,
-      servings: recipeServings,
+      servings: servingsToUse,
     })
       .then((data) => {
         showToast(`Рецепт "${recipeName}" добавлен`);
         closePicker();
         const cell = findTableCell(window._pickerDate, window._pickerMealType);
         if (cell) {
-          renderRecipeCard(data.entry_id, recipeName, recipeServings, cell, recipeImage);
+          renderRecipeCard(data.entry_id, recipeName, servingsToUse, cell, recipeImage);
         } else {
           // Fallback: reload page
           setTimeout(() => location.reload(), 400);

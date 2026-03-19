@@ -12,6 +12,7 @@ class MealType(models.TextChoices):
         DRINK = "drink", _("Напиток")
         BABY_FOOD = "baby_food", _("Детское питание")
         SIDE_DISH = "side_dish", _("Гарнир")
+        UNCATEGORIZED = "uncategorized", _("Без категории")
         
 
 class Unit(models.TextChoices):
