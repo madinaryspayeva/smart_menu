@@ -6,13 +6,15 @@
 <div class="py-6 md:py-10 animate-fade-in-up">
 
   <!-- Header -->
-  <div class="mb-8 relative">
-    <a href="javascript:history.back()" class="back-btn" style="position:absolute;left:0;top:0">
-      <i class="fa-solid fa-arrow-left"></i> Назад
-    </a>
-    <div class="text-center">
-      <h1 class="page-title">Новое меню</h1>
-      <p class="page-subtitle">Выберите даты, приёмы пищи и настройте параметры</p>
+  <div class="mb-8">
+    <div class="flex items-start gap-3 mb-2">
+      <a href="javascript:history.back()" class="back-btn flex-shrink-0 mb-0">
+        <i class="fa-solid fa-arrow-left"></i><span class="hidden sm:inline ml-1">Назад</span>
+      </a>
+      <div class="flex-1 text-center sm:pr-12">
+        <h1 class="page-title" style="font-size:2rem">Новое меню</h1>
+        <p class="page-subtitle" style="margin-bottom:0">Выберите даты, приёмы пищи и настройте параметры</p>
+      </div>
     </div>
   </div>
 
@@ -212,7 +214,7 @@
           Создать
         </button>
         <button type="submit" name="empty" value="1"
-                class="btn btn-outline py-4 px-4 text-base flex items-center justify-center gap-2">
+                class="btn btn-outline flex-1 py-4 text-base flex items-center justify-center gap-2">
           <i class="fa-solid fa-table-cells"></i>
           Пустое
         </button>

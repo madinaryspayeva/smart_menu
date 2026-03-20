@@ -2,8 +2,9 @@ from collections import defaultdict
 from datetime import date
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Count, Max, Min, Q
 from django.shortcuts import redirect
-from django.views.generic import DetailView, TemplateView
+from django.views.generic import DetailView, ListView, TemplateView
 
 from api.v1.common.uow.django_uow import DjangoUnitOfWork
 from api.v1.menu.dto.menu_dto import CreateMenuDTO
@@ -12,6 +13,7 @@ from api.v1.menu.services.menu_generator import MenuGeneratorService
 from api.v1.menu.services.shopping_cart import ShoppingCartService
 from api.v1.menu.usecases.create_menu_usecase import CreateMenuUseCase
 from api.v1.menu.usecases.generate_shopping_cart_usecase import GenerateShoppingCartUseCase
+from app.views import AuthRequiredView
 from menu.models import MenuPlan
 
 
@@ -60,6 +62,26 @@ class MenuPlanCreateView(LoginRequiredMixin, TemplateView):
         is_empty = request.POST.get("empty") == "1"
         plan = use_case.execute(request.user, dto, empty=is_empty)
         return redirect("menu:detail", pk=plan.id)
+
+
+class MenuPlanListView(AuthRequiredView, ListView):
+    model = MenuPlan
+    template_name = "menu/list.html"
+    context_object_name = "plans"
+    paginate_by = 4
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .filter(created_by=self.request.user)
+            .annotate(
+                total_recipes=Count("entries", filter=Q(entries__recipe__isnull=False)),
+                total_days=Count("entries__date", distinct=True),
+                date_min=Min("entries__date"),
+                date_max=Max("entries__date"),
+            ).order_by("-created")
+        )   
 
 
 class MenuPlanDetailView(LoginRequiredMixin, DetailView):

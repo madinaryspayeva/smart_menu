@@ -37,7 +37,7 @@
     </script>
 </head>
 <body class="bg-pastel-yellow dark:bg-dark-bg font-inter min-h-screen flex flex-col transition-colors duration-300">
-    <div class="fixed inset-0 pointer-events-none opacity-30 bg-hero-pattern" style="z-index: -1;"></div>
+    <div class="fixed inset-0 pointer-events-none bg-hero-pattern hero-bg-responsive" style="z-index: -1;"></div>
 
     <header class="navbar">
         <div class="container mx-auto px-4">
@@ -92,6 +92,9 @@
                                 </div>
                                 <a href="{% url 'recipe:my_list' %}" class="flex items-center gap-3 px-4 py-3 text-sm text-dark-gray dark:text-dark-text hover:bg-pastel-yellow dark:hover:bg-dark-bg transition">
                                     <i class="fas fa-book-open w-4" style="color: #FF8811;"></i> Мои рецепты
+                                </a>
+                                <a href="{% url 'menu:list' %}" class="flex items-center gap-3 px-4 py-3 text-sm text-dark-gray dark:text-dark-text hover:bg-pastel-yellow dark:hover:bg-dark-bg transition">
+                                     <i class="fas fa-calendar-plus" style="color: #FF8811;"></i> Меню
                                 </a>
                                 <a href="{% url 'notifications' %}" class="flex items-center gap-3 px-4 py-3 text-sm text-dark-gray dark:text-dark-text hover:bg-pastel-yellow dark:hover:bg-dark-bg transition">
                                     <i class="fas fa-bell w-4" style="color: #FF8811;"></i> Уведомления
