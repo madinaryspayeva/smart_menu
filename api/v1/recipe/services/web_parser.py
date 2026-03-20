@@ -50,13 +50,17 @@ class WebParserService(IRecipeParserService):
             
             ]
 
+            raw_tips = recipe_data.get("tips")
+            if isinstance(raw_tips, list):
+                raw_tips = "\n".join(str(t) for t in raw_tips if t) or None
+
             return RecipeDTO(
                 title=recipe_data.get("title"),
                 description=recipe_data.get("description"),
                 meal_type=recipe_data.get("meal_type"),
                 ingredients=ingredients,
                 steps=steps,
-                tips=recipe_data.get("tips"),
+                tips=raw_tips,
                 thumbnail=recipe_data.get("thumbnail")
             )
         

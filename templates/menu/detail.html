@@ -324,10 +324,10 @@
     table-layout: fixed;
   }
   #table-view thead th:first-child {
-    width: 110px;
+    width: 90px;
   }
   #table-view td .cell-wrapper {
-    height: 220px;
+    height: 180px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -342,12 +342,14 @@
     display: flex;
     flex-direction: column;
   }
-  #table-view .recipe-entry-card > .relative {
+  #table-view .recipe-entry-card > .relative,
+  #table-view .recipe-entry-card > a.block {
     flex: 1;
     min-height: 0;
     aspect-ratio: auto !important;
   }
-  #table-view .recipe-entry-card > .relative img {
+  #table-view .recipe-entry-card > .relative img,
+  #table-view .recipe-entry-card > a.block img {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -357,6 +359,16 @@
   }
   #table-view .recipe-entry-card > div:last-child {
     flex-shrink: 0;
+  }
+
+  /* Mobile: hide table view, show cards by default */
+  @media (max-width: 1023px) {
+    #table-view {
+      display: none !important;
+    }
+    #card-view {
+      display: block !important;
+    }
   }
 
   /* Fix search-wrapper inside picker */
@@ -449,7 +461,7 @@ async function addEntry(data) {
 }
 
 // ---- View toggle ----
-let currentView = 'table';
+let currentView = window.innerWidth < 1024 ? 'cards' : 'table';
 function setView(v) {
   currentView = v;
   document.getElementById('table-view').classList.toggle('hidden', v !== 'table');
@@ -490,17 +502,26 @@ function renderCardDay(idx) {
     <div class="rounded-2xl border p-4 mb-3" style="background:var(--color-bg-card);border-color:var(--color-border)">
       <div class="text-xs font-semibold mb-2 uppercase tracking-wide" style="color:var(--color-text-muted)">${m.mealType}</div>
       ${m.entries.filter(e => e.name).map(e => `
-        <div class="flex items-center gap-3 mb-2">
+        <div class="recipe-entry-card flex items-center gap-3 mb-2"
+             data-entry-id="${e.id}" data-date="${d.iso}" data-meal-type="${m.mealType}"
+             style="padding:8px;border-radius:12px;cursor:grab">
           ${e.image ? `<a href="/recipe/${e.recipeId}/"><img src="${e.image}" class="w-14 h-14 rounded-xl object-cover flex-shrink-0"></a>` : ''}
           <a href="/recipe/${e.recipeId}/" class="flex-1 min-w-0" style="text-decoration:none">
             <p class="font-medium text-sm truncate" style="color:var(--color-text)">${e.name}</p>
             <p class="text-xs mt-0.5" style="color:var(--color-primary)">${e.servings} порц.</p>
           </a>
-          <button onclick="openRecipePicker('${e.id}')"
-                  class="w-10 h-10 flex items-center justify-center rounded-full transition-all flex-shrink-0"
-                  style="background:var(--color-bg-soft);color:var(--color-text)">
-            <i class="fa-solid fa-arrows-rotate text-sm"></i>
-          </button>
+          <div class="flex gap-1 flex-shrink-0">
+            <button onclick="openRecipePicker('${e.id}')"
+                    class="w-9 h-9 flex items-center justify-center rounded-full transition-all"
+                    style="background:var(--color-bg-soft);color:var(--color-text)">
+              <i class="fa-solid fa-arrows-rotate text-xs"></i>
+            </button>
+            <button onclick="deleteEntry('${e.id}')"
+                    class="w-9 h-9 flex items-center justify-center rounded-full transition-all"
+                    style="background:var(--color-bg-soft);color:var(--color-text)">
+              <i class="fa-solid fa-trash-can text-xs"></i>
+            </button>
+          </div>
         </div>
       `).join('')}
       ${!hasRecipes ? `
@@ -627,8 +648,8 @@ document.addEventListener('drop', async e => {
   }
 });
 
-// Touch drag (mobile long press)
-let touchDragCard = null, touchDragTimer = null;
+// Touch drag (mobile long press) with actual drop support
+let touchDragCard = null, touchDragTimer = null, touchDragClone = null;
 document.addEventListener('touchstart', e => {
   const card = e.target.closest('.recipe-entry-card');
   if (!card) return;
@@ -636,11 +657,83 @@ document.addEventListener('touchstart', e => {
     touchDragCard = card;
     card.classList.add('touch-drag-active');
     if (navigator.vibrate) navigator.vibrate(50);
+    // Prevent scrolling while dragging
+    document.body.style.overflow = 'hidden';
   }, 400);
 }, { passive: true });
-document.addEventListener('touchend', () => {
+
+document.addEventListener('touchmove', e => {
+  if (!touchDragCard) return;
+  const touch = e.touches[0];
+  // Highlight drop targets under finger
+  const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+  if (!elemBelow) return;
+  // Clear previous highlights
+  document.querySelectorAll('.drag-over-active,.drop-zone-active').forEach(el => {
+    el.classList.remove('drag-over-active', 'drop-zone-active');
+  });
+  const targetCard = elemBelow.closest('.recipe-entry-card');
+  const emptyBtn = elemBelow.closest('.empty-cell-btn');
+  if (targetCard && targetCard !== touchDragCard) targetCard.classList.add('drag-over-active');
+  if (emptyBtn) emptyBtn.classList.add('drop-zone-active');
+}, { passive: true });
+
+document.addEventListener('touchend', e => {
   clearTimeout(touchDragTimer);
   if (touchDragCard) {
+    document.body.style.overflow = '';
+    const touch = e.changedTouches[0];
+    const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+
+    if (elemBelow) {
+      const targetCard = elemBelow.closest('.recipe-entry-card');
+      const emptyBtn = elemBelow.closest('.empty-cell-btn');
+      const srcId = touchDragCard.dataset.entryId;
+
+      if (targetCard && targetCard !== touchDragCard) {
+        // Swap two recipe cards
+        const tgtId = targetCard.dataset.entryId;
+        fetch('/api/v1/menu/swap/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+          body: JSON.stringify({ entry_id_1: srcId, entry_id_2: tgtId })
+        }).then(res => {
+          if (res.ok) { showToast('Рецепты переставлены!'); setTimeout(() => location.reload(), 600); }
+          else showToast('Ошибка при перестановке', true);
+        }).catch(() => showToast('Ошибка при перестановке', true));
+      } else if (emptyBtn) {
+        // Move to empty slot
+        const tgtEntryId = emptyBtn.dataset.entryId;
+        if (tgtEntryId) {
+          fetch('/api/v1/menu/swap/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+            body: JSON.stringify({ entry_id_1: srcId, entry_id_2: tgtEntryId })
+          }).then(res => {
+            if (res.ok) { showToast('Рецепт перемещён!'); setTimeout(() => location.reload(), 600); }
+            else showToast('Ошибка при перемещении', true);
+          }).catch(() => showToast('Ошибка при перемещении', true));
+        } else {
+          const date = emptyBtn.dataset.date;
+          const mealType = emptyBtn.dataset.mealType;
+          if (date && mealType) {
+            fetch(`/api/v1/menu/entry/${srcId}/`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+              body: JSON.stringify({ date, meal_type: mealType })
+            }).then(res => {
+              if (res.ok) { showToast('Рецепт перемещён!'); setTimeout(() => location.reload(), 600); }
+              else showToast('Ошибка при перемещении', true);
+            }).catch(() => showToast('Ошибка при перемещении', true));
+          }
+        }
+      }
+    }
+
+    // Clear all visual states
+    document.querySelectorAll('.drag-over-active,.drop-zone-active').forEach(el => {
+      el.classList.remove('drag-over-active', 'drop-zone-active');
+    });
     touchDragCard.classList.remove('touch-drag-active');
     touchDragCard = null;
   }
@@ -881,6 +974,14 @@ function deleteEntry(entryId) {
 function copyToNextDay(entryId) {
   showToast('Скопировано на следующий день');
   // actual implementation depends on backend endpoint
+}
+
+// ---- Init: render card view on mobile ----
+if (window.innerWidth < 1024) {
+  document.getElementById('card-view').classList.remove('hidden');
+  document.getElementById('view-cards').classList.add('active-view');
+  document.getElementById('view-table').classList.remove('active-view');
+  renderCardDay(currentCardDay);
 }
 </script>
 {% endblock %}

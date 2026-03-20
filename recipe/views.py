@@ -169,7 +169,24 @@ class RecipeDetailView(AuthRequiredView, DetailView):
             s.strip() for s in recipe.description.split("\n") if s.strip()
         ] if recipe.description else []
         context["steps"] = steps
+        context["tips"] = self._parse_tips(recipe.tips)
         return context
+
+    @staticmethod
+    def _parse_tips(raw_tips):
+        if not raw_tips:
+            return []
+        text = str(raw_tips).strip()
+        # Handle tips stored as Python list repr: "['tip1', 'tip2']"
+        if text.startswith("[") and text.endswith("]"):
+            import ast
+            try:
+                parsed = ast.literal_eval(text)
+                if isinstance(parsed, list):
+                    return [str(t).strip() for t in parsed if str(t).strip()]
+            except (ValueError, SyntaxError):
+                pass
+        return [line.strip() for line in text.splitlines() if line.strip()]
 
 
 class RecipeDeleteView(AuthRequiredView, OwnerOrSuperuserMixin, DeleteView):

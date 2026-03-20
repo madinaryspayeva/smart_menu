@@ -2,8 +2,8 @@
 {% load static %}
 
 {% block content %}
-<div class="min-h-screen py-6 sm:py-8">
-    <div class="mx-auto" style="max-width: 720px;">
+<div class="min-h-screen py-6 sm:py-8" style="overflow-x:hidden">
+    <div class="mx-auto px-4" style="max-width: 720px;">
 
         <!-- Кнопка назад -->
         <a href="{% url 'recipe:list' %}" class="back-btn animate-fade-in-up">
@@ -152,11 +152,11 @@
                     {% endfor %}
                 </ul>
 
-                {% if recipe.tips %}
+                {% if tips %}
                     <div class="tips-block" style="margin-top: 1.5rem; padding: 1rem; background: rgba(255, 136, 17, 0.08); border-radius: 12px; border-left: 3px solid #FF8811;">
                         <div style="font-weight: 600; margin-bottom: 0.5rem; color: #FF8811;">Советы</div>
                         <div style="color: #6B6E81;">
-                            {% for tip in recipe.tips.splitlines %}
+                            {% for tip in tips %}
                                 <p style="margin: 0 0 0.5rem 0; line-height: 1.6;">{{ tip }}</p>
                             {% endfor %}
                         </div>

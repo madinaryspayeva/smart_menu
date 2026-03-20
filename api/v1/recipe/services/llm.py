@@ -64,13 +64,17 @@ class LLMService:
         ingredients = [IngredientDTO(raw=i.get("raw")) for i in data.get("ingredients", [])]
         steps = [StepDTO(step=s.get("step")) for s in data.get("steps", [])]
 
+        raw_tips = data.get("tips")
+        if isinstance(raw_tips, list):
+            raw_tips = "\n".join(str(t) for t in raw_tips if t) or None
+
         return RecipeDTO(
             title=data.get("title"),
             description=data.get("description"),
             meal_type=data.get("meal_type"),
             ingredients=ingredients,
             steps=steps,
-            tips=data.get("tips"),
+            tips=raw_tips,
             thumbnail=data.get("thumbnail"),
         )
 
