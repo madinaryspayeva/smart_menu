@@ -120,6 +120,9 @@ INGREDIENT_NOISE_WORDS = {
     "продукты", "ингредиенты", "ingredients", "состав", "тесто",
 }
 
+# Порог схожести для поиска продуктов по триграммам (pg_trgm)
+PRODUCT_SIMILARITY_THRESHOLD = 0.5
+
 UNIT_SYNONYMS = {
     # --- без количества ---
     "по вкусу": Unit.TO_TASTE,

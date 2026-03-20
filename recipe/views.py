@@ -87,7 +87,7 @@ class RecipeListView(AuthRequiredView, ListView):
     model = Recipe
     template_name = "recipe/list.html"
     context_object_name = "recipes"
-    paginate_by = 6
+    paginate_by = 4
 
     def get_queryset(self):
         queryset = super().get_queryset().order_by("-created")
