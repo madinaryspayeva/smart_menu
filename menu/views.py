@@ -2,8 +2,8 @@ from collections import defaultdict
 from datetime import date
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import redirect, get_object_or_404
-from django.views.generic import TemplateView, DetailView
+from django.shortcuts import redirect
+from django.views.generic import DetailView, TemplateView
 
 from api.v1.common.uow.django_uow import DjangoUnitOfWork
 from api.v1.menu.dto.menu_dto import CreateMenuDTO

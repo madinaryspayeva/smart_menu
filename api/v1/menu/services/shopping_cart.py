@@ -1,4 +1,3 @@
-from collections import defaultdict
 from decimal import Decimal
 
 from api.v1.menu.dto.menu_dto import ShoppingItemDTO
@@ -65,7 +64,9 @@ class ShoppingCartService(IShoppingCartService):
 
                 # Пересчёт порций
                 # (кол-во в рецепте / порции рецепта) * порции этой записи
-                scaled_qty = (quantity / Decimal(str(recipe_servings))) * Decimal(str(entry.servings))
+                scaled_qty = (
+                    quantity / Decimal(str(recipe_servings))
+                    ) * Decimal(str(entry.servings))
 
                 # Конвертация в базовую единицу
                 if unit in self.TO_BASE:

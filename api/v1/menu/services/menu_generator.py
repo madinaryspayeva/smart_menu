@@ -1,5 +1,4 @@
 import random
-from collections import defaultdict
 
 from api.v1.menu.dto.menu_dto import CreateMenuDTO, MenuEntryDTO
 from api.v1.menu.interfaces.menu import IMenuGeneratorService
@@ -134,10 +133,10 @@ class MenuGeneratorService(IMenuGeneratorService):
         # Совсем ничего не нашлось без повторов → разрешаем повторы
         all_recipes = exact + compat + uncat + rest
         if all_recipes:
-            return random.choice(all_recipes)
+            return random.choice(all_recipes)  # nosec B311
 
         return None
-    
+
     def _choose_from_pool(
         self,
         pool: list[Recipe],
@@ -161,16 +160,16 @@ class MenuGeneratorService(IMenuGeneratorService):
             if str(r.id) != exclude_id and str(r.id) not in exclude_ids
         ]
         if strict:
-            return random.choice(strict)
+            return random.choice(strict)  # nosec B311
 
         # Мягкий: только не в этот день
         no_today = [r for r in pool if str(r.id) not in exclude_ids]
         if no_today:
-            return random.choice(no_today)
+            return random.choice(no_today)  # nosec B311
 
         # Ещё мягче: только не подряд
         no_repeat = [r for r in pool if str(r.id) != exclude_id]
         if no_repeat:
-            return random.choice(no_repeat)
+            return random.choice(no_repeat)  # nosec B311
 
         return None

@@ -6,7 +6,13 @@ from rest_framework.views import APIView
 from api.v1.common.uow.django_uow import DjangoUnitOfWork
 from api.v1.menu.dto.menu_dto import CreateMenuDTO, MenuEntryDTO
 from api.v1.menu.repositories.menu_repository import MenuRepository
-from api.v1.menu.serializers import AddMenuEntrySerializer, CreateMenuSerializer, ShoppingCartSerializer, SwapEntriesSerializer, UpdateMenuEntrySerializer
+from api.v1.menu.serializers import (
+    AddMenuEntrySerializer,
+    CreateMenuSerializer,
+    ShoppingCartSerializer,
+    SwapEntriesSerializer,
+    UpdateMenuEntrySerializer,
+)
 from api.v1.menu.services.menu_generator import MenuGeneratorService
 from api.v1.menu.services.shopping_cart import ShoppingCartService
 from api.v1.menu.usecases.create_menu_usecase import CreateMenuUseCase
@@ -158,7 +164,10 @@ class SwapEntriesAPIView(APIView):
                 str(data["entry_id_2"]),
             )
         except Exception:
-            return Response({"error": "Ошибка при перестановке"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Ошибка при перестановке"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         return Response({"ok": True}, status=status.HTTP_200_OK)
 

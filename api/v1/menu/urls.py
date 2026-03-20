@@ -1,6 +1,13 @@
 from django.urls import path
 
-from api.v1.menu.views import AddMenuEntryAPIView, ClearMenuEntryRecipeAPIView, CreateMenuAPIView, ShoppingCartAPIView, SwapEntriesAPIView, UpdateMenuEntryAPIView
+from api.v1.menu.views import (
+    AddMenuEntryAPIView,
+    ClearMenuEntryRecipeAPIView,
+    CreateMenuAPIView,
+    ShoppingCartAPIView,
+    SwapEntriesAPIView,
+    UpdateMenuEntryAPIView,
+)
 
 app_name = "menu-api"
 
