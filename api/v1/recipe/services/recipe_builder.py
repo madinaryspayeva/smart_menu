@@ -49,7 +49,12 @@ class RecipeBuilderService(IRecipeBuilderService):
     def _is_noise(self, raw: str | None) -> bool:
         if not raw:
             return True
-        return raw.strip().lower() in INGREDIENT_NOISE_WORDS
+        text = raw.strip().lower()
+        if text in INGREDIENT_NOISE_WORDS:
+            return True
+        if text.startswith("для "):
+            return True
+        return False
 
     # ------------------------------------------------------------------
     # Meal type
