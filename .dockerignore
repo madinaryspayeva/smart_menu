@@ -16,7 +16,6 @@ __pycache__/
 
 # Node (Tailwind builds in separate stage)
 node_modules/
-package-lock.json
 
 # Environment
 .env
