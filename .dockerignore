@@ -1,13 +1,10 @@
-*.sqlite3
-*.pyc   
-.DS_Store
-.venv
 # Git
 .git
 .gitignore
 
 # Docker
-Dockerfile
+Dockerfile*
+docker-compose*
 .dockerignore
 
 # Python
@@ -15,13 +12,23 @@ __pycache__/
 *.pyc
 *.py[cod]
 *.sqlite3
+.venv
+
+# Node (Tailwind builds in separate stage)
+node_modules/
+package-lock.json
 
 # Environment
 .env
-.env*
+.env.*
 
 # IDE / Editor / OS
 .idea/
 .vscode/
 .DS_Store
-.venv
+
+# CI/CD
+.github/
+
+# Collected static (built in Docker)
+staticfiles/

@@ -1,0 +1,337 @@
+{% extends "base.html" %}
+{% load static %}
+{% load menu_extras %}
+
+{% block content %}
+<div class="py-6 animate-fade-in-up pb-32 lg:pb-6">
+
+  <!-- ==================== HEADER CARD ==================== -->
+  <div class="rounded-3xl border mb-6 overflow-hidden"
+       style="background:var(--color-bg-card);border-color:var(--color-border)">
+
+    <!-- Top row -->
+    <div class="p-4 sm:p-5">
+      <div class="flex items-center gap-3 mb-3">
+        <a href="{% url 'menu:detail' plan.id %}" class="back-btn mb-0">
+          <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <div class="flex-1 min-w-0">
+          <h1 class="font-semibold leading-tight truncate"
+              style="color:var(--color-text);font-family:var(--font-display);font-size:1.2rem">
+            Список покупок
+          </h1>
+          <p class="text-xs truncate" style="color:var(--color-text-muted)">{{ plan.name }}</p>
+        </div>
+        <span class="px-2 py-1 rounded-full text-xs font-semibold flex-shrink-0"
+              style="background:rgba(255,136,17,0.12);color:var(--color-primary)">
+          {{ total_items }} поз.
+        </span>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="flex gap-2">
+        <button onclick="toggleAll()"
+                class="btn btn-outline text-xs py-1.5 px-2.5 flex-1" id="toggle-all-btn">
+          <i class="fa-solid fa-check-double mr-1"></i>Все
+        </button>
+        <button onclick="copyList()"
+                class="btn btn-outline text-xs py-1.5 px-2.5 flex-1">
+          <i class="fa-solid fa-copy mr-1"></i>Копировать
+        </button>
+        <button onclick="shareList()"
+                class="btn btn-outline text-xs py-1.5 px-2.5 flex-1">
+          <i class="fa-solid fa-share-nodes mr-1"></i>Отправить
+        </button>
+      </div>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="px-4 sm:px-5 pb-4">
+      <div class="flex justify-between text-xs mb-1" style="color:var(--color-text-muted)">
+        <span>Куплено</span>
+        <span id="progress-label">0 из {{ total_items }}</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== CATEGORIES LIST ==================== -->
+  {% if categories %}
+  <div class="flex flex-col gap-4" id="categories-grid">
+    {% for category, items in categories.items %}
+    <div class="category-card rounded-3xl border overflow-hidden"
+         style="background:var(--color-bg-card);border-color:var(--color-border)"
+         data-category="{{ forloop.counter }}">
+
+      <!-- Category header -->
+      <button type="button"
+              onclick="toggleCategory(this)"
+              class="w-full flex items-center justify-between p-4 transition-all"
+              style="color:var(--color-text)"
+              onmouseover="this.style.background='var(--color-bg-soft)'"
+              onmouseout="this.style.background='transparent'">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+               style="background:rgba(255,136,17,0.12)">
+            <i class="{{ category|category_icon:'fa-solid fa-basket-shopping' }} text-sm" style="color:var(--color-primary)"></i>
+          </div>
+          <span class="font-semibold text-sm">{{ category }}</span>
+          <span class="text-xs px-2 py-0.5 rounded-full"
+                style="background:var(--color-bg-soft);color:var(--color-text-muted)">
+            {{ items|length }}
+          </span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span onclick="toggleCategory_items(event, {{ forloop.counter }})"
+                class="text-xs px-2 py-1 rounded-full border cursor-pointer transition-all hidden sm:inline-block"
+                style="border-color:var(--color-border);color:var(--color-text-muted)">
+            Отметить всё
+          </span>
+          <i class="fa-solid fa-chevron-down cat-chevron transition-transform duration-300 text-xs"
+             style="color:var(--color-text-muted)"></i>
+        </div>
+      </button>
+
+      <!-- Items list -->
+      <ul class="cat-items border-t" style="border-color:var(--color-border);list-style:none;padding:0;margin:0">
+        {% for item in items %}
+        <li class="shop-item flex items-center gap-3 px-4 py-3 border-b transition-all"
+            style="border-color:var(--color-border)"
+            data-product-id="{{ item.product_id }}"
+            data-category-id="{{ forloop.parentloop.counter }}">
+          <!-- Checkbox -->
+          <label class="relative cursor-pointer flex-shrink-0 flex items-center justify-center"
+                 style="width:32px;height:32px">
+            <input type="checkbox"
+                   class="shop-checkbox absolute opacity-0 w-0 h-0"
+                   data-product-id="{{ item.product_id }}"
+                   data-plan-id="{{ plan.id }}"
+                   onchange="handleCheckbox(this)">
+            <span class="checkbox-visual w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all"
+                  style="border-color:var(--color-border)">
+              <i class="fa-solid fa-check text-xs text-white hidden check-v" style="font-size:0.6rem"></i>
+            </span>
+          </label>
+          <!-- Product info -->
+          <div class="flex-1 min-w-0 shop-item-text">
+            <span class="text-sm font-medium block truncate" style="color:var(--color-text)">
+              {{ item.product_name }}
+            </span>
+          </div>
+          <!-- Quantity -->
+          <div class="text-sm font-semibold flex-shrink-0 whitespace-nowrap" style="color:var(--color-primary)">
+            {% if item.unit == 'по вкусу' %}
+              <span class="text-xs font-normal" style="color:var(--color-text-muted)">по вкусу</span>
+            {% else %}
+              {{ item.quantity }} <span class="text-xs font-normal" style="color:var(--color-text-muted)">{{ item.unit }}</span>
+            {% endif %}
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="rounded-3xl border p-8 text-center"
+       style="background:var(--color-bg-card);border-color:var(--color-border)">
+    <div class="text-4xl mb-3" style="color:var(--color-border)"><i class="fa-solid fa-cart-shopping"></i></div>
+    <h2 class="font-semibold mb-1" style="color:var(--color-text);font-family:var(--font-display)">Список пуст</h2>
+    <p class="text-sm mb-4" style="color:var(--color-text-muted)">В этом меню нет продуктов для покупки</p>
+    <a href="{% url 'menu:detail' plan.id %}" class="btn btn-primary text-sm py-2 px-4">
+      <i class="fa-solid fa-arrow-left mr-2"></i>Вернуться к меню
+    </a>
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- Mobile sticky bottom bar -->
+<div class="lg:hidden fixed bottom-0 left-0 right-0 p-3 z-40"
+     style="background:var(--color-bg-card);border-top:1px solid var(--color-border)">
+  <div class="flex items-center justify-between">
+    <span class="text-sm" style="color:var(--color-text-muted)">
+      Куплено: <strong id="mobile-progress-label" style="color:var(--color-primary)">0 / {{ total_items }}</strong>
+    </span>
+    <a href="{% url 'menu:detail' plan.id %}" class="btn btn-outline text-sm py-2 px-4">
+      <i class="fa-solid fa-utensils mr-1"></i>К меню
+    </a>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<style>
+  .shop-item.checked .shop-item-text {
+    opacity: 0.45;
+    text-decoration: line-through;
+  }
+  .shop-item.checked {
+    background: var(--color-bg-soft);
+  }
+  .checkbox-visual.is-checked {
+    background: var(--color-primary) !important;
+    border-color: var(--color-primary) !important;
+    transform: scale(1.1);
+    animation: checkBounce 0.25s ease;
+  }
+  @keyframes checkBounce {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.3); }
+    100% { transform: scale(1.1); }
+  }
+
+  .cat-items { display: block; }
+  .cat-items.collapsed { display: none; }
+  .cat-chevron.rotated { transform: rotate(180deg); }
+
+  .shop-item {
+    animation: slideInRight 0.3s ease both;
+  }
+
+  .shop-item.checked {
+    order: 99;
+  }
+</style>
+
+<script>
+const PLAN_ID = "{{ plan.id }}";
+const TOTAL_ITEMS = {{ total_items }};
+
+function storageKey(productId) {
+  return `cart_${PLAN_ID}_${productId}`;
+}
+
+function restoreState() {
+  document.querySelectorAll('.shop-checkbox').forEach(cb => {
+    const stored = localStorage.getItem(storageKey(cb.dataset.productId));
+    if (stored === 'true') {
+      cb.checked = true;
+      applyCheckStyle(cb, true, false);
+    }
+  });
+  updateProgress();
+}
+
+function handleCheckbox(cb) {
+  const checked = cb.checked;
+  localStorage.setItem(storageKey(cb.dataset.productId), checked);
+  applyCheckStyle(cb, checked, true);
+  updateProgress();
+}
+
+function applyCheckStyle(cb, checked, animate) {
+  const item = cb.closest('.shop-item');
+  const visual = cb.closest('label').querySelector('.checkbox-visual');
+  const checkIcon = visual.querySelector('.check-v');
+
+  if (checked) {
+    item.classList.add('checked');
+    visual.classList.add('is-checked');
+    checkIcon.classList.remove('hidden');
+  } else {
+    item.classList.remove('checked');
+    visual.classList.remove('is-checked');
+    checkIcon.classList.add('hidden');
+  }
+}
+
+function updateProgress() {
+  const checked = document.querySelectorAll('.shop-checkbox:checked').length;
+  const pct = TOTAL_ITEMS > 0 ? Math.round(checked / TOTAL_ITEMS * 100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = `${checked} из ${TOTAL_ITEMS}`;
+  const mob = document.getElementById('mobile-progress-label');
+  if (mob) mob.textContent = `${checked} / ${TOTAL_ITEMS}`;
+}
+
+let allChecked = false;
+function toggleAll() {
+  allChecked = !allChecked;
+  document.querySelectorAll('.shop-checkbox').forEach(cb => {
+    cb.checked = allChecked;
+    localStorage.setItem(storageKey(cb.dataset.productId), allChecked);
+    applyCheckStyle(cb, allChecked, false);
+  });
+  updateProgress();
+  const btn = document.getElementById('toggle-all-btn');
+  btn.innerHTML = allChecked
+    ? '<i class="fa-solid fa-xmark mr-1"></i>Снять'
+    : '<i class="fa-solid fa-check-double mr-1"></i>Все';
+}
+
+function toggleCategory_items(e, catId) {
+  e.stopPropagation();
+  const items = document.querySelectorAll(`.shop-item[data-category-id="${catId}"] .shop-checkbox`);
+  const anyUnchecked = [...items].some(cb => !cb.checked);
+  items.forEach(cb => {
+    cb.checked = anyUnchecked;
+    localStorage.setItem(storageKey(cb.dataset.productId), anyUnchecked);
+    applyCheckStyle(cb, anyUnchecked, false);
+  });
+  updateProgress();
+}
+
+function toggleCategory(btn) {
+  const list = btn.nextElementSibling;
+  const chevron = btn.querySelector('.cat-chevron');
+  list.classList.toggle('collapsed');
+  chevron.classList.toggle('rotated');
+}
+
+function copyList() {
+  const lines = [];
+  document.querySelectorAll('.category-card').forEach(card => {
+    const catName = card.querySelector('.font-semibold')?.textContent?.trim();
+    if (catName) lines.push(`\n${catName}:`);
+    card.querySelectorAll('.shop-item').forEach(item => {
+      const name = item.querySelector('.shop-item-text .text-sm')?.textContent?.trim();
+      const qty = item.querySelector('.text-sm.font-semibold')?.childNodes[0]?.textContent?.trim();
+      const unit = item.querySelector('.text-xs.font-normal')?.textContent?.trim();
+      if (name) lines.push(`- ${name}: ${qty || ''} ${unit || ''}`.trim());
+    });
+  });
+  navigator.clipboard.writeText(lines.join('\n').trim())
+    .then(() => showToast('Список скопирован!'))
+    .catch(() => showToast('Не удалось скопировать', true));
+}
+
+function shareList() {
+  const text = buildShareText();
+  if (navigator.share) {
+    navigator.share({ title: `Список покупок: {{ plan.name }}`, text }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text).then(() => showToast('Скопировано для отправки!'));
+  }
+}
+
+function buildShareText() {
+  const lines = [`Список покупок: {{ plan.name }}\n`];
+  document.querySelectorAll('.category-card').forEach(card => {
+    const catName = card.querySelector('.font-semibold')?.textContent?.trim();
+    if (catName) lines.push(`\n${catName}:`);
+    card.querySelectorAll('.shop-item').forEach(item => {
+      const name = item.querySelector('.shop-item-text .text-sm')?.textContent?.trim();
+      const qty = item.querySelector('.text-sm.font-semibold')?.childNodes[0]?.textContent?.trim();
+      const unit = item.querySelector('.text-xs.font-normal')?.textContent?.trim();
+      if (name) lines.push(`- ${name}: ${qty || ''} ${unit || ''}`.trim());
+    });
+  });
+  return lines.join('\n').trim();
+}
+
+function showToast(msg, error=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = error ? '#d44f4f' : 'var(--color-primary)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+restoreState();
+</script>
+{% endblock %}

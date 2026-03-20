@@ -1,6 +1,6 @@
 from django.db import transaction
 
-from api.v1.recipe.interfaces.uow import IUnitOfWork
+from api.v1.common.interfaces.uow import IUnitOfWork
 
 
 class DjangoUnitOfWork(IUnitOfWork):

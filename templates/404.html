@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block main_class %}main-container flex items-center justify-center{% endblock %}
+
+{% block content %}
+    <div class="w-full max-w-lg text-center animate-fade-in-up">
+        <div class="rounded-[var(--radius-card)] p-10 border border-[var(--color-border)] bg-[var(--color-bg-card)] shadow-lg">
+            <div class="text-8xl font-oswald text-[var(--color-primary)] mb-4">404</div>
+            <h1 class="text-2xl font-oswald text-[var(--color-text)] mb-3">Страница не найдена</h1>
+            <p class="text-[var(--color-text-muted)] mb-8">
+                Похоже, этот рецепт потерялся где-то на кухне.
+            </p>
+            <a href="/" class="btn btn-primary inline-flex">
+                <i class="fas fa-home mr-2"></i> На главную
+            </a>
+        </div>
+    </div>
+{% endblock content %}

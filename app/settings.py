@@ -58,7 +58,7 @@ DJANGO_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
+    'django.contrib.postgres',
 ]
 
 THIRD_PARTY_APPS = [
@@ -81,6 +81,7 @@ PROJECT_APPS = [
      'recipe.apps.RecipeConfig',
      'api.apps.ApiConfig',
      'notifications.apps.NotificationsConfig',
+     'menu.apps.MenuConfig',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + PROJECT_APPS
@@ -117,8 +118,7 @@ MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',
 ]
 
-if DEBUG:
-    MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 ROOT_URLCONF = 'app.urls'
 
@@ -195,7 +195,7 @@ STORAGES = {
         "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
     },
     "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        "BACKEND": "app.storage.SafeManifestStaticFilesStorage",
     },
 }
 

@@ -81,6 +81,8 @@ class Recipe(TimestampedModel, StatusModel):
     meal_type = models.CharField(
         max_length=50,
         choices=MealType.choices,
+        default=MealType.UNCATEGORIZED,
+        blank=True,
         verbose_name=_("Тип блюда"),
     )
     tips = models.TextField(
