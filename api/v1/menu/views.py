@@ -95,6 +95,18 @@ class UpdateMenuEntryAPIView(APIView):
         return Response({"ok": True}, status=status.HTTP_200_OK)
 
 
+class ClearMenuEntryRecipeAPIView(APIView):
+    """POST /api/v1/menu/entry/<uuid>/clear/ — убирает рецепт из слота меню."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, entry_id):
+        repository = MenuRepository()
+        found = repository.clear_entry_recipe(str(entry_id), str(request.user.id))
+        if not found:
+            return Response({"error": "Запись не найдена"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"ok": True}, status=status.HTTP_200_OK)
+
+
 class AddMenuEntryAPIView(APIView):
     """POST /api/v1/menu/entry/add/ — создаёт новую запись в плане."""
     permission_classes = [IsAuthenticated]

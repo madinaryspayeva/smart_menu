@@ -32,6 +32,11 @@ class IMenuRepository(ABC):
         pass
 
     @abstractmethod
+    def clear_entry_recipe(self, entry_id: str, user_id: str) -> bool:
+        """Remove recipe from a menu entry (keep the slot). Returns True if found."""
+        pass
+
+    @abstractmethod
     def delete_entry(self, entry_id: str) -> None:
         pass
 

@@ -76,6 +76,13 @@ class MenuRepository(IMenuRepository):
             servings=servings,
         )
 
+    def clear_entry_recipe(self, entry_id: str, user_id: str) -> bool:
+        updated = MenuPlanEntry.objects.filter(
+            id=entry_id,
+            menu_plan__created_by_id=user_id,
+        ).update(recipe_id=None)
+        return updated > 0
+
     def delete_entry(self, entry_id: str) -> None:
         MenuPlanEntry.objects.filter(id=entry_id).delete()
         

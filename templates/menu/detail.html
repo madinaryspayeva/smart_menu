@@ -866,11 +866,14 @@ document.getElementById('servings-edit-input').addEventListener('keydown', e => 
   if (e.key === 'Escape') cancelServings();
 });
 
-// ---- Delete ----
+// ---- Remove recipe from slot ----
 function deleteEntry(entryId) {
-  if (!confirm('Удалить рецепт из меню?')) return;
-  updateEntry(entryId, { recipe_id: null })
-    .then(() => { showToast('Рецепт удалён'); setTimeout(() => location.reload(), 600); })
+  fetch(`/api/v1/menu/entry/${entryId}/clear/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': csrfToken },
+  })
+    .then(res => { if (!res.ok) throw new Error(); return res.json(); })
+    .then(() => { showToast('Рецепт убран из меню'); setTimeout(() => location.reload(), 600); })
     .catch(() => showToast('Ошибка удаления', true));
 }
 

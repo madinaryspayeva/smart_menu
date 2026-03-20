@@ -30,14 +30,14 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
-      
+
       redis:
         image: redis:7-alpine
         ports:
           - 6379:6379
 
     steps:
-      - name: Checkout 
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Python
@@ -87,9 +87,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Disable COMPOSE_BAKE
-        run: echo "COMPOSE_BAKE=false" >> $GITHUB_ENV
-
       - name: Deploy to server via SSH
         uses: appleboy/ssh-action@v1.2.1
         with:
@@ -100,11 +97,17 @@ jobs:
           script: |
             cd smart_menu
             git pull origin main
-            npx tailwindcss -i static/input.css -o static/output.css --minify
-            docker compose -f docker-compose.prod.yml build --parallel
-            docker compose -f docker-compose.prod.yml up -d --force-recreate
-            docker compose -f docker-compose.prod.yml exec -T web find /code/staticfiles -mindepth 1 -delete 2>/dev/null || true
+
+            # Build with BuildKit cache for faster builds
+            export DOCKER_BUILDKIT=1
+            export COMPOSE_DOCKER_CLI_BUILD=1
+            docker compose -f docker-compose.prod.yml build --parallel web
+
+            # Only recreate app containers (not db/redis/ollama)
+            docker compose -f docker-compose.prod.yml up -d --no-deps web asgi nginx celery_worker celery_beat
+
+            # Migrations
             docker compose -f docker-compose.prod.yml exec -T web poetry run python manage.py migrate --noinput
-            docker compose -f docker-compose.prod.yml exec -T web poetry run python manage.py collectstatic --noinput
-            docker compose -f docker-compose.prod.yml restart nginx
+
+            # Verify containers are running
             docker compose -f docker-compose.prod.yml ps
