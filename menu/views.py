@@ -2,9 +2,9 @@ from collections import defaultdict
 from datetime import date
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Count, Min, Max, Q
+from django.db.models import Count, Max, Min, Q
 from django.shortcuts import redirect
-from django.views.generic import DetailView, TemplateView, ListView
+from django.views.generic import DetailView, ListView, TemplateView
 
 from api.v1.common.uow.django_uow import DjangoUnitOfWork
 from api.v1.menu.dto.menu_dto import CreateMenuDTO

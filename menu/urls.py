@@ -1,6 +1,11 @@
 from django.urls import path
 
-from menu.views import MenuPlanCreateView, MenuPlanDetailView, MenuPlanListView, MenuPlanShoppingCartView
+from menu.views import (
+    MenuPlanCreateView,
+    MenuPlanDetailView,
+    MenuPlanListView,
+    MenuPlanShoppingCartView,
+)
 
 app_name = "menu"
 
