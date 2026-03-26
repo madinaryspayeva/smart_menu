@@ -134,6 +134,9 @@
                             <a href="{% url 'recipe:my_list' %}" class="flex items-center gap-3 px-4 py-3 text-sm text-dark-gray dark:text-dark-text hover:bg-pastel-yellow dark:hover:bg-dark-bg transition">
                                 <i class="fas fa-book-open w-4" style="color: #FF8811;"></i> Мои рецепты
                             </a>
+                            <a href="{% url 'menu:list' %}" class="flex items-center gap-3 px-4 py-3 text-sm text-dark-gray dark:text-dark-text hover:bg-pastel-yellow dark:hover:bg-dark-bg transition">
+                                <i class="fas fa-calendar-plus w-4" style="color: #FF8811;"></i> Меню
+                            </a>
                             <a href="{% url 'notifications' %}" class="flex items-center gap-3 px-4 py-3 text-sm text-dark-gray dark:text-dark-text hover:bg-pastel-yellow dark:hover:bg-dark-bg transition">
                                 <i class="fas fa-bell w-4" style="color: #FF8811;"></i> Уведомления
                                 {% if unread_notifications_count %}

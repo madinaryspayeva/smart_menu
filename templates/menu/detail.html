@@ -20,7 +20,8 @@
       </div>
     </div>
     <div class="flex items-center gap-2">
-      <!-- Mobile view toggle -->
+      {% if sorted_dates|length > 1 %}
+      <!-- Mobile view toggle (only for multi-day menus) -->
       <div class="flex rounded-full border overflow-hidden lg:hidden"
            style="border-color:var(--color-border)">
         <button id="view-table" onclick="setView('table')"
@@ -34,6 +35,7 @@
           <i class="fa-solid fa-id-card"></i>
         </button>
       </div>
+      {% endif %}
       <a href="{% url 'menu:cart' plan.id %}" class="btn btn-primary flex items-center gap-2">
         <i class="fa-solid fa-cart-shopping"></i>
         <span class="hidden sm:inline">Корзина</span>
@@ -41,7 +43,8 @@
     </div>
   </div>
 
-  <!-- ==================== TABLE VIEW ==================== -->
+  {% if sorted_dates|length > 1 %}
+  <!-- ==================== TABLE VIEW (multi-day) ==================== -->
   <div id="table-view">
     <div class="overflow-x-auto rounded-3xl border" style="border-color:var(--color-border)">
       <table class="w-full" style="border-collapse:separate;border-spacing:0">
@@ -160,8 +163,101 @@
       </table>
     </div>
   </div>
+  {% endif %}
 
-  <!-- ==================== CARD VIEW (mobile) ==================== -->
+  {% if sorted_dates|length == 1 %}
+  <!-- ==================== SINGLE-DAY VIEW ==================== -->
+  <div id="single-day-view">
+    {% with date=sorted_dates.0 %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {% for meal_type in meal_types %}
+      <div class="rounded-2xl border p-4" style="background:var(--color-bg-card);border-color:var(--color-border)">
+        <div class="text-xs font-semibold mb-3 uppercase tracking-wide" style="color:var(--color-text-muted)">
+          {{ meal_type }}
+        </div>
+        {% with entries_list=schedule|get_item:date|get_item:meal_type %}
+        {% if entries_list %}
+        {% for entry in entries_list %}
+        {% if entry.recipe %}
+        <div class="recipe-entry-card group {% if not forloop.first %}mt-3{% endif %}"
+             data-entry-id="{{ entry.id }}"
+             data-date="{{ entry.date|date:'Y-m-d' }}"
+             data-meal-type="{{ entry.meal_type }}"
+             draggable="true">
+          {% if entry.recipe.image %}
+          <a href="{% url 'recipe:detail' entry.recipe.id %}" class="block relative overflow-hidden rounded-xl mb-2" style="aspect-ratio:16/9" onclick="event.stopPropagation()">
+            <img src="{{ entry.recipe.image.url }}" alt="{{ entry.recipe.name }}"
+                 class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+          </a>
+          {% endif %}
+          <a href="{% url 'recipe:detail' entry.recipe.id %}" class="text-sm font-medium leading-tight mb-1 line-clamp-2 block hover:underline"
+             style="color:var(--color-text)" onclick="event.stopPropagation()">{{ entry.recipe.name }}</a>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1 cursor-pointer rounded-lg px-1.5 py-0.5 transition-all servings-btn-area"
+                 style="background:rgba(255,136,17,0.08)"
+                 onclick="startEditServings(this.querySelector('.servings-display'), '{{ entry.id }}', {{ entry.servings }})"
+                 title="Изменить порции">
+              <i class="fa-solid fa-users text-xs" style="color:var(--color-text-muted)"></i>
+              <span class="servings-display text-xs font-medium" style="color:var(--color-primary)">{{ entry.servings }}</span>
+              <i class="fa-solid fa-pen text-xs" style="color:var(--color-text-muted);font-size:0.55rem"></i>
+            </div>
+            <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity quick-actions">
+              <button type="button" title="Заменить"
+                      onclick="openRecipePicker('{{ entry.id }}')"
+                      class="w-7 h-7 rounded-full flex items-center justify-center text-xs transition-all"
+                      style="background:var(--color-bg-soft);color:var(--color-text)"
+                      onmouseover="this.style.background='var(--color-primary)';this.style.color='white'"
+                      onmouseout="this.style.background='var(--color-bg-soft)';this.style.color='var(--color-text)'">
+                <i class="fa-solid fa-arrows-rotate"></i>
+              </button>
+              <button type="button" title="Удалить"
+                      onclick="deleteEntry('{{ entry.id }}')"
+                      class="w-7 h-7 rounded-full flex items-center justify-center text-xs transition-all"
+                      style="background:var(--color-bg-soft);color:var(--color-text)"
+                      onmouseover="this.style.background='#ff4444';this.style.color='white'"
+                      onmouseout="this.style.background='var(--color-bg-soft)';this.style.color='var(--color-text)'">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <button type="button"
+                onclick="openRecipePicker('{{ entry.id }}')"
+                class="empty-cell-btn w-full flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed py-6 transition-all {% if not forloop.first %}mt-3{% endif %}"
+                data-date="{{ date|date:'Y-m-d' }}"
+                data-meal-type="{{ meal_type }}"
+                data-entry-id="{{ entry.id }}"
+                style="border-color:var(--color-border);color:var(--color-text-muted)"
+                onmouseover="this.style.borderColor='var(--color-primary)';this.style.color='var(--color-primary)';this.style.background='rgba(255,136,17,0.05)'"
+                onmouseout="this.style.borderColor='var(--color-border)';this.style.color='var(--color-text-muted)';this.style.background='transparent'">
+          <i class="fa-solid fa-plus text-lg"></i>
+          <span class="text-xs">Добавить</span>
+        </button>
+        {% endif %}
+        {% endfor %}
+        {% else %}
+        <button type="button"
+                onclick="openRecipePickerEmpty('{{ date|date:'Y-m-d' }}', '{{ meal_type }}')"
+                class="empty-cell-btn w-full flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed py-6 transition-all"
+                data-date="{{ date|date:'Y-m-d' }}"
+                data-meal-type="{{ meal_type }}"
+                style="border-color:var(--color-border);color:var(--color-text-muted)"
+                onmouseover="this.style.borderColor='var(--color-primary)';this.style.color='var(--color-primary)';this.style.background='rgba(255,136,17,0.05)'"
+                onmouseout="this.style.borderColor='var(--color-border)';this.style.color='var(--color-text-muted)';this.style.background='transparent'">
+          <i class="fa-solid fa-plus text-lg"></i>
+          <span class="text-xs">Добавить</span>
+        </button>
+        {% endif %}
+        {% endwith %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endwith %}
+  </div>
+
+  {% else %}
+  <!-- ==================== CARD VIEW (multi-day mobile) ==================== -->
   <div id="card-view" class="hidden">
     <!-- Swipe navigation -->
     <div class="flex items-center justify-between mb-4">
@@ -180,6 +276,7 @@
     </div>
     <div id="card-day-content"></div>
   </div>
+  {% endif %}
 
 </div>
 
@@ -361,7 +458,7 @@
     flex-shrink: 0;
   }
 
-  /* Mobile: hide table view, show cards by default */
+  /* Multi-day mobile: hide table view, show cards by default */
   @media (max-width: 1023px) {
     #table-view {
       display: none !important;
@@ -460,9 +557,33 @@ async function addEntry(data) {
   return res.json();
 }
 
-// ---- View toggle ----
-let currentView = window.innerWidth < 1024 ? 'cards' : 'table';
+// ---- View toggle & Card view (multi-day only) ----
+const isMultiDay = {{ sorted_dates|length }} > 1;
+let currentView = 'table';
+let currentCardDay = 0;
+const datesData = [];
+
+if (isMultiDay) {
+  currentView = window.innerWidth < 1024 ? 'cards' : 'table';
+  datesData.push(
+    {% for date in sorted_dates %}
+    { iso: "{{ date|date:'Y-m-d' }}", label: "{{ date|date:'D, d M' }}", meals: [
+      {% for meal_type in meal_types %}
+      {% with entries_list=schedule|get_item:date|get_item:meal_type %}
+      { mealType: "{{ meal_type }}", entries: [
+        {% if entries_list %}{% for entry in entries_list %}
+        {% if entry.recipe %}{ id:"{{ entry.id }}", recipeId:"{{ entry.recipe.id }}", name:"{{ entry.recipe.name|escapejs }}", servings:{{ entry.servings }}{% if entry.recipe.image %}, image:"{{ entry.recipe.image.url }}"{% endif %} }{% else %}{ id:"{{ entry.id }}", name:null, servings:{{ entry.servings }} }{% endif %},
+        {% endfor %}{% endif %}
+      ]},
+      {% endwith %}
+      {% endfor %}
+    ]},
+    {% endfor %}
+  );
+}
+
 function setView(v) {
+  if (!isMultiDay) return;
   currentView = v;
   document.getElementById('table-view').classList.toggle('hidden', v !== 'table');
   document.getElementById('card-view').classList.toggle('hidden', v !== 'cards');
@@ -470,24 +591,6 @@ function setView(v) {
   document.getElementById('view-cards').classList.toggle('active-view', v === 'cards');
   if (v === 'cards') renderCardDay(currentCardDay);
 }
-
-// ---- Card view ----
-const datesData = [
-  {% for date in sorted_dates %}
-  { iso: "{{ date|date:'Y-m-d' }}", label: "{{ date|date:'D, d M' }}", meals: [
-    {% for meal_type in meal_types %}
-    {% with entries_list=schedule|get_item:date|get_item:meal_type %}
-    { mealType: "{{ meal_type }}", entries: [
-      {% if entries_list %}{% for entry in entries_list %}
-      {% if entry.recipe %}{ id:"{{ entry.id }}", recipeId:"{{ entry.recipe.id }}", name:"{{ entry.recipe.name|escapejs }}", servings:{{ entry.servings }}{% if entry.recipe.image %}, image:"{{ entry.recipe.image.url }}"{% endif %} }{% else %}{ id:"{{ entry.id }}", name:null, servings:{{ entry.servings }} }{% endif %},
-      {% endfor %}{% endif %}
-    ]},
-    {% endwith %}
-    {% endfor %}
-  ]},
-  {% endfor %}
-];
-let currentCardDay = 0;
 
 function renderCardDay(idx) {
   if (idx < 0 || idx >= datesData.length) return;
@@ -542,13 +645,15 @@ function nextDay() {
   if (currentCardDay < datesData.length - 1) { currentCardDay++; renderCardDay(currentCardDay); }
 }
 
-// Touch swipe for card view
+// Touch swipe for card view (multi-day only)
 let touchStartX = 0;
-document.getElementById('card-view').addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
-document.getElementById('card-view').addEventListener('touchend', e => {
-  const diff = touchStartX - e.changedTouches[0].clientX;
-  if (Math.abs(diff) > 50) diff > 0 ? nextDay() : prevDay();
-});
+if (isMultiDay) {
+  document.getElementById('card-view').addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
+  document.getElementById('card-view').addEventListener('touchend', e => {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) diff > 0 ? nextDay() : prevDay();
+  });
+}
 
 // ---- Drag & Drop ----
 let dragSrcEntry = null;
@@ -976,8 +1081,8 @@ function copyToNextDay(entryId) {
   // actual implementation depends on backend endpoint
 }
 
-// ---- Init: render card view on mobile ----
-if (window.innerWidth < 1024) {
+// ---- Init: render card view on mobile (multi-day only) ----
+if (isMultiDay && window.innerWidth < 1024) {
   document.getElementById('card-view').classList.remove('hidden');
   document.getElementById('view-cards').classList.add('active-view');
   document.getElementById('view-table').classList.remove('active-view');
