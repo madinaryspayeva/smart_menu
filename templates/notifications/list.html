@@ -143,8 +143,8 @@ function deleteNotification(id) {
 }
 
 const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-const socket = new WebSocket(wsProtocol + window.location.host + "/ws/notifications/");
-socket.onmessage = function(event) {
+const notifSocket = new WebSocket(wsProtocol + window.location.host + "/ws/notifications/");
+notifSocket.onmessage = function(event) {
     const data = JSON.parse(event.data);
     if (!data.id) return;
 
