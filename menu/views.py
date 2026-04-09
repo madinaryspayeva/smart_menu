@@ -4,7 +4,8 @@ from datetime import date
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count, Max, Min, Q
 from django.shortcuts import redirect
-from django.views.generic import DetailView, ListView, TemplateView
+from django.urls import reverse_lazy
+from django.views.generic import DetailView, ListView, TemplateView, DeleteView
 
 from api.v1.common.uow.django_uow import DjangoUnitOfWork
 from api.v1.menu.dto.menu_dto import CreateMenuDTO
@@ -47,7 +48,12 @@ class MenuPlanCreateView(LoginRequiredMixin, TemplateView):
             ))  
         
         dto = CreateMenuDTO(
-            name=name or f"Меню на {len(dates)} дней",
+            name=name or "Меню на {} {}".format(
+                len(dates),
+                "день" if len(dates) % 10 == 1 and len(dates) % 100 != 11
+                else "дня" if len(dates) % 10 in (2, 3, 4) and len(dates) % 100 not in range(11, 20)
+                else "дней"
+            ),
             servings=servings,
             dates=dates,
             meal_types=meal_types,      
@@ -140,3 +146,12 @@ class MenuPlanShoppingCartView(LoginRequiredMixin, DetailView):
         context["categories"] = dict(categories)
         context["total_items"] = len(items)
         return context
+
+
+
+class MenuPlanDeleteView(AuthRequiredView, DeleteView):
+    model = MenuPlan
+    success_url = reverse_lazy("menu:list")
+
+    def get_queryset(self):
+        return MenuPlan.objects.filter(created_by=self.request.user)

@@ -357,9 +357,41 @@
 
   .filters-actions {
     display: flex;
+    flex-direction: column;
     gap: 0.75rem;
-    flex-wrap: wrap;
-    align-items: center;
+  }
+
+  .filters-row {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .filters-row .filter-select {
+    flex: 1;
+  }
+
+  .filters-btn {
+    flex: 1;
+  }
+
+  .filters-add-btn {
+    width: 100%;
+  }
+
+  @media (min-width: 640px) {
+    .filters-actions {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filters-row {
+      flex: 1;
+    }
+
+    .filters-add-btn {
+      width: auto;
+    }
   }
 
   .search-wrapper {

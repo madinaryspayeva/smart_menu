@@ -1,17 +1,11 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static menu_extras %}
 
 {% block content %}
-<div class="py-6 sm:py-8 animate-fade-in-up">
+<div class="py-6 sm:py-8 animate-fade-in-up" style="width:100%">
 
   <!-- Header -->
-  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-    <div>
-      <h1 class="page-title" style="font-size:1.8rem;margin-bottom:0.25rem">Мои меню</h1>
-      <p class="text-sm" style="color:var(--color-text-muted)">
-        {{ plans|length }} {% if plans|length == 1 %}план{% elif plans|length < 5 %}плана{% else %}планов{% endif %}
-      </p>
-    </div>
+  <div class="flex justify-end mb-6">
     <a href="{% url 'menu:create' %}" class="btn btn-primary flex items-center gap-2">
       <i class="fa-solid fa-plus"></i>
       <span>Новое меню</span>
@@ -20,15 +14,15 @@
 
   <!-- Menu Plans Grid -->
   {% if plans %}
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="plans-grid">
+  <div class="grid gap-4 {% if plans|length > 1 %}grid-cols-1 sm:grid-cols-2{% else %}grid-cols-1{% endif %}" id="plans-grid" style="width:100%">
     {% for plan in plans %}
-    <div class="menu-plan-card rounded-3xl border overflow-hidden transition-all group"
+    <div class="menu-plan-card w-full rounded-3xl border overflow-hidden transition-all group"
          style="background:var(--color-bg-card);border-color:var(--color-border)"
          data-plan-id="{{ plan.id }}">
 
       <!-- Recipe images preview -->
       {% if plan.preview_images %}
-      <div class="flex h-28 overflow-hidden">
+      <div class="flex overflow-hidden {% if plans|length == 1 %}h-56{% else %}h-28{% endif %}">
         {% for img in plan.preview_images %}
         <div class="flex-1 min-w-0">
           <img src="{{ img }}" alt="" class="w-full h-full object-cover">
@@ -41,7 +35,7 @@
         {% endif %}
       </div>
       {% else %}
-      <div class="h-28 flex items-center justify-center" style="background:var(--color-bg-soft)">
+      <div class="flex items-center justify-center {% if plans|length == 1 %}h-56{% else %}h-28{% endif %}" style="background:var(--color-bg-soft)">
         <i class="fa-solid fa-utensils text-3xl" style="color:var(--color-border)"></i>
       </div>
       {% endif %}
@@ -75,7 +69,7 @@
           </span>
           <span>
             <i class="fa-solid fa-clock mr-1" style="color:var(--color-primary)"></i>
-            {{ plan.total_days }} дн.
+            {{ plan.total_days|days_plural }}
           </span>
           <span>
             <i class="fa-solid fa-users mr-1" style="color:var(--color-primary)"></i>
@@ -145,16 +139,16 @@
       </p>
       <div class="flex gap-3">
         <button onclick="closeDeleteModal()"
-                class="btn btn-outline flex-1 py-2.5">
+                class="btn btn-outline flex-1">
           Отмена
         </button>
-        <button id="delete-confirm-btn" onclick="executeDelete()"
-                class="flex-1 py-2.5 rounded-xl font-semibold text-sm text-white transition-all"
-                style="background:#ff4444"
-                onmouseover="this.style.background='#dd3333'"
-                onmouseout="this.style.background='#ff4444'">
-          Удалить
-        </button>
+        <form id="delete-form" method="post" action="" class="flex-1">
+          {% csrf_token %}
+          <button type="submit" class="btn w-full"
+                  style="background:var(--color-red-500);color:white">
+            Удалить
+          </button>
+        </form>
       </div>
     </div>
   </div>
@@ -181,65 +175,14 @@
 let deletePlanId = null;
 
 function confirmDelete(planId, planName) {
-  deletePlanId = planId;
   document.getElementById('delete-plan-name').textContent = planName;
+  document.getElementById('delete-form').action = `/menu/${planId}/delete/`;
   document.getElementById('delete-modal').classList.remove('hidden');
 }
 
 function closeDeleteModal() {
   document.getElementById('delete-modal').classList.add('hidden');
   deletePlanId = null;
-}
-
-function executeDelete() {
-  if (!deletePlanId) return;
-  const btn = document.getElementById('delete-confirm-btn');
-  btn.textContent = 'Удаление...';
-  btn.disabled = true;
-
-  fetch(`/api/v1/menu/${deletePlanId}/delete/`, {
-    method: 'POST',
-    headers: {
-      'X-CSRFToken': getCookie('csrftoken'),
-    },
-  })
-    .then(res => {
-      if (!res.ok) throw new Error();
-      const card = document.querySelector(`[data-plan-id="${deletePlanId}"]`);
-      if (card) {
-        card.style.transition = 'all 0.3s ease';
-        card.style.opacity = '0';
-        card.style.transform = 'scale(0.95)';
-        setTimeout(() => {
-          card.remove();
-          // Check if grid is empty
-          const grid = document.getElementById('plans-grid');
-          if (grid && grid.children.length === 0) {
-            location.reload();
-          }
-        }, 300);
-      }
-      closeDeleteModal();
-      showToast('Меню удалено');
-    })
-    .catch(() => {
-      showToast('Ошибка удаления', true);
-      btn.textContent = 'Удалить';
-      btn.disabled = false;
-    });
-}
-
-function getCookie(name) {
-  const m = document.cookie.match(`(^|;)\\s*${name}\\s*=\\s*([^;]+)`);
-  return m ? m.pop() : '';
-}
-
-function showToast(msg, error = false) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.style.background = error ? '#d44f4f' : 'var(--color-primary)';
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
 }
 </script>
 {% endblock %}
